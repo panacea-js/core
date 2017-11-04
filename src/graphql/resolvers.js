@@ -37,9 +37,6 @@ export const graphQLResolvers = function() {
         return await modelQuery(models.Dog, parent, args)
       },
 
-      lizards: async (parent, args, models) => {
-        return await modelQuery(models.Lizard, parent, args)
-      },
     },
     Dog: {
       livesWithCats(dog, args, models) {

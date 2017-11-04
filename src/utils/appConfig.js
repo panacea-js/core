@@ -10,16 +10,9 @@ const appConfig = function() {
 
     const { _, fs} = DI.container
 
-    const distConfigFilePath = './src/app.config.json'
-    const overridesConfigFilePath = './app.config.json'
+    const configFilePath = process.cwd() + '/app.config.json'
 
-    let config = fs.readJsonSync(distConfigFilePath)
-
-    /* istanbul ignore else */
-    if (fs.pathExistsSync(overridesConfigFilePath)) {
-      let overridenConfig = fs.readJsonSync(overridesConfigFilePath)
-      _.extend(config, overridenConfig)
-    }
+    let config = fs.readJsonSync(configFilePath)
 
     return resolve(config)
   })

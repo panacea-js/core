@@ -1,5 +1,5 @@
 {
-  "name": "mongodb-graphql-backend",
+  "name": "@panaceajs/core",
   "version": "0.0.0",
   "description": "",
   "main": "index.js",
@@ -67,7 +67,7 @@
     "dotenv-safe": "^4.0.4",
     "express": "^4.15.3",
     "fs-extra": "^4.0.2",
-    "glob-fs": "^0.1.7",
+    "glob": "^7.1.2",
     "graphql": "^0.10.5",
     "graphql-tools": "^1.1.0",
     "graphql-voyager": "^1.0.0-rc.9",

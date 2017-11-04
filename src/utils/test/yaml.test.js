@@ -10,7 +10,7 @@ test('Calling loadYmlFiles should throw Error when no directory is provided', t 
 
 test('Glob returns a non-empty array when files are found', t => {
   const directory = './src/test/fixtures/yml';
-  let files = glob({ gitignore: true }).readdirSync(directory + '/*.yml')
+  let files = glob.sync(directory + '/*.yml')
   t.true(files.length > 0)
 })
 

@@ -10,7 +10,7 @@ import { graphiqlExpress, graphqlExpress } from 'apollo-server-express'
 import { makeExecutableSchema } from 'graphql-tools'
 import { express as voyagerMiddleware } from 'graphql-voyager/middleware';
 import fs from 'fs-extra'
-import glob from 'glob-fs'
+import glob from 'glob'
 import js_yaml from 'js-yaml'
 import mongoose from 'mongoose'
 import requireDir from 'require-dir'

@@ -1,5 +1,10 @@
 {
-  "something-else": {
-
-  }
+  "directories": {
+    "entities": [
+      "./config/entities/schemas"
+    ]
+  },
+  "hooks": [
+    "./hooks.js"
+  ]
 }

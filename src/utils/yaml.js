@@ -16,7 +16,7 @@ export const loadYmlFiles = function(directory) {
 
   if (!fs.pathExistsSync(directory)) throw Error(`Directory ${directory} doesn't exist.`)
 
-  let files = glob({ gitignore: true }).readdirSync(directory + '/*.yml')
+  let files = glob.sync(directory + '/*.yml')
 
   files.map(file => {
     // Entity type name is the file name stub.

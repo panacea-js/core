@@ -22,7 +22,7 @@ export const registerServicesFromFile = function(file, globalVariable = 'DI') {
 
   const startTime = Date.now()
 
-  const servicesFile = `${process.env.PWD}/${file}`
+  const servicesFile = `${file}`
 
   const services = require(servicesFile).default
 

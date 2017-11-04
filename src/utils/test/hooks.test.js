@@ -80,13 +80,15 @@ test('Logging of available hooks works as not nested', async t => {
 
 test('Can load hooks from a directory', async t => {
 
+  t.plan(2)
+
   // ./ syntax.
   await hooks.loadFromDirectories(['./src/test/fixtures/hooks'])
-  t.true(typeof hooks._events['graphql.definitions.types'] !== 'undefined')
+  t.true(typeof hooks._events['core.graphql.definitions.types'] !== 'undefined')
 
   // Relative from project root syntax.
   await hooks.loadFromDirectories(['src/test/fixtures/hooks'])
-  t.true(typeof hooks._events['graphql.definitions.types'] !== 'undefined')
+  t.true(typeof hooks._events['core.graphql.definitions.types'] !== 'undefined')
 
 })
 

@@ -299,11 +299,11 @@ export const graphQLTypeDefinitions = function () {
       const entityTypes = {}
 
       for (let entitiesPath of config.directories.entities) {
-        let fileEntities = loadYmlFiles(entitiesPath)
+        const fileEntities = loadYmlFiles(entitiesPath)
         _.extend(entityTypes, fileEntities)
       }
 
-      if (!entityTypes) reject('No entity types found')
+      if (Object.keys(entityTypes).length === 0) reject('No entity types found')
 
       // Get entity types, inputs, queries and mutations.
       _(entityTypes).forEach((entityTypeData, entityTypeName) => {
@@ -405,24 +405,24 @@ export const graphQLTypeDefinitions = function () {
       }
 
       // Computed types.
-      hooks.invoke('graphql.definitions.types', types)
+      hooks.invoke('core.graphql.definitions.types', types)
       if (types.length === 0) reject("No type definitions could be compiled")
       output.push(formatTypesToOutput('type', types))
 
       // Input types.
-      hooks.invoke('graphql.definitions.input', inputs)
+      hooks.invoke('core.graphql.definitions.input', inputs)
       output.push(formatTypesToOutput('input', inputs))
 
       // Computed queries.
-      hooks.invoke('graphql.definitions.queries', queries)
+      hooks.invoke('core.graphql.definitions.queries', queries)
       output.push(formatRootTypeToOutput('Query', queries))
 
       // Computed mutations.
-      hooks.invoke('graphql.definitions.mutations', mutations)
+      hooks.invoke('core.graphql.definitions.mutations', mutations)
       output.push(formatRootTypeToOutput('Mutation', mutations))
 
       // Enums.
-      hooks.invoke('graphql.definitions.enums', enums)
+      hooks.invoke('core.graphql.definitions.enums', enums)
       output.push(formatEnumsToOutput(enums))
 
       //log.info(output.join('\n\n'))

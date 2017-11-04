@@ -1,7 +1,6 @@
 {
   "directories": {
     "entities": [
-      "./src/config/entities/schemas",
       "./config/entities/schemas"
     ]
   },
