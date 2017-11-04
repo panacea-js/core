@@ -1,0 +1,22 @@
+description: Lovely furry thing
+storage: db
+plural: Cats
+fields:
+    _id:
+        label: Unique identifier
+        type: id
+    name:
+        label: Name
+        type: string
+        required: true
+    breed:
+        label: Breed
+        type: string
+    cost:
+        label: Cost
+        type: float
+    livesWithDogs:
+        label: Lives with dogs
+        type: reference
+        references: Dog
+        many: true

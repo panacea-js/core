@@ -1,0 +1,80 @@
+{
+  "name": "mongodb-graphql-backend",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "startdb": "mongod --directoryperdb --dbpath=data/db --logappend --logRotate rename --logpath=data/db_log/mongod.log",
+    "start": "nodemon --inspect --exec babel-node index.js",
+    "test": "ava",
+    "watch:test": "npm t --",
+    "cover": "cross-env NODE_ENV=test nyc npm run test",
+    "watch:cover": "nodemon --quiet --watch src --exec npm run cover -s",
+    "check-coverage": "nyc check-coverage",
+    "lint": "eslint ."
+  },
+  "nyc": {
+    "require": [
+      "babel-register"
+    ],
+    "sourceMap": false,
+    "instrument": false,
+    "reporter": [
+      "lcov",
+      "text",
+      "html"
+    ],
+    "exclude": [
+      "src/test",
+      "**/*.test.js"
+    ],
+    "lines": 10,
+    "statements": 10,
+    "functions": 10,
+    "branches": 10
+  },
+  "ava": {
+    "files": [
+      "src/**/*.test.js"
+    ],
+    "require": [
+      "babel-register",
+      "./src/test/setup-test-env.js"
+    ],
+    "babel": "inherit",
+    "failWithoutAssertions": false
+  },
+  "author": "Barry Fisher <hello@reallifedigital.com> (https://www.reallifedigital.com)",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "ava": "^0.23.0",
+    "babel-cli": "^6.24.1",
+    "babel-plugin-istanbul": "^4.1.5",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-register": "^6.26.0",
+    "cross-env": "^5.1.1",
+    "eslint": "^4.4.0",
+    "eslint-config-airbnb-base": "^11.3.1",
+    "eslint-plugin-import": "^2.8.0",
+    "nodemon": "^1.11.0",
+    "nyc": "^11.2.0"
+  },
+  "dependencies": {
+    "apollo-server-express": "^1.0.5",
+    "babel-preset-env": "^1.6.1",
+    "body-parser": "^1.17.2",
+    "bottlejs": "^1.6.1",
+    "dotenv-safe": "^4.0.4",
+    "express": "^4.15.3",
+    "fs-extra": "^4.0.2",
+    "glob-fs": "^0.1.7",
+    "graphql": "^0.10.5",
+    "graphql-tools": "^1.1.0",
+    "graphql-voyager": "^1.0.0-rc.9",
+    "js-yaml": "github:nodeca/js-yaml",
+    "lodash": "^4.17.4",
+    "mongoose": "^4.11.5",
+    "require-dir": "^0.3.2",
+    "winston": "^3.0.0-rc1"
+  }
+}
