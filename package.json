@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "startdb": "mongod --directoryperdb --dbpath=data/db --logappend --logRotate rename --logpath=data/db_log/mongod.log",
-    "start": "nodemon --inspect --exec babel-node index.js",
+    "startapp": "npm run startdb & nodemon --inspect --exec babel-node index.js",
+    "start": "npm run startdb & npm run startapp",
     "test": "ava",
     "watch:test": "npm t --",
     "cover": "cross-env NODE_ENV=test nyc npm run test",

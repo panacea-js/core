@@ -1,7 +1,7 @@
 import { registerServicesFromFile } from './src/utils/DIContainer'
 registerServicesFromFile(__dirname + '/src/default.services')
 
-export default function(options = {}) {
+export default function(params = {}) {
 
   const {
     appConfig,
@@ -15,40 +15,91 @@ export default function(options = {}) {
     graphQLTypeDefinitions,
     graphQLResolvers,
     hooks,
-    log
+    log,
+    _
   } = DI.container
 
-  appConfig().then((config) => {
+  const defaults = {
+    main: {
+      endpoint: 'graphql',
+      port: 3000,
+      deferListen: false
+    },
+    graphiql: {
+      endpoint: 'graphiql',
+      enable: true,
+    },
+    voyager: {
+      endpoint: 'voyager',
+      enable: true,
+    },
+  }
 
-    // Load application level hooks.
-    if (config.hasOwnProperty('hooks')) {
-      hooks.loadFromDirectories(config.hooks)
-    }
+  const options = _.defaultsDeep(params || {}, defaults)
 
-    graphQLTypeDefinitions().then(typeDefs => {
+  return new Promise((resolve, reject) => {
 
-      const resolvers = graphQLResolvers()
+    appConfig().then(config => {
 
-      const schema = makeExecutableSchema({
-        typeDefs,
-        resolvers,
-      });
+      // Load application level hooks.
+      if (config.hasOwnProperty('hooks')) {
+        hooks.loadFromDirectories(config.hooks)
+      }
 
-      const app = express();
+      graphQLTypeDefinitions().then(typeDefs => {
 
-      app.use('/graphql', bodyParser.json(), graphqlExpress({ schema, context: dbModels() }));
+        const resolvers = graphQLResolvers()
 
-      app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
+        const schema = makeExecutableSchema({
+          typeDefs,
+          resolvers,
+        })
 
-      app.use('/voyager', voyagerMiddleware({ endpointUrl: '/graphql' }));
+        const app = express()
 
-      app.listen(3000);
-      log.info('Server listening on port 3000')
+        // Main GraphQL endpoint.
+        app.use(
+          `/${options.main.endpoint}`,
+          bodyParser.json(),
+          graphqlExpress({
+            schema,
+            context: dbModels()
+          })
+        )
 
-      hooks.logAvailableHooks()
+        // GraphiQL endpoint.
+        if (options.graphiql.enable) {
+          app.use(
+            `/${options.graphiql.endpoint}`,
+            graphiqlExpress({
+              endpointURL: `/${options.main.endpoint}`
+            })
+          )
+        }
 
-    }).catch(error => log.error(`Server not started: ${error}`))
+        // Voyager endpoint.
+        if (options.voyager.enable) {
+          app.use(
+            `/${options.voyager.endpoint}`,
+            voyagerMiddleware({
+              endpointUrl: `/${options.main.endpoint}`
+            })
+          )
+        }
 
-  }).catch(error => log.error(`Server not started: ${error}`))
+        hooks.logAvailableHooks()
+
+        if (!options.main.deferListen) {
+          app.listen(`${options.main.port}`)
+          log.info(`Server listening on port ${options.main.port}`)
+        }
+
+        return resolve(app)
+
+      }).catch(error => reject(`Server not started. Type definitions error: ${error}`))
+
+    }).catch(error => reject(`Server not started: Application configuration error: ${error}`))
+
+  })
 
 }
