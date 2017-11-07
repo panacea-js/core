@@ -121,7 +121,7 @@ Points to note:
 
 * **No database configuration** - Panacea embraces version control for configuration management workflows. Other CMSs have complicated methods to get/write and sync config to and from their database. Panacea CMS reads and writes the applications configuration directly to the file system, so you can use your favorite version control system to manage complex workflows leaving your database for, well... data!
 * **Front-end agnostic** - Panacea assumes very few things about your front end. The only pre-requisite is that your application can send and receive GraphQL queries. As such, Panacea can be used with any front end framework or backend service (written in any language).
-* **No front end provided** - Panacea does not have any public front-end bundled in, so should be considered a [headless-CMS](https://en.wikipedia.org/wiki/Headless_CMS). The maintainers don't rule out bundling optional front-ends in the future, which will make it a more complete end-to-end solution. For now, our focus is building an extremely approachable and flexible solutions for reliably persisting data that comes from your front end application.
+* **No front end provided** - Panacea does not have any public front-end bundled in, so should be considered a [headless-CMS](https://en.wikipedia.org/wiki/Headless_CMS). The maintainers don't rule out bundling optional front-ends in the future, which will make it a more complete end-to-end solution. For now, our focus is building an extremely approachable and flexible solution for reliably persisting data sent from your front end application.
 * **Batteries included** - The Panacea CMS aims to rival the best Content Management Systems available today by providing an intuitive admin UI that's not just for programmers. End clients expect more-and-more from their website admin experience and we aim to blow them away with speed, simplicity and ease-of-use.
 
 ## Configuration details
@@ -206,7 +206,9 @@ Like what you see?
 We welcome any interest in contribution to help Panacea be stronger and better. Please create an issue or [send us a message](https://www.reallifedigital.com/contact).
 
 [Github](https://github.com/panacea-js)
+
 Twitter: Coming soon
+
 npm: Coming soon
 
 ## Security issues
@@ -215,5 +217,6 @@ If you find any security related issues in Panacea, please [contact us](https://
 
 ## Credits
 
-Panacea development is sponsored by [Real Life Digital](https://www.reallifedigital.com) - a UK web development agency helping clients
+Panacea development is sponsored by [Real Life Digital](https://www.reallifedigital.com) - a UK-based web consultancy helping businesses grow, navigate change and create stronger connections with their clients.
+
 Lead developer and maintainer: Barry Fisher
