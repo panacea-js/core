@@ -19,6 +19,8 @@
 * ~~Allow hookable API for third parties extensions and distributions~~
 * Better structure for defining separate applications
 * Allow trigger from external application (e.g. cms) to reload the backend configuration (e.g. on saving entity schema changes)
+* i18n integration
+* Files management - file and image GraphQL types
 
 ### Users and auth
 

@@ -2,9 +2,9 @@
 
 ## What is PanaceaJS?
 
-**For end clients** - Panacea is a framework your developers can use to build you fast, stable and efficient websites. In a world where technology is being used for competitive advantage it's important that your content and data can be used and re-used for different devices and platforms. Panacea provides highly flexible data modeling tools that your developers can use for your website, CRM system, intranet or anything else you can think of.
+**For end clients** - Panacea is a framework your developers can use to build fast, stable and efficient websites. In a world where technology is being used for competitive advantage it's important that your content and data can be used and re-used for different devices and platforms. Panacea provides highly flexible data modeling tools that your developers can use for your website, CRM system, intranet or anything else you can think of.
 
-**For developers** - PanaceaJS (or simply, Panacea) is a headless Content Management System which has been built using the best Node.js components available to make your front-end development a breeze. Have you built a great front-end app, but struggling to find a powerful way to model and persist your data? Then Panacea may be for you. Panacea is opinionated where it makes, but gets out of way for you to integrate it with any front-end framework (or back-end service) of your choosing. By using a combination of GraphQL, MongoDB and express you can model, prototype and MVP your application's persisted data easily from day one while giving a free/libre solution to scale-up with when success kicks in. Panacea's powerful hooks system allows you to interact with data and events in real-time meaning there's no stopping your custom workflows and integrations.
+**For developers** - PanaceaJS (or simply, Panacea) is a [headless Content Management System](https://en.wikipedia.org/wiki/Headless_CMS) which has been built using the best Node.js components to make your front-end development a breeze. **Have you built a great front-end app, but struggling to find a powerful way to model and persist your data?** Then Panacea may be for you. Panacea is opinionated where it makes sense, but gets out of way for you to integrate it with any front-end framework (or back-end service) of your choosing. By using a combination of [GraphQL](https://en.wikipedia.org/wiki/GraphQL), [MongoDB](https://en.wikipedia.org/wiki/MongoDB) and [express](https://en.wikipedia.org/wiki/Express.js) you can model, prototype and MVP your application's persisted data easily from day one while giving a free/libre solution to scale-up with when success kicks in. Data types (entities) and configration are declarative in nature so you can easily spot changes in your VCS allowing you to work efficiently and avoid merge conflict hell! Panacea's powerful hooks system allows you to interact with data and events in real-time meaning there's no stopping your custom workflows and integrations.
 
 ## Prerequisites
 
@@ -13,35 +13,35 @@ The following need to be installed:
 * [Node + npm](https://docs.npmjs.com/getting-started/installing-node)
 * [MongoDB](https://docs.mongodb.com/manual/installation/)
 
-## Quick start
+## Quick start (5 easy steps)
 
-Install the Panacea cli tool globally:
+1. Install the Panacea cli tool globally:
 
 ```sh
-npm install -g @Panaceajs/cli
+npm install -g @panaceajs/cli
 ```
 
-Start a project with the started template:
+2. Start a project with the started template:
 
 ```sh
-Panacea init starter-template PROJECT_NAME
+panacea init starter-template PROJECT_NAME
 ```
 
 where `PROJECT_NAME` is the sub-directory you wish to create your application.
 
-Alternatively, you can run `Panacea init starter-template .` in an existing empty directory.
+(Alternatively, you can run `panacea init starter-template .` in an existing empty directory.)
 
-Navigate into your directory created for `PROJECT_NAME`.
+3. Navigate into your directory created for `PROJECT_NAME`.
 
-Panacea requires a .env environment file to be set up.
+4. Panacea requires a .env environment file to be set up.
 
 If this is your first time using Panacea let Panacea scaffold this file for you:
 
 ```sh
-Panacea generate-env
+panacea generate-env
 ```
 
-Finally run:
+5. Finally, run:
 
 ```sh
 npm start
@@ -64,17 +64,29 @@ For more information about GraphQL, check out the [Introduction to GraphQL](http
 │ │ └ schemas      ─  Main entity schemas directly used in your app
 │ │   ├ Cat.yml    ─  An example schema for a Cat
 │ │   └ Dog.yml    ─  An example schema for a Dog
+│ │ 
 │ └ hooks
 │   └ hooks.js     ─  Example hooks file to interact and override Panacea's behaviors and triggered events
-├ data
+│
+├ data             ─  Everything in this directory should be git ignored
 │ ├ app_log        ─  The default log directory for your application - debugging starts here
 │ ├ db             ─  The default Mongo database (dbpath)
 │ ├ db_log         ─  The default log directory MongoDB
-│ └ sessions       ─  The store of active user sessions
-├ index.js         ─  The applications main entry point
+│ ├ sessions       ─  The store of active user sessions
+│ └ files
+│   ├ managed      ─  Storage for uploaded files
+│   │ ├ private    ─  Managed private files (with special access permissions required)
+│   │ └ public     ─  Managed public files (available without authentication)
+│   └ static       ─  Storage for any static files not managed or editable via the GraphQL API
+│
+├ index.js         ─  The application main entry point
 ├ .env             ─  Application environment variables (per environment - don't commit to version control)
 └ .env.example     ─  An example .env file
 </pre>
+
+For a more secure production setups, we recommend that you mount your application as read-only with exception of the `data` and `config` directories.
+
+Please note that when using Panacea CMS it's possible that the `config` directory may be changed to reflect changes made in the admin UI. It's important to check for live changes before merging and commit them into version control to maintain a full history of changes.
 
 ## Key concepts
 
@@ -84,7 +96,7 @@ Panacea has been designed to provide you with comprehensive CMS features using a
 * **[Panacea CMS](https://github.com/panacea-js/cms)** - is a first-class application providing functionality you'd expect to find in all good CMSs. Although Panacea Core can be used as a standalone application we strongly recommend using Panacea's official CMS to make the most of the Panacea eco-system.
 * **[Panacea CLI](https://github.com/panacea-js/cli)** - is a command line tool (cli) for creating new projects and performing common tasks within your application.
 * **Templates** - allow you to create application starter kits and distribute them to your team and the wider world. Templates can be easily installed using the Panacea CLI.
-* **Application** - is a term used in Panacea as anything that consumes the GraphQL endpoint.
+* **Application** - is a term used in Panacea as any system that consumes the GraphQL endpoint. All applications require setting up in the admin UI.
 * **Hooks** - are a publish/subscribe mechanism to add your own behaviors and alter workflow data.
 * **Entities** - are the yml files which describe data types in your application. They can reference other types of objects and can have a nested 'object' structure. Entities automatically get converted to GraphQL types and MongoDB collections without you needing to do any of the plumbing. Of course, all of this can be overriden using the hooks system.
 * **Config entities** - are a singleton entities which define site-wide configuration. This configuration can be altered directly in the yml files, however we strongly recommend you use Panacea CMS to make any changes.
@@ -96,7 +108,9 @@ Points to note:
 * **No front end provided** - Panacea does not have any public front-end bundled in, so should be considered a [headless-CMS](https://en.wikipedia.org/wiki/Headless_CMS). The maintainers don't rule out bundling optional front-ends in the future, which will make it a more complete end-to-end solution. For now, our focus is building an extremely approachable and flexible solutions for reliably persisting data that comes from your front end application.
 * **Batteries included** - The Panacea CMS aims to rival the best Content Management Systems available today by providing an intuitive admin UI that's not just for programmers. End clients expect more-and-more from their website admin experience and we aim to blow them away with speed, simplicity and ease-of-use.
 
-### Server configuration
+## Configuration details
+
+### Various bootstrap methods
 
 If you want to except Panacea's defaults, you're index.js can be very terse:
 
@@ -131,3 +145,59 @@ Available options to pass to `panacea()` are as follows with defaults shown:
     },
   }
 ```
+
+### Registering your application
+
+@todo
+
+### Hooks
+
+@todo
+
+### Entity yml documentation
+
+@todo
+
+### Config yml documentation
+
+@todo
+
+### Creating templates
+
+@todo
+
+### Front end examples
+
+@todos
+
+### CMS (admin UI) documentation
+
+Please refer to the [CMS documentation](https://github.com/panacea-js/cms)
+@todo - Build a guide on main website
+
+### Securing Panacea
+
+@todo
+
+### Scaling Panacea
+
+@todo
+
+## Contribution, feature requests, support and promotion
+
+Like what you see?
+
+We welcome any interest in contribution to help Panacea be stronger and better. Please create an issue or [send us a message](https://www.reallifedigital.com/contact).
+
+[Github](https://github.com/panacea-js)
+Twitter: Coming soon
+npm: Coming soon
+
+## Security issues
+
+If you find any security related issues in Panacea, please [contact us](https://www.reallifedigital.com/contact) privately.
+
+## Credits
+
+Panacea development is sponsored by [Real Life Digital](https://www.reallifedigital.com) - a UK web development agency helping clients
+Lead developer and maintainer: Barry Fisher
