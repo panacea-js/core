@@ -2,9 +2,25 @@
 
 ## What is PanaceaJS?
 
-**For end clients** - Panacea is a framework your developers can use to build fast, stable and efficient websites. In a world where technology is being used for competitive advantage it's important that your content and data can be used and re-used for different devices and platforms. Panacea provides highly flexible data modeling tools that your developers can use for your website, CRM system, intranet or anything else you can think of.
+**For clients** - Panacea is a framework your developers can use to build fast, stable and efficient websites. In a world where technology is being used for competitive advantage it's important that your content and data can be used and re-used for different devices and platforms.
 
-**For developers** - PanaceaJS (or simply, Panacea) is a [headless Content Management System](https://en.wikipedia.org/wiki/Headless_CMS) which has been built using the best Node.js components to make your front-end development a breeze. **Have you built a great front-end app, but struggling to find a powerful way to model and persist your data?** Then Panacea may be for you. Panacea is opinionated where it makes sense, but gets out of way for you to integrate it with any front-end framework (or back-end service) of your choosing. By using a combination of [GraphQL](https://en.wikipedia.org/wiki/GraphQL), [MongoDB](https://en.wikipedia.org/wiki/MongoDB) and [express](https://en.wikipedia.org/wiki/Express.js) you can model, prototype and MVP your application's persisted data easily from day one while giving a free/libre solution to scale-up with when success kicks in. Data types (entities) and configration are declarative in nature so you can easily spot changes in your VCS allowing you to work efficiently and avoid merge conflict hell! Panacea's powerful hooks system allows you to interact with data and events in real-time meaning there's no stopping your custom workflows and integrations.
+Panacea provides highly flexible data modeling tools that your developers can use for your website, CRM system, intranet or anything else you can think of.
+
+Using Panacea is free (as in cost) and also comes with a permissive free-software [license](https://github.com/panacea-js/core/blob/master/LICENSE) allowing you build commercial solutions without supplier lock-in.
+
+**For developers** - PanaceaJS (or simply, Panacea) is a [headless Content Management System](https://en.wikipedia.org/wiki/Headless_CMS) which has been built using the best Node.js components to make your front-end development a breeze.
+
+**Have you built a great front-end app, but struggling to find a powerful way to model and persist your data?**
+
+Panacea may be for you.
+
+Panacea is opinionated where it makes sense, but gets out of way for you to integrate it with any front-end framework (or back-end service) of your choosing.
+
+By using a combination of [GraphQL](https://en.wikipedia.org/wiki/GraphQL), [MongoDB](https://en.wikipedia.org/wiki/MongoDB) and [express](https://en.wikipedia.org/wiki/Express.js) you can model, prototype and MVP your application's persisted data easily from day one while giving a free/libre solution to scale-up with when success kicks in.
+
+Data types (entities) and configration are declarative in nature so you can easily spot changes in your VCS allowing you to work efficiently and avoid merge conflict hell!
+
+Panacea's powerful hooks system allows you to interact with data and events in real-time meaning there's no stopping your custom workflows and integrations.
 
 ## Prerequisites
 
