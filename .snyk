@@ -1,0 +1,141 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.7.1
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  'npm:debug:20170905':
+    - babel-preset-env > babel-plugin-transform-es2015-classes > babel-helper-function-name > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-block-scoping > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-computed-properties > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-modules-commonjs > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-modules-systemjs > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-parameters > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-parameters > babel-helper-call-delegate > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-parameters > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-function-name > babel-helper-function-name > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-function-name > babel-helper-function-name > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-modules-amd > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-modules-amd > babel-plugin-transform-es2015-modules-commonjs > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-object-super > babel-helper-replace-supers > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-object-super > babel-helper-replace-supers > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-exponentiation-operator > babel-helper-builder-binary-assignment-operator-visitor > babel-helper-explode-assignable-expression > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-async-to-generator > babel-helper-remap-async-to-generator > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-async-to-generator > babel-helper-remap-async-to-generator > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-async-to-generator > babel-helper-remap-async-to-generator > babel-helper-function-name > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-async-to-generator > babel-helper-remap-async-to-generator > babel-helper-function-name > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-classes > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-classes > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-classes > babel-helper-function-name > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-block-scoping > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-classes > babel-helper-replace-supers > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-classes > babel-helper-replace-supers > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-classes > babel-helper-define-map > babel-helper-function-name > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-classes > babel-helper-define-map > babel-helper-function-name > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-modules-umd > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-modules-umd > babel-plugin-transform-es2015-modules-amd > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - babel-preset-env > babel-plugin-transform-es2015-modules-umd > babel-plugin-transform-es2015-modules-amd > babel-plugin-transform-es2015-modules-commonjs > babel-template > babel-traverse > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - snyk > snyk-policy > snyk-resolve > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - snyk > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - snyk > snyk-module > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.848Z'
+    - snyk > snyk-resolve > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+    - snyk > snyk-try-require > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+    - snyk > snyk-policy > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+    - snyk > snyk-policy > snyk-module > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+    - snyk > needle > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+    - snyk > snyk-policy > snyk-try-require > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+    - snyk > snyk-config > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+    - snyk > snyk-resolve-deps > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+    - snyk > snyk-resolve-deps > snyk-module > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+    - snyk > snyk-resolve-deps > snyk-resolve > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+    - snyk > snyk-resolve-deps > snyk-try-require > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+    - snyk > snyk-resolve-deps > clite > debug:
+        reason: No option but to ignore!
+        expires: '2017-12-08T03:51:45.849Z'
+patch: {}

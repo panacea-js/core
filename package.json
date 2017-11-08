@@ -7,13 +7,15 @@
     "startdb": "mongod --directoryperdb --dbpath=data/db --logappend --logRotate rename --logpath=data/db_log/mongod.log",
     "startapp": "npm run startdb & nodemon --inspect --exec babel-node index.js",
     "start": "npm run startdb & npm run startapp",
-    "test": "ava",
+    "test": "snyk test && ava",
     "watch:test": "npm t --",
     "cover": "cross-env NODE_ENV=test nyc npm run test",
     "watch:cover": "nodemon --quiet --watch src --exec npm run cover -s",
     "coveralls": "npm run cover && nyc report --reporter=text-lcov | coveralls",
     "lint": "standard",
-    "lint:fix": "standard --fix"
+    "lint:fix": "standard --fix",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "standard": {
     "parser": "babel-eslint",
@@ -79,11 +81,13 @@
     "glob": "^7.1.2",
     "graphql": "^0.10.5",
     "graphql-tools": "^1.1.0",
-    "graphql-voyager": "^1.0.0-rc.9",
+    "graphql-voyager": "http://github.com/APIs-guru/graphql-voyager/tarball/master",
     "js-yaml": "github:nodeca/js-yaml",
     "lodash": "^4.17.4",
     "mongoose": "^4.11.5",
     "require-dir": "^0.3.2",
+    "snyk": "^1.48.1",
     "winston": "^3.0.0-rc1"
-  }
+  },
+  "snyk": true
 }
