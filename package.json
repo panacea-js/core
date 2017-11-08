@@ -81,7 +81,7 @@
     "glob": "^7.1.2",
     "graphql": "^0.10.5",
     "graphql-tools": "^1.1.0",
-    "graphql-voyager": "http://github.com/APIs-guru/graphql-voyager/tarball/master",
+    "graphql-voyager": "^1.0.0-rc.9",
     "js-yaml": "github:nodeca/js-yaml",
     "lodash": "^4.17.4",
     "mongoose": "^4.11.5",
