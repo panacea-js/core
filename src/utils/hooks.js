@@ -5,7 +5,7 @@ import events from 'events'
 const Hooks = events.EventEmitter
 
 // The instance gets passed around between modules from the service container.
-const hooks = new Hooks()
+export const hooks = new Hooks()
 
 /**
  * Registry of hooks that have been invoked
@@ -122,5 +122,3 @@ Hooks.prototype.loadFromDirectories = function (paths) {
 
   return result
 }
-
-export { hooks }

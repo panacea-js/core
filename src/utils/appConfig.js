@@ -4,7 +4,7 @@
  *
  * @returns Promise
  */
-const appConfig = function () {
+export function appConfig () {
   return new Promise(function (resolve, reject) {
     const { fs } = DI.container
 
@@ -15,5 +15,3 @@ const appConfig = function () {
     return resolve(config)
   })
 }
-
-export { appConfig }

@@ -33,8 +33,7 @@ export default function (params = {}) {
     graphQLTypeDefinitions,
     graphQLResolvers,
     hooks,
-    log,
-    _
+    log
   } = DI.container
 
   return new Promise((resolve, reject) => {

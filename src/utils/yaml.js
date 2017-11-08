@@ -8,7 +8,7 @@
  *   Keyed by the filename.
  *   Value is a parsed YAML to JSON.
  */
-export const loadYmlFiles = function (directory) {
+export function loadYmlFiles (directory) {
   const { jsYaml, fs, _, glob } = DI.container
 
   let result = {}
