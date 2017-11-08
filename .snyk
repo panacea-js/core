@@ -138,4 +138,11 @@ ignore:
     - snyk > snyk-resolve-deps > clite > debug:
         reason: No option but to ignore!
         expires: '2017-12-08T03:51:45.849Z'
-patch: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:marked:20170112':
+    - graphql-voyager > marked:
+        patched: '2017-11-08T11:18:58.568Z'
+  'npm:marked:20170907':
+    - graphql-voyager > marked:
+        patched: '2017-11-08T11:17:27.736Z'
