@@ -1,7 +1,26 @@
-import { registerServicesFromFile } from './src/utils/DIContainer'
-registerServicesFromFile(`${__dirname}/src/default.services`)
-
 export default function (params = {}) {
+  const defaults = {
+    main: {
+      endpoint: 'graphql',
+      port: 3000,
+      deferListen: false,
+      servicesFile: `${__dirname}/src/default.services`
+    },
+    graphiql: {
+      endpoint: 'graphiql',
+      enable: true
+    },
+    voyager: {
+      endpoint: 'voyager',
+      enable: true
+    }
+  }
+
+  const defaultsDeep = require('lodash/defaultsDeep')
+  const options = defaultsDeep(params || {}, defaults)
+
+  require('./src/utils/DIContainer').registerServicesFromFile(options.main.servicesFile)
+
   const {
     appConfig,
     makeExecutableSchema,
@@ -17,24 +36,6 @@ export default function (params = {}) {
     log,
     _
   } = DI.container
-
-  const defaults = {
-    main: {
-      endpoint: 'graphql',
-      port: 3000,
-      deferListen: false
-    },
-    graphiql: {
-      endpoint: 'graphiql',
-      enable: true
-    },
-    voyager: {
-      endpoint: 'voyager',
-      enable: true
-    }
-  }
-
-  const options = _.defaultsDeep(params || {}, defaults)
 
   return new Promise((resolve, reject) => {
     appConfig().then(config => {

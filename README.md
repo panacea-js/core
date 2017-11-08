@@ -154,7 +154,8 @@ Available options to pass to `panacea()` are as follows with defaults shown:
     main: {
       endpoint: 'graphql', // Change this to alter the main GraphQL endpoint.
       port: 3000,
-      deferListen: false
+      deferListen: false,
+      servicesFile: `${__dirname}/src/default.services` // Advanced: path to your own services file for dependency injection.
     },
     graphiql: {
       endpoint: 'graphiql',
