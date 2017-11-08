@@ -1,9 +1,10 @@
 # Core PanaceaJS framework - In active development - Not production ready!
 
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
-[![CircleCI](https://img.shields.io/circleci/project/github/panacea-js/core.svg)]()
+[![CircleCI](https://img.shields.io/circleci/project/github/panacea-js/core.svg)](https://circleci.com/gh/panacea-js/core)
 [![Coverage Status](https://coveralls.io/repos/github/panacea-js/core/badge.svg)](https://coveralls.io/github/panacea-js/core)
 [![Known Vulnerabilities](https://snyk.io/test/github/panacea-js/core/badge.svg)](https://snyk.io/test/github/panacea-js/core)
+[![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](https://github.com/panacea-js/core/blob/master/LICENSE)
 
 ## What is PanaceaJS?
 
