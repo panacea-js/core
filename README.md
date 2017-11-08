@@ -3,6 +3,7 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![CircleCI](https://img.shields.io/circleci/project/github/panacea-js/core.svg)]()
 [![Coverage Status](https://coveralls.io/repos/github/panacea-js/core/badge.svg)](https://coveralls.io/github/panacea-js/core)
+[![Known Vulnerabilities](https://snyk.io/test/github/panacea-js/core/badge.svg)](https://snyk.io/test/github/panacea-js/core)
 
 ## What is PanaceaJS?
 
