@@ -1,5 +1,8 @@
 # Core PanaceaJS framework - In active development - Not production ready!
 
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![CircleCI](https://img.shields.io/circleci/project/github/panacea-js/core.svg)]()
+
 ## What is PanaceaJS?
 
 **For clients** - Panacea is a framework your developers can use to build fast, stable and efficient websites. In a world where technology is being used for competitive advantage it's important that your content and data can be used and re-used for different devices and platforms.
