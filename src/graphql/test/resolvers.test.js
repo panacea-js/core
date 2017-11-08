@@ -12,25 +12,21 @@ const {
   dbModels
 } = DI.container
 
-
 test.skip('TODO', t => {
-
   graphQLTypeDefinitions().then(typeDefs => {
     const resolvers = graphQLResolvers()
 
     const schema = makeExecutableSchema({
       typeDefs,
-      resolvers,
-    });
+      resolvers
+    })
 
-    const app = express();
+    const app = express()
 
-    app.use('/graphql', bodyParser.json(), graphqlExpress({ schema, context: dbModels() }));
+    app.use('/graphql', bodyParser.json(), graphqlExpress({ schema, context: dbModels() }))
 
     app.listen(9898)
-
   })
 
   t.pass()
 })
-

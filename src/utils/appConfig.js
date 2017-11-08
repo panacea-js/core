@@ -4,11 +4,9 @@
  *
  * @returns Promise
  */
-const appConfig = function() {
-
-  return new Promise(function(resolve, reject) {
-
-    const { _, fs} = DI.container
+const appConfig = function () {
+  return new Promise(function (resolve, reject) {
+    const { fs } = DI.container
 
     const configFilePath = process.cwd() + '/app.config.json'
 
@@ -16,7 +14,6 @@ const appConfig = function() {
 
     return resolve(config)
   })
-
 }
 
 export { appConfig }

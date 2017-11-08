@@ -1,4 +1,4 @@
-const modelQuery = async function(model, parent, args) {
+const modelQuery = async function (model, parent, args) {
   const params = args.params || {
     limit: 100,
     sortBy: null,
@@ -11,36 +11,37 @@ const modelQuery = async function(model, parent, args) {
     sortOptions[params.sortBy] = params.sortDirection === 'DESC' ? -1 : 1
   }
 
-  return await model.find().limit(params.limit).sort(sortOptions)
+  const entities = await model.find().limit(params.limit).sort(sortOptions)
 
+  return entities
 }
 
-export const graphQLResolvers = function() {
-
-  const { log } = DI.container
-
+export const graphQLResolvers = function () {
   return {
     Query: {
       cat: async (parent, args, models) => {
-        return await models.Cat.findById(args.id)
+        const entity = await models.Cat.findById(args.id)
+        return entity
       },
 
       dog: async (parent, args, models) => {
-        return await models.Dog.findById(args.id)
+        const entity = await models.Dog.findById(args.id)
+        return entity
       },
 
       cats: async (parent, args, models) => {
-        return await modelQuery(models.Cat, parent, args)
+        const entity = await modelQuery(models.Cat, parent, args)
+        return entity
       },
 
       dogs: async (parent, args, models) => {
-        return await modelQuery(models.Dog, parent, args)
-      },
+        const entity = await modelQuery(models.Dog, parent, args)
+        return entity
+      }
 
     },
     Dog: {
-      livesWithCats(dog, args, models) {
-
+      livesWithCats (dog, args, models) {
         let cats = []
 
         dog.livesWithCats.map(catId => {
@@ -51,8 +52,7 @@ export const graphQLResolvers = function() {
       }
     },
     Cat: {
-      livesWithDogs(cat, args, models) {
-
+      livesWithDogs (cat, args, models) {
         let dogs = []
 
         cat.livesWithDogs.map(dogId => {
@@ -64,16 +64,15 @@ export const graphQLResolvers = function() {
     },
     Mutation: {
       createCat: async (parent, args, { Cat }) => {
-        const kitty = await new Cat(args.params).save();
-        kitty._id = kitty._id.toString();
-        return kitty;
+        const kitty = await new Cat(args.params).save()
+        kitty._id = kitty._id.toString()
+        return kitty
       },
       createDog: async (parent, args, { Dog }) => {
-
-        const doggy = await new Dog(args.params).save();
-        doggy._id = doggy._id.toString();
-        return doggy;
-      },
-    },
+        const doggy = await new Dog(args.params).save()
+        doggy._id = doggy._id.toString()
+        return doggy
+      }
+    }
   }
 }

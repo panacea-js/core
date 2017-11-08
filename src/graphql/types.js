@@ -4,8 +4,7 @@
  * @param type String
  * @returns object
  */
-const convertSystemFieldToGraphQL = function(type) {
-
+const convertSystemFieldToGraphQL = function (type) {
   const map = {
     id: 'String',
     string: 'String',
@@ -16,7 +15,7 @@ const convertSystemFieldToGraphQL = function(type) {
     boolean: 'Boolean',
     reference: 'String',
     // objects are for nested data.
-    object: '__NestedObject',
+    object: '__NestedObject'
   }
 
   if (!map[type]) {
@@ -24,23 +23,6 @@ const convertSystemFieldToGraphQL = function(type) {
   }
 
   return map[type]
-
-}
-
-/**
- * Pretty prints generated output for generated GraphQL string output
- * @param input String
- *
- * @deprecated Should not require this anymore.
- */
-const prettyPrintGraphQL = function(input) {
-  return input
-  // Replace all preceding whitespace with two spaces.
-    .replace(/^( +)/gm, '  ')
-    // Remove preceding white space for braced lines and comments.
-    .replace(/^(\s*)(.*)([\{\}\#])/gm, '$2$3')
-    // Add new line after closing brace.
-    .replace(/\}/gm, '}\n')
 }
 
 /**
@@ -56,7 +38,6 @@ const prettyPrintGraphQL = function(input) {
  * @returns {{refsAsStrings: object, refsAsModels: object}}
  */
 const processGraphQLfields = function (fields) {
-
   const { _ } = DI.container
 
   let output = {
@@ -65,21 +46,18 @@ const processGraphQLfields = function (fields) {
   }
 
   _(fields).forEach((field, _fieldName) => {
-
     // Transform all field names to camel case so as not to interfere with
     // the underscores used to identify the entity/field nesting hierarchy.
     const fieldName = _.camelCase(_fieldName)
 
     Object.keys(output).forEach((refType) => {
-
       let fieldDescription = field.description || ''
 
       let fieldType
 
       if (field.type === 'reference') {
         fieldType = (refType === 'refsAsStrings') ? 'String' : field.references
-      }
-      else {
+      } else {
         fieldType = convertSystemFieldToGraphQL(field.type)
       }
 
@@ -96,9 +74,7 @@ const processGraphQLfields = function (fields) {
         // This allows for unlimited nesting of defined fields.
         output[refType][fieldName].fields = processGraphQLfields(field.fields)
       }
-
     })
-
   })
 
   return output
@@ -121,37 +97,31 @@ const processGraphQLfields = function (fields) {
  * @returns String
  */
 const formatRootTypeToOutput = function (rootType, definitions) {
-
   const { _ } = DI.container
 
   let output = []
 
   output.push(`type ${rootType} {`)
 
-  _(definitions).forEach(function(entityTypeDefinitions) {
-
-    _(entityTypeDefinitions).forEach(function(definition) {
-
+  _(definitions).forEach(function (entityTypeDefinitions) {
+    _(entityTypeDefinitions).forEach(function (definition) {
       let args = []
 
-      _(definition.arguments).forEach(function(value, key) {
+      _(definition.arguments).forEach(function (value, key) {
         return args.push(`${key}: ${value}`)
       })
 
-      args = args.join(', ');
+      args = args.join(', ')
 
       output.push(`# ${definition.comment}`)
       output.push(`  ${definition.name}(${args}): ${definition.returnType}`)
       output.push('')
-
     })
-
   })
 
   output.push('}')
 
-  return output.join("\n")
-
+  return output.join('\n')
 }
 
 /**
@@ -173,7 +143,6 @@ const formatRootTypeToOutput = function (rootType, definitions) {
  * @returns String
  */
 const formatTypesToOutput = function (type, definitions) {
-
   const { _ } = DI.container
 
   let output = []
@@ -181,16 +150,13 @@ const formatTypesToOutput = function (type, definitions) {
   // Nested types (objects in fields) are deferred to be concatenated to the final output.
   let nestedTypes = []
 
-  _(definitions).forEach(function(data, entityType) {
-
+  _(definitions).forEach(function (data, entityType) {
     output.push(`# ${data.comment}`)
 
     output.push(`${type} ${data.name} {`)
 
     _(data.fields).forEach((field, fieldName) => {
-
       if (field.hasOwnProperty('fields')) {
-
         // This field has nested fields as an object, which needs to be execute recursively
         // to allow for unlimited data nesting.
 
@@ -218,20 +184,16 @@ const formatTypesToOutput = function (type, definitions) {
         // Replace placeholder with computed type name as this field still needs to be
         // appended to this entityType which references the nested field.
         field.value = field.value.replace('__NestedObject', nestedFieldName)
-
       }
 
       output.push(`  # ${field.comment}`)
       output.push(`  ${field.value}`)
-
     })
 
     output.push('}')
-
   })
 
-  return output.join("\n") + nestedTypes.join("\n")
-
+  return output.join('\n') + nestedTypes.join('\n')
 }
 
 /**
@@ -249,13 +211,11 @@ const formatTypesToOutput = function (type, definitions) {
  * @returns String
  */
 const formatEnumsToOutput = function (enums) {
-
   const { _ } = DI.container
 
   let output = []
 
-  _(enums).forEach(function(definition) {
-
+  _(enums).forEach(function (definition) {
     output.push(`# ${definition.comment}`)
 
     output.push(`enum ${definition.name} {`)
@@ -266,11 +226,9 @@ const formatEnumsToOutput = function (enums) {
     })
 
     output.push('}')
-
   })
 
-  return output.join("\n")
-
+  return output.join('\n')
 }
 
 /**
@@ -281,21 +239,18 @@ const formatEnumsToOutput = function (enums) {
  * @returns Promise
  */
 export const graphQLTypeDefinitions = function () {
-
   const { appConfig, loadYmlFiles, _, log, hooks } = DI.container
 
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
+    const output = []
 
-    const output = [];
-
-    const types = {};
-    const queries = {};
-    const mutations = {};
-    const inputs = {};
-    const enums = {};
+    const types = {}
+    const queries = {}
+    const mutations = {}
+    const inputs = {}
+    const enums = {}
 
     appConfig().then((config) => {
-
       const entityTypes = {}
 
       for (let entitiesPath of config.directories.entities) {
@@ -303,11 +258,10 @@ export const graphQLTypeDefinitions = function () {
         _.extend(entityTypes, fileEntities)
       }
 
-      if (Object.keys(entityTypes).length === 0) reject('No entity types found')
+      if (Object.keys(entityTypes).length === 0) reject(new Error('No entity types found'))
 
       // Get entity types, inputs, queries and mutations.
       _(entityTypes).forEach((entityTypeData, entityTypeName) => {
-
         if (!entityTypeData) return
         if (!entityTypeData.hasOwnProperty('fields')) throw new TypeError(`Fields do not exist on ${entityTypeName}`)
 
@@ -324,13 +278,13 @@ export const graphQLTypeDefinitions = function () {
         types[entityTypeNamePascal] = {
           comment: `${entityDescription} entity`,
           name: entityTypeNamePascal,
-          fields: definedFields.refsAsModels,
+          fields: definedFields.refsAsModels
         }
 
         inputs[entityTypeNamePascal + 'Input'] = {
           comment: `${entityDescription} input type`,
           name: `${entityTypeNamePascal}Input`,
-          fields: definedFields.refsAsStrings,
+          fields: definedFields.refsAsStrings
         }
 
         mutations[entityTypeNamePascal] = {
@@ -338,19 +292,19 @@ export const graphQLTypeDefinitions = function () {
             comment: `Create ${entityDescriptionLowerFirst}`,
             name: `create${entityTypeNamePascal}`,
             arguments: {
-              params: `${entityTypeNamePascal}Input`,
+              params: `${entityTypeNamePascal}Input`
             },
-            returnType: `${entityTypeNamePascal}!`,
+            returnType: `${entityTypeNamePascal}!`
           },
           update: {
             comment: `Update ${entityDescriptionLowerFirst}`,
             name: `update${entityTypeNamePascal}`,
             arguments: {
               id: `String!`,
-              params: `${entityTypeNamePascal}Input`,
+              params: `${entityTypeNamePascal}Input`
             },
-            returnType: `${entityTypeNamePascal}!`,
-          },
+            returnType: `${entityTypeNamePascal}!`
+          }
         }
 
         queries[entityTypeNamePascal] = {
@@ -358,20 +312,19 @@ export const graphQLTypeDefinitions = function () {
             comment: `Get all ${entityTypeData.plural}`,
             name: pluralCamel,
             arguments: {
-              params: `QueryParams`,
+              params: `QueryParams`
             },
-            returnType: `[${entityTypeNamePascal}!]`,
+            returnType: `[${entityTypeNamePascal}!]`
           },
           single: {
             comment: `Get a single ${entityTypeNamePascal}`,
             name: entityTypeNameCamel,
             arguments: {
-              id: `String!`,
+              id: `String!`
             },
-            returnType: `${entityTypeNamePascal}`,
-          },
+            returnType: `${entityTypeNamePascal}`
+          }
         }
-
       })
 
       // Non-entity related inputs
@@ -390,7 +343,7 @@ export const graphQLTypeDefinitions = function () {
           },
           sortDirection: {
             comment: 'Direction of sort',
-            value: 'sortDirection: SORT_DIRECTIONS = ASC',
+            value: 'sortDirection: SORT_DIRECTIONS = ASC'
           }
         }
       }
@@ -399,14 +352,14 @@ export const graphQLTypeDefinitions = function () {
         comment: 'Ascending/Descending sort order values',
         name: 'SORT_DIRECTIONS',
         items: [
-          { comment: 'Ascending', value: 'ASC'},
-          { comment: 'Descending', value: 'DESC'},
+          { comment: 'Ascending', value: 'ASC' },
+          { comment: 'Descending', value: 'DESC' }
         ]
       }
 
       // Computed types.
       hooks.invoke('core.graphql.definitions.types', types)
-      if (types.length === 0) reject("No type definitions could be compiled")
+      if (types.length === 0) reject(new Error('No type definitions could be compiled'))
       output.push(formatTypesToOutput('type', types))
 
       // Input types.
@@ -425,11 +378,8 @@ export const graphQLTypeDefinitions = function () {
       hooks.invoke('core.graphql.definitions.enums', enums)
       output.push(formatEnumsToOutput(enums))
 
-      //log.info(output.join('\n\n'))
+      // log.info(output.join('\n\n'))
       resolve(output.join('\n\n'))
-
     }).catch(error => log.error(error))
-
   })
-
 }

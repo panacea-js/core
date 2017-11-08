@@ -9,19 +9,19 @@ test('Calling loadYmlFiles should throw Error when no directory is provided', t 
 })
 
 test('Glob returns a non-empty array when files are found', t => {
-  const directory = './src/test/fixtures/yml';
+  const directory = './src/test/fixtures/yml'
   let files = glob.sync(directory + '/*.yml')
   t.true(files.length > 0)
 })
 
 test('Call to loadYmlFiles returns a non empty object when YML files are available', t => {
-  const directory = './src/test/fixtures/yml';
+  const directory = './src/test/fixtures/yml'
   const results = loadYmlFiles(directory)
   t.true(results !== {})
 })
 
 test('Call to loadYmlFiles returns correct structured data', t => {
-  const directory = './src/test/fixtures/yml';
+  const directory = './src/test/fixtures/yml'
   const results = loadYmlFiles(directory)
 
   const test1 = results.hasOwnProperty('Cat')

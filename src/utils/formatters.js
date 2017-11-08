@@ -15,8 +15,7 @@
  *
  * @returns Object
  */
-const compileNestFromDotSeparated = function(hook, nest) {
-
+const compileNestFromDotSeparated = function (hook, nest) {
   if (hook.indexOf('.') !== -1) {
     hook = hook.split('.')
     let shifted = hook.shift()
@@ -26,14 +25,11 @@ const compileNestFromDotSeparated = function(hook, nest) {
     }
 
     nest[shifted] = compileNestFromDotSeparated(hook.join('.'), nest[shifted])
-
-  }
-  else {
+  } else {
     nest[hook] = {}
   }
 
   return nest
-
 }
 
 /**
@@ -52,14 +48,12 @@ const compileNestFromDotSeparated = function(hook, nest) {
  *
  * @returns String
  */
-const formatNestedObjectKeys = function(nest, indentSize = 2, _level = 0) {
-
+const formatNestedObjectKeys = function (nest, indentSize = 2, _level = 0) {
   const { _ } = DI.container
 
   let output = ''
 
   _(nest).forEach((item, key) => {
-
     let indent = ''
 
     _.times(_level * indentSize, () => {
@@ -72,11 +66,9 @@ const formatNestedObjectKeys = function(nest, indentSize = 2, _level = 0) {
       let increasedLevel = _level + 1
       output += formatNestedObjectKeys(item, indentSize, increasedLevel)
     }
-
   })
 
   return output
-
 }
 
 export {

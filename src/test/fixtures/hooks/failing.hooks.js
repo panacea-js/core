@@ -1,5 +1,5 @@
 export const shouldOnlyExportDefault = {
-  register() {
+  register () {
     // This should fail
   }
 

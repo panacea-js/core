@@ -4,8 +4,7 @@
  * @param type String
  * @returns object
  */
-const convertSystemFieldToMongo = function(type) {
-
+const convertSystemFieldToMongo = function (type) {
   const map = {
     string: String,
     password: String,
@@ -15,7 +14,7 @@ const convertSystemFieldToMongo = function(type) {
     boolean: Number,
     reference: String,
     // objects are for nested data.
-    object: Object,
+    object: Object
   }
 
   if (!map[type]) {
@@ -23,15 +22,13 @@ const convertSystemFieldToMongo = function(type) {
   }
 
   return map[type]
-
 }
 
 /**
  * Loads entity types from yml files to define MongoDB models.
  * @returns {object}
  */
-export const dbModels = function() {
-
+export const dbModels = function () {
   const { appConfig, loadYmlFiles, _, dbConnection, log } = DI.container
 
   const db = dbConnection()
@@ -39,7 +36,6 @@ export const dbModels = function() {
   const models = {}
 
   appConfig().then(config => {
-
     const entityTypes = {}
 
     for (let entitiesPath of config.directories.entities) {
@@ -48,34 +44,24 @@ export const dbModels = function() {
     }
 
     _(entityTypes).forEach((entityTypeData, entityTypeName) => {
-
       // Only create a mongoose model if the entity type is for the database.
       if (entityTypeData.storage !== 'db') return
 
       const definedFields = {}
 
       if (entityTypeData.hasOwnProperty('fields')) {
-
         _(entityTypeData.fields).forEach((field, fieldName) => {
-
           // Skip native _id mapping as this is internal to MongoDB.
           if (fieldName !== '_id') {
-
             let fieldType = convertSystemFieldToMongo(field.type)
             definedFields[fieldName] = field.many ? [fieldType] : fieldType
-
           }
-
         })
-
       }
 
-      models[entityTypeName] = db.model(entityTypeName, definedFields);
-
+      models[entityTypeName] = db.model(entityTypeName, definedFields)
     })
-
   }).catch(error => log.error(error))
 
   return models
-
 }

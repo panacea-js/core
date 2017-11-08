@@ -1,5 +1,5 @@
-export default  {
-  incorrectRegister() {
+export default {
+  incorrectRegister () {
 
   }
 }

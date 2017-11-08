@@ -1,8 +1,7 @@
 import { registerServicesFromFile } from './src/utils/DIContainer'
-registerServicesFromFile(__dirname + '/src/default.services')
+registerServicesFromFile(`${__dirname}/src/default.services`)
 
-export default function(params = {}) {
-
+export default function (params = {}) {
   const {
     appConfig,
     makeExecutableSchema,
@@ -27,32 +26,29 @@ export default function(params = {}) {
     },
     graphiql: {
       endpoint: 'graphiql',
-      enable: true,
+      enable: true
     },
     voyager: {
       endpoint: 'voyager',
-      enable: true,
-    },
+      enable: true
+    }
   }
 
   const options = _.defaultsDeep(params || {}, defaults)
 
   return new Promise((resolve, reject) => {
-
     appConfig().then(config => {
-
       // Load application level hooks.
       if (config.hasOwnProperty('hooks')) {
         hooks.loadFromDirectories(config.hooks)
       }
 
       graphQLTypeDefinitions().then(typeDefs => {
-
         const resolvers = graphQLResolvers()
 
         const schema = makeExecutableSchema({
           typeDefs,
-          resolvers,
+          resolvers
         })
 
         const app = express()
@@ -95,11 +91,7 @@ export default function(params = {}) {
         }
 
         return resolve(app)
-
-      }).catch(error => reject(`Server not started. Type definitions error: ${error}`))
-
-    }).catch(error => reject(`Server not started: Application configuration error: ${error}`))
-
+      }).catch(error => reject(new Error(`Server not started. Type definitions error: ${error}`)))
+    }).catch(error => reject(new Error(`Server not started: Application configuration error: ${error}`)))
   })
-
 }

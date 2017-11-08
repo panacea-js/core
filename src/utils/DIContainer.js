@@ -18,8 +18,7 @@ import Bottle from 'bottlejs'
  *
  * @returns Bottle
  */
-export const registerServicesFromFile = function(file, globalVariable = 'DI') {
-
+export const registerServicesFromFile = function (file, globalVariable = 'DI') {
   const startTime = Date.now()
 
   const servicesFile = `${file}`
@@ -39,5 +38,4 @@ export const registerServicesFromFile = function(file, globalVariable = 'DI') {
   console.info(`(${elapsedTime}) Registered DI service container on global.${globalVariable}.container from ${servicesFile}`)
 
   return bottle
-
-};
+}

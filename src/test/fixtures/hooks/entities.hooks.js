@@ -1,7 +1,7 @@
 export default {
-  register: function(hooks) {
+  register: function (hooks) {
     hooks.on('core.graphql.definitions.types', data => {
-      //console.log(data)
+      // console.log(data)
     })
   }
 }

@@ -1,18 +1,16 @@
 import fs from 'fs-extra'
 
-const getTestingKey = function() {
+const getTestingKey = function () {
   return `ava-test-${process.pid}`
 }
 
-const getSandboxDir = function() {
-
+const getSandboxDir = function () {
   const testingKey = getTestingKey()
 
   return `/tmp/${testingKey}`
 }
 
-const initTasks = function(test) {
-
+const initTasks = function (test) {
   const sandboxDir = getSandboxDir()
 
   // Set up.

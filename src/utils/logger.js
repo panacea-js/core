@@ -1,9 +1,8 @@
 import winston from 'winston'
 import fs from 'fs-extra'
-import { getSandboxDir } from "../test/test-common";
+import { getSandboxDir } from '../test/test-common'
 
-const getOptions = function() {
-
+const getOptions = function () {
   const env = process.env
 
   const isTesting = env.NODE_ENV === 'test'
@@ -12,13 +11,11 @@ const getOptions = function() {
 
   return {
     isTesting,
-    directory: isTesting ? `${sandboxDir}/logs` : /* istanbul ignore next */ env.APP_LOG,
+    directory: isTesting ? `${sandboxDir}/logs` : /* istanbul ignore next */ env.APP_LOG
   }
-
 }
 
-const getTransports = function(logDirectory, isTesting) {
-
+const getTransports = function (logDirectory, isTesting) {
   const env = process.env
 
   let transports = []
@@ -31,7 +28,7 @@ const getTransports = function(logDirectory, isTesting) {
 
   transports.push(new winston.transports.File({
     filename: `${logDirectory}/combined.log`,
-    maxsize: env.APP_LOG_MAX_SIZE,
+    maxsize: env.APP_LOG_MAX_SIZE
   }))
 
   /* istanbul ignore next */
@@ -42,8 +39,7 @@ const getTransports = function(logDirectory, isTesting) {
   return transports
 }
 
-const Logger = function() {
-
+const Logger = function () {
   const { directory, isTesting } = getOptions()
 
   fs.ensureDirSync(directory)
@@ -56,7 +52,6 @@ const Logger = function() {
     format: winston.format.printf(info => info.message),
     transports
   })
-
 }
 
 export { Logger }

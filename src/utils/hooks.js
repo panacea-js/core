@@ -23,14 +23,13 @@ Hooks.availableHooks = []
  *
  * @returns mixed
  */
-Hooks.prototype.invoke = function(type, defaultData = null) {
-
+Hooks.prototype.invoke = function (type, defaultData = null) {
   // Add hook type to the availableHooks registry.
   if (Hooks.availableHooks.indexOf(type) === -1) Hooks.availableHooks.push(type)
 
   let returnData = null
 
-  this.once(type, function(data) {
+  this.once(type, function (data) {
     returnData = data
   })
   this.emit(type, defaultData)
@@ -59,29 +58,23 @@ Hooks.prototype.getAvailableHooks = function () {
  * @returns void
  */
 hooks.logAvailableHooks = function (nested = true) {
-
   const { log, formatters } = DI.container
 
   let output = ''
 
   if (nested) {
-
     const nest = {}
     hooks.getAvailableHooks().forEach(hook => formatters.compileNestFromDotSeparated(hook, nest))
     output = formatters.formatNestedObjectKeys(nest)
-
-  }
-  else {
+  } else {
     if (hooks.getAvailableHooks().length > 0) {
       output = '\n  - ' + hooks.getAvailableHooks().join('\n  - ')
-    }
-    else {
+    } else {
       output = 'None'
     }
   }
 
   log.info(`Available hooks: ${output}`)
-
 }
 
 /**
@@ -90,14 +83,12 @@ hooks.logAvailableHooks = function (nested = true) {
  * @param paths Array
  *   A list of directories to load application level hooks which register listeners via the standard 'on' method.
  */
-Hooks.prototype.loadFromDirectories = function(paths) {
-
+Hooks.prototype.loadFromDirectories = function (paths) {
   const { fs, requireDir, _, log } = DI.container
 
   let result = ''
 
-  paths.forEach(function(path) {
-
+  paths.forEach(function (path) {
     if (_(path).startsWith('./')) path = _(path).trimStart('./')
 
     const pathFromBase = `${process.cwd()}/${path}`
@@ -110,15 +101,14 @@ Hooks.prototype.loadFromDirectories = function(paths) {
 
     const moduleHookFiles = requireDir(pathFromBase)
 
-    _(moduleHookFiles).forEach(function(exports, file) {
-
+    _(moduleHookFiles).forEach(function (exports, file) {
       if (!exports.hasOwnProperty('default')) {
         result = `Hook file ${file} should export as default.`
         log.warn(result)
         return
       }
       if (!exports.default.hasOwnProperty('register')) {
-        result =`Could not execute register() in hook file: ${file}.`
+        result = `Could not execute register() in hook file: ${file}.`
         log.warn(result)
         return
       }
@@ -127,13 +117,10 @@ Hooks.prototype.loadFromDirectories = function(paths) {
 
       result = `Registered hooks in ${path}/${file}.js`
       log.info(result)
-
     })
-
   })
 
   return result
-
 }
 
 export { hooks }
