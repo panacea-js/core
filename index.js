@@ -1,25 +1,6 @@
 export default function (params = {}) {
-  const defaults = {
-    main: {
-      endpoint: 'graphql',
-      port: 3000,
-      deferListen: false,
-      servicesFile: `${__dirname}/src/default.services`
-    },
-    graphiql: {
-      endpoint: 'graphiql',
-      enable: true
-    },
-    voyager: {
-      endpoint: 'voyager',
-      enable: true
-    }
-  }
 
-  const defaultsDeep = require('lodash/defaultsDeep')
-  const options = defaultsDeep(params || {}, defaults)
-
-  require('./src/utils/DIContainer').registerServicesFromFile(options.main.servicesFile)
+  require('./src/utils/DIContainer').registerServices(params)
 
   const {
     appConfig,
@@ -33,7 +14,8 @@ export default function (params = {}) {
     graphQLTypeDefinitions,
     graphQLResolvers,
     hooks,
-    log
+    log,
+    options
   } = DI.container
 
   return new Promise((resolve, reject) => {
@@ -83,7 +65,7 @@ export default function (params = {}) {
           )
         }
 
-        hooks.logAvailableHooks()
+        console.log(hooks.getAvailableHooksOutput(true))
 
         if (!options.main.deferListen) {
           app.listen(`${options.main.port}`)

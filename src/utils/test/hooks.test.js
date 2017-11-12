@@ -1,9 +1,7 @@
 import test from 'ava'
 import { initTasks } from '../../test/setup-test-env.js'
-import { getSandboxDir } from '../../test/test-common'
 initTasks(test)
-const { hooks, fs } = DI.container
-const sandboxDir = getSandboxDir()
+const { hooks } = DI.container
 
 test('Hook listener can be registered and stored in the _events list', t => {
   hooks.on('listenerIsRegistered', data => {
@@ -13,7 +11,10 @@ test('Hook listener can be registered and stored in the _events list', t => {
   t.true(typeof hooks._events.listenerIsRegistered !== 'undefined')
 })
 
-test('Hooks can be invoked with a default value made available to listener', t => {
+test('Hooks can be invoked (twice) with a default value made available to listener', t => {
+
+  t.plan(2)
+
   hooks.on('invokable', data => {
     t.true(data.defaultValue === 'isCorrectlySetAndAvailable')
   })
@@ -50,20 +51,27 @@ test('Available hooks can be retrieved', t => {
   t.true(hooks.getAvailableHooks().length > 0)
 })
 
-test('Logging of available hooks works as nested', async t => {
-  await hooks.logAvailableHooks()
+test('Logging of available hooks works as nested', t => {
+  t.plan(2)
 
-  const mockLoggerContents = fs.readFileSync(`${sandboxDir}/logs/combined.log`, 'UTF-8')
+  hooks.invoke('invokable.NestedProperty')
 
-  t.true(mockLoggerContents.indexOf('Available hooks:') !== -1)
+  const availableHooks = hooks.getAvailableHooksOutput()
+
+  t.true(availableHooks.indexOf(' - invokable') !== -1)
+  t.true(availableHooks.indexOf('   - NestedProperty') !== -1)
 })
 
-test('Logging of available hooks works as not nested', async t => {
-  await hooks.logAvailableHooks(false)
+test('Logging of available hooks works as not nested', t => {
+  t.plan(5)
 
-  const mockLoggerContents = fs.readFileSync(`${sandboxDir}/logs/combined.log`, 'UTF-8')
+  const availableHooks = hooks.getAvailableHooksOutput(false)
 
-  t.true(mockLoggerContents.indexOf('Available hooks:') !== -1)
+  t.true(availableHooks.indexOf('Available hooks') !== -1)
+  t.true(availableHooks.indexOf('  - invokable') !== -1)
+  t.true(availableHooks.indexOf('  - invokable.NestedProperty') !== -1)
+  t.true(availableHooks.indexOf('  - invokableNoData') !== -1)
+  t.true(availableHooks.indexOf('  - persistentData') !== -1)
 })
 
 test('Can load hooks from a directory', async t => {
@@ -84,10 +92,8 @@ test('Fails with error message when hooks directory does not exist', async t => 
 })
 
 // Executes before other tests
-test.serial('Logging of available hooks displays "None" when there are no hook invocations found', async t => {
-  hooks.logAvailableHooks(false)
+test.serial('Logging of available hooks displays "None" when there are no hook invocations found', t => {
+  const availableHooks = hooks.getAvailableHooksOutput(false)
 
-  const mockLoggerContents = fs.readFileSync(`${sandboxDir}/logs/combined.log`, 'UTF-8')
-
-  t.true(mockLoggerContents.indexOf('Available hooks: None') !== -1)
+  t.true(availableHooks.indexOf('Available hooks: None') !== -1)
 })

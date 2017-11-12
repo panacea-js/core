@@ -4,9 +4,6 @@ import events from 'events'
 // Create a Hooks base object which extends node's event emitter.
 const Hooks = events.EventEmitter
 
-// The instance gets passed around between modules from the service container.
-export const hooks = new Hooks()
-
 /**
  * Registry of hooks that have been invoked
  */
@@ -50,15 +47,15 @@ Hooks.prototype.getAvailableHooks = function () {
 }
 
 /**
- * Log a list of available hooks registered in the application.
+ * Return formatted output of available hooks registered in the application.
  *
  * The result may change over time, so it's suggested that this is called late in the bootstrap lifecycle.
  * For example, at the end of the main application entry point file.
  *
  * @returns void
  */
-hooks.logAvailableHooks = function (nested = true) {
-  const { log, formatters } = DI.container
+Hooks.prototype.getAvailableHooksOutput = function (nested = true) {
+  const { formatters } = DI.container
 
   let output = ''
 
@@ -74,7 +71,7 @@ hooks.logAvailableHooks = function (nested = true) {
     }
   }
 
-  log.info(`Available hooks: ${output}`)
+  return `Available hooks: ${output}`
 }
 
 /**
@@ -122,3 +119,6 @@ Hooks.prototype.loadFromDirectories = function (paths) {
 
   return result
 }
+
+// The instance gets passed around between modules from the service container.
+export const hooks = new Hooks()

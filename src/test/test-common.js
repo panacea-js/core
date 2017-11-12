@@ -15,7 +15,6 @@ const initTasks = function (test) {
 
   // Set up.
   test.before(t => {
-    //
   })
 
   // Tear down.
