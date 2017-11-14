@@ -7,8 +7,7 @@
  * @param options
  *   Options injected from bootstrapping file to configure dependencies
  */
-export const registerServices = function(s, options) {
-
+export const registerServices = function (s, options) {
   const servicesOptions = options.services.options
 
   // Third-party.
@@ -39,7 +38,6 @@ export const registerServices = function(s, options) {
   s.add('dbModels', '%core/mongodb/models', 'dbModels')
   s.add('graphQLTypeDefinitions', '%core/graphql/types', 'graphQLTypeDefinitions')
   s.add('graphQLResolvers', '%core/graphql/resolvers', 'graphQLResolvers')
-
 }
 
 /**
@@ -50,8 +48,7 @@ export const registerServices = function(s, options) {
  *
  * @returns Object
  */
-export const servicesConfig = function() {
-
+export const servicesConfig = function () {
   require('dotenv-safe').load()
 
   const cwd = process.cwd()
@@ -61,7 +58,7 @@ export const servicesConfig = function() {
     main: {
       endpoint: 'graphql',
       port: process.env.APP_SERVE_PORT || 3000,
-      deferListen: false,
+      deferListen: false
     },
     services: {
       file: __filename,
@@ -75,7 +72,7 @@ export const servicesConfig = function() {
         },
         db: {
           type: env.DB_TYPE || 'mongodb',
-          host: env.DB_HOST ||'localhost',
+          host: env.DB_HOST || 'localhost',
           dbName: env.DB_NAME || 'panacea'
         }
       }
@@ -91,5 +88,4 @@ export const servicesConfig = function() {
       enable: true
     }
   }
-
 }

@@ -20,7 +20,8 @@
   "standard": {
     "parser": "babel-eslint",
     "globals": [
-      "DI"
+      "DI",
+      "DI_Testing"
     ]
   },
   "nyc": {

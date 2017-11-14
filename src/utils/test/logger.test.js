@@ -22,7 +22,6 @@ test('Logger can write some text to combined log file', t => {
 })
 
 test('Logger should ignore file transports when option is set', t => {
-
   const sandboxDir = getSandboxDir()
 
   const options = {
@@ -36,16 +35,14 @@ test('Logger should ignore file transports when option is set', t => {
 
   for (let transport in mockLogger.transports) {
     if (mockLogger.transports[transport].dirname !== undefined) {
-      t.fail("File transport found when it should not")
+      t.fail('File transport found when it should not')
     }
   }
 
   t.pass()
-
 })
 
 test('Logger should ignore console transports when option is set', t => {
-
   const sandboxDir = getSandboxDir()
 
   const options = {
@@ -59,10 +56,9 @@ test('Logger should ignore console transports when option is set', t => {
 
   for (let transport in mockLogger.transports) {
     if (mockLogger.transports[transport].dirname === undefined) {
-      t.fail("Console transport found when it should not")
+      t.fail('Console transport found when it should not')
     }
   }
 
   t.pass()
-
 })

@@ -4,7 +4,7 @@ import Bottle from 'bottlejs'
 /**
  * Service builder helper to pass to services file.
  */
-const servicesBuilder = function() {
+const ServicesBuilder = function () {
   this.services = {}
   this.aliases = {}
 }
@@ -23,8 +23,7 @@ const servicesBuilder = function() {
  * @param callbackArguments Array|null
  *   Arguments as an array to pass to the instantiating call.
  */
-servicesBuilder.prototype.add = function(serviceName, location, property = null, callbackArguments = null) {
-
+ServicesBuilder.prototype.add = function (serviceName, location, property = null, callbackArguments = null) {
   // Process aliases.
   for (let alias in this.aliases) {
     location = location.replace(alias, this.aliases[alias])
@@ -49,7 +48,7 @@ servicesBuilder.prototype.add = function(serviceName, location, property = null,
  * @param location
  *   The absolute location to replace the alias when found.
  */
-servicesBuilder.prototype.alias = function(alias, location) {
+ServicesBuilder.prototype.alias = function (alias, location) {
   this.aliases[alias] = location
 }
 
@@ -62,12 +61,11 @@ servicesBuilder.prototype.alias = function(alias, location) {
  * @returns Bottle
  */
 export const registerServices = function (params) {
-
   const defaultsDeep = require('lodash/defaultsDeep')
 
   const path = require('path')
 
-  const services = new servicesBuilder()
+  const services = new ServicesBuilder()
 
   const coreServices = path.resolve(__dirname, '../default.services.js')
   const defaultOptions = require(coreServices).servicesConfig()
@@ -78,13 +76,12 @@ export const registerServices = function (params) {
   const bottle = new Bottle()
 
   for (let serviceName in services.services) {
-
     const location = services.services[serviceName].location
     const property = services.services[serviceName].property
     const callbackArguments = services.services[serviceName].callbackArguments
 
-    const provider = function() {}
-    provider.prototype.$get = function(container) {
+    const provider = function () {}
+    provider.prototype.$get = function (container) {
       if (property) {
         if (Array.isArray(callbackArguments)) {
           return require(location)[property].apply(null, callbackArguments)

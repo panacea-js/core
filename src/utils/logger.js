@@ -1,7 +1,6 @@
 const { fs, winston, formatters, moment } = DI.container
 
 const getFileTransports = function (options) {
-
   const fileFormatter = winston.format.printf(info => {
     return JSON.stringify({
       t: moment().format(),
@@ -38,7 +37,6 @@ const getFileTransports = function (options) {
 }
 
 const Logger = function (options) {
-
   fs.ensureDirSync(options.directory)
 
   const fileTransports = getFileTransports(options)
@@ -46,7 +44,6 @@ const Logger = function (options) {
   return winston.createLogger({
     transports: fileTransports
   })
-
 }
 
 export { Logger }

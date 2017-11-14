@@ -1,5 +1,4 @@
 export default function (params = {}) {
-
   require('./src/utils/DIContainer').registerServices(params)
 
   const {
@@ -63,7 +62,7 @@ export default function (params = {}) {
         )
       }
 
-      //console.log(hooks.getAvailableHooksOutput(true))
+      // console.log(hooks.getAvailableHooksOutput(true))
 
       if (!options.main.deferListen) {
         app.listen(`${options.main.port}`)

@@ -98,5 +98,3 @@ test('convertFileSizeShortHandToBytes returns the input value when not a string'
 test('convertFileSizeShortHandToBytes converts value without any suffix to integer', t => {
   t.true(formatters.convertFileSizeShortHandToBytes('200') === 200)
 })
-
-

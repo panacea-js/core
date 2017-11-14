@@ -12,7 +12,6 @@ test('Hook listener can be registered and stored in the _events list', t => {
 })
 
 test('Hooks can be invoked (twice) with a default value made available to listener', t => {
-
   t.plan(2)
 
   hooks.on('invokable', data => {

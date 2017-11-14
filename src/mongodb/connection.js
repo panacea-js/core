@@ -5,7 +5,6 @@
  */
 
 const dbConnection = function (options) {
-
   const { host, dbName } = options
 
   const { mongoose } = DI.container

@@ -77,8 +77,7 @@ const formatNestedObjectKeys = function (nest, indentSize = 2, _level = 0) {
  * @param value
  * @returns Integer
  */
-const convertFileSizeShortHandToBytes = function(value) {
-
+const convertFileSizeShortHandToBytes = function (value) {
   // If passed value is a string without any suffixes then treat as an integer.
   if (parseInt(value).toString() === value) {
     value = parseInt(value)
@@ -92,7 +91,7 @@ const convertFileSizeShortHandToBytes = function(value) {
     kb: 1,
     mb: 2,
     gb: 3,
-    tb: 4,
+    tb: 4
   }
 
   if (typeof value === 'string') {

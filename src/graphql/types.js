@@ -379,6 +379,5 @@ export const graphQLTypeDefinitions = function () {
 
     // log.info(output.join('\n\n'))
     resolve(output.join('\n\n'))
-
   })
 }
