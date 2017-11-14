@@ -71,7 +71,44 @@ const formatNestedObjectKeys = function (nest, indentSize = 2, _level = 0) {
   return output
 }
 
+/**
+ * Convert a string like '2Mb' to it's bytes equivalent.
+ *
+ * @param value
+ * @returns Integer
+ */
+const convertFileSizeShortHandToBytes = function(value) {
+
+  // If passed value is a string without any suffixes then treat as an integer.
+  if (parseInt(value).toString() === value) {
+    value = parseInt(value)
+  }
+
+  const sizes = {
+    k: 1,
+    m: 2,
+    g: 3,
+    t: 4,
+    kb: 1,
+    mb: 2,
+    gb: 3,
+    tb: 4,
+  }
+
+  if (typeof value === 'string') {
+    for (let size in sizes) {
+      if (value.indexOf(size) !== -1 || value.indexOf(size.toUpperCase()) !== -1) {
+        return parseInt(value.replace(size, '').replace(size.toUpperCase(), '')) * (Math.pow(1024, sizes[size]))
+      }
+    }
+    throw TypeError(`Could not find a way to convert file size shorthand string: ${value}`)
+  }
+
+  return value
+}
+
 export {
+  convertFileSizeShortHandToBytes,
   compileNestFromDotSeparated,
   formatNestedObjectKeys
 }

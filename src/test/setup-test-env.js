@@ -1,24 +1,20 @@
 import { registerServices } from '../utils/DIContainer'
-import { getSandboxDir, initTasks } from './test-common'
-
-require('dotenv-safe').load()
-const env = process.env
+import { getSandboxDir } from './test-common'
 
 const sandboxDir = getSandboxDir()
+
+// Don't use process.env variables or dotenv for tests.
+// Instead, directly inject configuration into registerServices().
 
 const params = {
   services: {
     options: {
       log: {
         directory: `${sandboxDir}/logs`,
-        maxSize: env.APP_LOG_MAX_SIZE
+        maxSize: '1024k',
+        showLogsInConsole: false
       }
     }
   }
 }
-
 registerServices(params)
-
-//require('./src/utils/DIContainer').registerServices(params)
-
-export { getSandboxDir, initTasks }

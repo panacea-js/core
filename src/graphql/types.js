@@ -239,7 +239,7 @@ const formatEnumsToOutput = function (enums) {
  * @returns Promise
  */
 export const graphQLTypeDefinitions = function () {
-  const { appConfig, loadYmlFiles, _, log, hooks } = DI.container
+  const { loadYmlFiles, _, options, hooks } = DI.container
 
   return new Promise(function (resolve, reject) {
     const output = []
@@ -250,136 +250,135 @@ export const graphQLTypeDefinitions = function () {
     const inputs = {}
     const enums = {}
 
-    appConfig().then((config) => {
-      const entityTypes = {}
+    const entityTypes = {}
 
-      for (let entitiesPath of config.directories.entities) {
-        const fileEntities = loadYmlFiles(entitiesPath)
-        _.extend(entityTypes, fileEntities)
+    for (let entitiesPath of options.entities) {
+      const fileEntities = loadYmlFiles(entitiesPath)
+      _.extend(entityTypes, fileEntities)
+    }
+
+    if (Object.keys(entityTypes).length === 0) reject(new Error('No entity types found'))
+
+    // Get entity types, inputs, queries and mutations.
+    _(entityTypes).forEach((entityTypeData, entityTypeName) => {
+      if (!entityTypeData) return
+      if (!entityTypeData.hasOwnProperty('fields')) throw new TypeError(`Fields do not exist on ${entityTypeName}`)
+
+      const entityTypeNameCamel = _.camelCase(entityTypeName)
+      const entityTypeNamePascal = _.upperFirst(entityTypeNameCamel)
+
+      const entityDescription = entityTypeData.description || ''
+      const entityDescriptionLowerFirst = entityDescription.charAt(0).toLowerCase() + entityDescription.slice(1)
+
+      const pluralCamel = _.camelCase(entityTypeData.plural)
+
+      const definedFields = processGraphQLfields(entityTypeData.fields)
+
+      types[entityTypeNamePascal] = {
+        comment: `${entityDescription} entity`,
+        name: entityTypeNamePascal,
+        fields: definedFields.refsAsModels
       }
 
-      if (Object.keys(entityTypes).length === 0) reject(new Error('No entity types found'))
+      inputs[entityTypeNamePascal + 'Input'] = {
+        comment: `${entityDescription} input type`,
+        name: `${entityTypeNamePascal}Input`,
+        fields: definedFields.refsAsStrings
+      }
 
-      // Get entity types, inputs, queries and mutations.
-      _(entityTypes).forEach((entityTypeData, entityTypeName) => {
-        if (!entityTypeData) return
-        if (!entityTypeData.hasOwnProperty('fields')) throw new TypeError(`Fields do not exist on ${entityTypeName}`)
-
-        const entityTypeNameCamel = _.camelCase(entityTypeName)
-        const entityTypeNamePascal = _.upperFirst(entityTypeNameCamel)
-
-        const entityDescription = entityTypeData.description || ''
-        const entityDescriptionLowerFirst = entityDescription.charAt(0).toLowerCase() + entityDescription.slice(1)
-
-        const pluralCamel = _.camelCase(entityTypeData.plural)
-
-        const definedFields = processGraphQLfields(entityTypeData.fields)
-
-        types[entityTypeNamePascal] = {
-          comment: `${entityDescription} entity`,
-          name: entityTypeNamePascal,
-          fields: definedFields.refsAsModels
-        }
-
-        inputs[entityTypeNamePascal + 'Input'] = {
-          comment: `${entityDescription} input type`,
-          name: `${entityTypeNamePascal}Input`,
-          fields: definedFields.refsAsStrings
-        }
-
-        mutations[entityTypeNamePascal] = {
-          create: {
-            comment: `Create ${entityDescriptionLowerFirst}`,
-            name: `create${entityTypeNamePascal}`,
-            arguments: {
-              params: `${entityTypeNamePascal}Input`
-            },
-            returnType: `${entityTypeNamePascal}!`
+      mutations[entityTypeNamePascal] = {
+        create: {
+          comment: `Create ${entityDescriptionLowerFirst}`,
+          name: `create${entityTypeNamePascal}`,
+          arguments: {
+            params: `${entityTypeNamePascal}Input`
           },
-          update: {
-            comment: `Update ${entityDescriptionLowerFirst}`,
-            name: `update${entityTypeNamePascal}`,
-            arguments: {
-              id: `String!`,
-              params: `${entityTypeNamePascal}Input`
-            },
-            returnType: `${entityTypeNamePascal}!`
-          }
-        }
-
-        queries[entityTypeNamePascal] = {
-          all: {
-            comment: `Get all ${entityTypeData.plural}`,
-            name: pluralCamel,
-            arguments: {
-              params: `QueryParams`
-            },
-            returnType: `[${entityTypeNamePascal}!]`
+          returnType: `${entityTypeNamePascal}!`
+        },
+        update: {
+          comment: `Update ${entityDescriptionLowerFirst}`,
+          name: `update${entityTypeNamePascal}`,
+          arguments: {
+            id: `String!`,
+            params: `${entityTypeNamePascal}Input`
           },
-          single: {
-            comment: `Get a single ${entityTypeNamePascal}`,
-            name: entityTypeNameCamel,
-            arguments: {
-              id: `String!`
-            },
-            returnType: `${entityTypeNamePascal}`
-          }
-        }
-      })
-
-      // Non-entity related inputs
-
-      inputs.QueryParams = {
-        comment: 'Limit the number of returned results',
-        name: `QueryParams`,
-        fields: {
-          limit: {
-            comment: 'Limit the number of returned results',
-            value: 'limit: Int = 100'
-          },
-          sortBy: {
-            comment: 'Sort by field',
-            value: 'sortBy: String'
-          },
-          sortDirection: {
-            comment: 'Direction of sort',
-            value: 'sortDirection: SORT_DIRECTIONS = ASC'
-          }
+          returnType: `${entityTypeNamePascal}!`
         }
       }
 
-      enums.SORT_DIRECTIONS = {
-        comment: 'Ascending/Descending sort order values',
-        name: 'SORT_DIRECTIONS',
-        items: [
-          { comment: 'Ascending', value: 'ASC' },
-          { comment: 'Descending', value: 'DESC' }
-        ]
+      queries[entityTypeNamePascal] = {
+        all: {
+          comment: `Get all ${entityTypeData.plural}`,
+          name: pluralCamel,
+          arguments: {
+            params: `QueryParams`
+          },
+          returnType: `[${entityTypeNamePascal}!]`
+        },
+        single: {
+          comment: `Get a single ${entityTypeNamePascal}`,
+          name: entityTypeNameCamel,
+          arguments: {
+            id: `String!`
+          },
+          returnType: `${entityTypeNamePascal}`
+        }
       }
+    })
 
-      // Computed types.
-      hooks.invoke('core.graphql.definitions.types', types)
-      if (types.length === 0) reject(new Error('No type definitions could be compiled'))
-      output.push(formatTypesToOutput('type', types))
+    // Non-entity related inputs
 
-      // Input types.
-      hooks.invoke('core.graphql.definitions.input', inputs)
-      output.push(formatTypesToOutput('input', inputs))
+    inputs.QueryParams = {
+      comment: 'Limit the number of returned results',
+      name: `QueryParams`,
+      fields: {
+        limit: {
+          comment: 'Limit the number of returned results',
+          value: 'limit: Int = 100'
+        },
+        sortBy: {
+          comment: 'Sort by field',
+          value: 'sortBy: String'
+        },
+        sortDirection: {
+          comment: 'Direction of sort',
+          value: 'sortDirection: SORT_DIRECTIONS = ASC'
+        }
+      }
+    }
 
-      // Computed queries.
-      hooks.invoke('core.graphql.definitions.queries', queries)
-      output.push(formatRootTypeToOutput('Query', queries))
+    enums.SORT_DIRECTIONS = {
+      comment: 'Ascending/Descending sort order values',
+      name: 'SORT_DIRECTIONS',
+      items: [
+        { comment: 'Ascending', value: 'ASC' },
+        { comment: 'Descending', value: 'DESC' }
+      ]
+    }
 
-      // Computed mutations.
-      hooks.invoke('core.graphql.definitions.mutations', mutations)
-      output.push(formatRootTypeToOutput('Mutation', mutations))
+    // Computed types.
+    hooks.invoke('core.graphql.definitions.types', types)
+    if (types.length === 0) reject(new Error('No type definitions could be compiled'))
+    output.push(formatTypesToOutput('type', types))
 
-      // Enums.
-      hooks.invoke('core.graphql.definitions.enums', enums)
-      output.push(formatEnumsToOutput(enums))
+    // Input types.
+    hooks.invoke('core.graphql.definitions.input', inputs)
+    output.push(formatTypesToOutput('input', inputs))
 
-      // log.info(output.join('\n\n'))
-      resolve(output.join('\n\n'))
-    }).catch(error => log.error(error))
+    // Computed queries.
+    hooks.invoke('core.graphql.definitions.queries', queries)
+    output.push(formatRootTypeToOutput('Query', queries))
+
+    // Computed mutations.
+    hooks.invoke('core.graphql.definitions.mutations', mutations)
+    output.push(formatRootTypeToOutput('Mutation', mutations))
+
+    // Enums.
+    hooks.invoke('core.graphql.definitions.enums', enums)
+    output.push(formatEnumsToOutput(enums))
+
+    // log.info(output.join('\n\n'))
+    resolve(output.join('\n\n'))
+
   })
 }

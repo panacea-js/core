@@ -4,14 +4,17 @@
  * @returns {Connection|Promise}
  */
 
-export const dbConnection = function () {
-  const env = process.env
+const dbConnection = function (options) {
+
+  const { host, dbName } = options
 
   const { mongoose } = DI.container
 
   mongoose.Promise = Promise
 
-  return mongoose.createConnection(`mongodb://${env.MONGODB_HOST}/${env.MONGODB_DBNAME}`, {
+  return mongoose.createConnection(`mongodb://${host}/${dbName}`, {
     useMongoClient: true
   })
 }
+
+export { dbConnection }

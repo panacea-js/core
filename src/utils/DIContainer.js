@@ -6,6 +6,7 @@ import Bottle from 'bottlejs'
  */
 const servicesBuilder = function() {
   this.services = {}
+  this.aliases = {}
 }
 
 /**
@@ -23,11 +24,33 @@ const servicesBuilder = function() {
  *   Arguments as an array to pass to the instantiating call.
  */
 servicesBuilder.prototype.add = function(serviceName, location, property = null, callbackArguments = null) {
+
+  // Process aliases.
+  for (let alias in this.aliases) {
+    location = location.replace(alias, this.aliases[alias])
+  }
+
   this.services[serviceName] = {
     location,
     property,
     callbackArguments
   }
+}
+
+/**
+ * Add an alias for path resolution.
+ *
+ * Aliases need to be set before importing any services using the alias.
+ *
+ * @param alias String
+ *   Recommend to use a percent symbol prefix to avoid conflict
+ *   E.g. '%core'
+ *
+ * @param location
+ *   The absolute location to replace the alias when found.
+ */
+servicesBuilder.prototype.alias = function(alias, location) {
+  this.aliases[alias] = location
 }
 
 /**
@@ -40,22 +63,14 @@ servicesBuilder.prototype.add = function(serviceName, location, property = null,
  */
 export const registerServices = function (params) {
 
-  require('dotenv-safe').load()
-  const path = require('path')
+  const defaultsDeep = require('lodash/defaultsDeep')
 
-  const startTime = Date.now()
+  const path = require('path')
 
   const services = new servicesBuilder()
 
-  if (!params.services) {
-    params.services = {}
-  }
-  if (!params.services.file) {
-    params.services.file = path.resolve(__dirname, '../default.services.js')
-  }
-
-  const defaultOptions = require(params.services.file).defaultOptions()
-  const defaultsDeep = require('lodash/defaultsDeep')
+  const coreServices = path.resolve(__dirname, '../default.services.js')
+  const defaultOptions = require(coreServices).servicesConfig()
   const options = defaultsDeep(params || {}, defaultOptions)
 
   require(options.services.file).registerServices(services, options)
@@ -69,7 +84,7 @@ export const registerServices = function (params) {
     const callbackArguments = services.services[serviceName].callbackArguments
 
     const provider = function() {}
-    provider.prototype.$get = function() {
+    provider.prototype.$get = function(container) {
       if (property) {
         if (Array.isArray(callbackArguments)) {
           return require(location)[property].apply(null, callbackArguments)
@@ -86,10 +101,6 @@ export const registerServices = function (params) {
   bottle.value('options', options)
 
   global[options.services.globalVariable] = bottle
-
-  const elapsedTime = `${Date.now() - startTime}ms`
-
-  console.info(`(${elapsedTime}) Registered DI service container on global.${options.services.globalVariable}.container from ${options.services.file}`)
 
   return bottle
 }

@@ -1,20 +1,38 @@
-import winston from 'winston'
-import fs from 'fs-extra'
+const { fs, winston, formatters, moment } = DI.container
 
-const getTransports = function (options) {
+const getFileTransports = function (options) {
+
+  const fileFormatter = winston.format.printf(info => {
+    return JSON.stringify({
+      t: moment().format(),
+      l: info.level,
+      m: info.message
+    })
+  })
 
   let transports = []
 
-  transports.push(new winston.transports.File({
-    filename: `${options.directory}/error.log`,
-    maxsize: options.maxSize,
-    level: 'error'
-  }))
+  if (options.logToFiles) {
+    transports.push(new winston.transports.File({
+      filename: `${options.directory}/error.log`,
+      maxsize: formatters.convertFileSizeShortHandToBytes(options.maxSize),
+      level: 'error',
+      format: fileFormatter
+    }))
 
-  transports.push(new winston.transports.File({
-    filename: `${options.directory}/combined.log`,
-    maxsize: options.maxSize
-  }))
+    transports.push(new winston.transports.File({
+      filename: `${options.directory}/combined.log`,
+      maxsize: formatters.convertFileSizeShortHandToBytes(options.maxSize),
+      format: fileFormatter
+    }))
+  }
+
+  if (options.showLogsInConsole) {
+    transports.push(new winston.transports.Console({
+      format: winston.format.simple(),
+      colorize: true
+    }))
+  }
 
   return transports
 }
@@ -23,14 +41,12 @@ const Logger = function (options) {
 
   fs.ensureDirSync(options.directory)
 
-  const transports = getTransports(options)
+  const fileTransports = getFileTransports(options)
 
-  /* istanbul ignore next */
   return winston.createLogger({
-    level: 'info',
-    format: winston.format.printf(info => info.message),
-    transports
+    transports: fileTransports
   })
+
 }
 
 export { Logger }

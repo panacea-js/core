@@ -1,5 +1,5 @@
 import test from 'ava'
-import { initTasks } from '../../test/setup-test-env.js'
+import { initTasks } from '../../test/test-common'
 initTasks(test)
 
 const { loadYmlFiles, glob } = DI.container

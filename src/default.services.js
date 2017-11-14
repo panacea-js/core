@@ -2,7 +2,7 @@
  * Add services to the DI container.
  *
  * @param s
- *   Builder object from src/utils/DIContainer::servicesBuilder()
+ *   Services builder object from src/utils/DIContainer::servicesBuilder()
  *
  * @param options
  *   Options injected from bootstrapping file to configure dependencies
@@ -10,8 +10,6 @@
 export const registerServices = function(s, options) {
 
   const servicesOptions = options.services.options
-
-  const d = __dirname + '/'
 
   // Third-party.
   s.add('_', 'lodash')
@@ -26,30 +24,43 @@ export const registerServices = function(s, options) {
   s.add('graphiqlExpress', 'apollo-server-express', 'graphiqlExpress')
   s.add('makeExecutableSchema', 'graphql-tools', 'makeExecutableSchema')
   s.add('mongoose', 'mongoose')
+  s.add('winston', 'winston')
+  s.add('moment', 'moment')
 
   // Panacea.
-  s.add('appConfig', d + 'utils/appConfig', 'appConfig')
-  s.add('log', d + 'utils/logger', 'Logger', [servicesOptions.log])
-  s.add('loadYmlFiles', d + 'utils/yaml', 'loadYmlFiles')
-  s.add('hooks', d + 'utils/hooks', 'hooks')
-  s.add('formatters', d + 'utils/formatters')
-  s.add('dbConnection', d + 'mongodb/connection', 'dbConnection')
-  s.add('dbModels', d + 'mongodb/models', 'dbModels')
-  s.add('graphQLTypeDefinitions', d + 'graphql/types', 'graphQLTypeDefinitions')
-  s.add('graphQLResolvers', d + 'graphql/resolvers', 'graphQLResolvers')
+  // Alias to panacea core module src directory.
+  s.alias('%core', __dirname)
+
+  s.add('log', '%core/utils/logger', 'Logger', [servicesOptions.log])
+  s.add('loadYmlFiles', '%core/utils/yaml', 'loadYmlFiles')
+  s.add('hooks', '%core/utils/hooks', 'hooks')
+  s.add('formatters', '%core/utils/formatters')
+  s.add('dbConnection', '%core/mongodb/connection', 'dbConnection', [servicesOptions.db])
+  s.add('dbModels', '%core/mongodb/models', 'dbModels')
+  s.add('graphQLTypeDefinitions', '%core/graphql/types', 'graphQLTypeDefinitions')
+  s.add('graphQLResolvers', '%core/graphql/resolvers', 'graphQLResolvers')
 
 }
 
-export const defaultOptions = function() {
+/**
+ * Defines the default options passed to register services.
+ *
+ * These can be overriden by the consumer via the params argument to the
+ * initial panacea invocation.
+ *
+ * @returns Object
+ */
+export const servicesConfig = function() {
 
-  const env = process.env
+  require('dotenv-safe').load()
+
   const cwd = process.cwd()
-  const d = __dirname
+  const env = process.env
 
   return {
     main: {
       endpoint: 'graphql',
-      port: 3000,
+      port: process.env.APP_SERVE_PORT || 3000,
       deferListen: false,
     },
     services: {
@@ -57,11 +68,20 @@ export const defaultOptions = function() {
       globalVariable: 'DI',
       options: {
         log: {
-          directory: `${cwd}/${env.APP_LOG}`,
-          maxSize: env.APP_LOG_MAX_SIZE
+          directory: env.APP_LOG || `${cwd}/data/app_log`,
+          maxSize: env.APP_LOG_MAX_SIZE || 1048576,
+          showLogsInConsole: env.NODE_ENV !== 'production',
+          logToFiles: true
+        },
+        db: {
+          type: env.DB_TYPE || 'mongodb',
+          host: env.DB_HOST ||'localhost',
+          dbName: env.DB_NAME || 'panacea'
         }
       }
     },
+    entities: ['./config/entities/schemas'],
+    hooks: ['./config/hooks'],
     graphiql: {
       endpoint: 'graphiql',
       enable: true
