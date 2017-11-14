@@ -138,8 +138,21 @@ If you want to except Panacea's defaults, you're index.js can be very terse:
 
 ```js
 import panacea from '@panaceajs/core'
-panacea().then(app => {})
-  .catch(error => console.log(`An error occurred: ${error}`))
+panacea()
+```
+
+A slighty more involved example could look like this:
+
+```js
+import panacea from '@panaceajs/core'
+
+const options = {
+  // See options below.
+}
+
+panacea(options).then(app => {
+  // Any code than should run after panacea has been bootstrapped.
+}).catch(error => console.log(`An error occurred: ${error}`))
 ```
 
 In your index.js file you can pass various options to alter the Panacea's bootstrap process.
