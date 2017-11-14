@@ -144,28 +144,49 @@ panacea().then(app => {})
 
 In your index.js file you can pass various options to alter the Panacea's bootstrap process.
 
-The `panacea()` function returns a Promise which resolves to an express application.
+The `panacea()` function returns a Promise which resolves to an express application, however in most instances you can simply call `panacea()`
 
-You can defer starting the application when calling `panacea()` if you want to add your own middleware. This is the example given in the [starter-template](https://github.com/panacea-js/starter-template).
+**Advanced**: Available options to pass to `panacea()` are as follows with defaults shown, however please bear in mind that many of the options are available from your .env file. Consider changing your configuration there first before considering these more flexible/advanced injected bootstrap options.
 
-Available options to pass to `panacea()` are as follows with defaults shown:
+> Note: `cwd` and `env` are simply pointers to existing globals. If the environment variable aren't found then a hard-coded default option can be seen, e.g. `env.APP_SERVE_PORT || 3000` - this means that Panacea will first look for the `APP_SERVE_PORT` key in you .env file, otherwise the default of 3000 will be used.
 
 ```js
-  const options = {
+  const cwd = process.cwd()
+  const env = process.env
+
+  return {
     main: {
-      endpoint: 'graphql', // Change this to alter the main GraphQL endpoint.
-      port: 3000,
-      deferListen: false,
-      servicesFile: `${__dirname}/src/default.services` // Advanced: path to your own services file for dependency injection.
+      endpoint: 'graphql',              // Change this to alter the main GraphQL endpoint.
+      port: env.APP_SERVE_PORT || 3000, // Set this to 80 for default http, but you should really be using 443 (https) in production.
+      deferListen: false,               // You can defer starting the application when calling panacea() if you want to add your own middleware.
     },
+    services: {
+      file: __filename,                 // Advanced: path to your own services file for dependency injection. You should never need to alter this unless you're heavily customising panacea.
+      globalVariable: 'DI',             // All injected services are available in the global: DI.container. Injected options can be inspected at DI.container.options
+      options: {                        // Options available to each registered service.
+        log: {
+          directory: env.APP_LOG || `${cwd}/data/app_log`,
+          maxSize: env.APP_LOG_MAX_SIZE || 1048576,
+          showLogsInConsole: env.NODE_ENV !== 'production',
+          logToFiles: true
+        },
+        db: {
+          type: env.DB_TYPE || 'mongodb',
+          host: env.DB_HOST ||'localhost',
+          dbName: env.DB_NAME || 'panacea'
+        }
+      }
+    },
+    entities: ['./config/entities/schemas'], // The directory location where your entity schemas live.
+    hooks: ['./config/hooks'],               // The directory location where your hooks live.
     graphiql: {
       endpoint: 'graphiql',
-      enable: true, // Set to false to disable GraphiQL.
+      enable: true                           // Set to false to disable GraphiQL.
     },
     voyager: {
       endpoint: 'voyager',
-      enable: true, // Set to false to disable Voyager.
-    },
+      enable: true                           // Set to false to disable Voyager.
+    }
   }
 ```
 
