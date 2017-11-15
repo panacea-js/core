@@ -15,6 +15,7 @@ const params = {
         showLogsInConsole: false
       }
     }
-  }
+  },
+  entities: [ `${__dirname}/fixtures/entities/schemas` ]
 }
 registerServices(params)

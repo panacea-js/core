@@ -19,7 +19,7 @@ const convertSystemFieldToGraphQL = function (type) {
   }
 
   if (!map[type]) {
-    throw new TypeError(type + ' not found in GraphQL type conversion mapping')
+    throw TypeError(type + ' not found in GraphQL type conversion mapping')
   }
 
   return map[type]
@@ -46,6 +46,12 @@ const processGraphQLfields = function (fields) {
   }
 
   _(fields).forEach((field, _fieldName) => {
+
+    // Validate field contains all the required attributes.
+    if (_(field).isEmpty()) throw TypeError(`Field ${_fieldName} configuration is empty`)
+    if (_(field.type).isEmpty()) throw TypeError(`Field type not defined for ${_fieldName}`)
+    if (_(field.label).isEmpty()) throw TypeError(`Field label not defined for ${_fieldName}`)
+
     // Transform all field names to camel case so as not to interfere with
     // the underscores used to identify the entity/field nesting hierarchy.
     const fieldName = _.camelCase(_fieldName)
@@ -234,7 +240,7 @@ const formatEnumsToOutput = function (enums) {
 /**
  * Loads entity types from yml files to define GraphQL type definitions.
  *
- * Allow overrides via graphql.definitions.* hooks.
+ * Allows overrides via core.graphql.definitions.* hooks.
  *
  * @returns Promise
  */
@@ -257,12 +263,14 @@ export const graphQLTypeDefinitions = function () {
       _.extend(entityTypes, fileEntities)
     }
 
-    if (Object.keys(entityTypes).length === 0) reject(new Error('No entity types found'))
+    hooks.invoke('core.graphql.definitions.entityTypes', entityTypes)
+
+    if (_(entityTypes).isEmpty()) reject(Error('No entity types found'))
 
     // Get entity types, inputs, queries and mutations.
     _(entityTypes).forEach((entityTypeData, entityTypeName) => {
-      if (!entityTypeData) return
-      if (!entityTypeData.hasOwnProperty('fields')) throw new TypeError(`Fields do not exist on ${entityTypeName}`)
+      if (_(entityTypeData).isEmpty()) throw TypeError(`No data is set on entity type: ${entityTypeName}`)
+      if (_(entityTypeData.fields).isEmpty()) throw TypeError(`Fields do not exist on entity type: ${entityTypeName}`)
 
       const entityTypeNameCamel = _.camelCase(entityTypeName)
       const entityTypeNamePascal = _.upperFirst(entityTypeNameCamel)
@@ -358,7 +366,6 @@ export const graphQLTypeDefinitions = function () {
 
     // Computed types.
     hooks.invoke('core.graphql.definitions.types', types)
-    if (types.length === 0) reject(new Error('No type definitions could be compiled'))
     output.push(formatTypesToOutput('type', types))
 
     // Input types.

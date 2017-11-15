@@ -1,0 +1,21 @@
+storage: db
+plural: Dogs
+fields:
+    _id:
+        label: Unique identifier
+        type: id
+    name:
+        label: Name
+        type: string
+        required: true
+    breed:
+        label: Breed
+        type: string
+    cost:
+        label: Cost
+        type: float
+    livesWithCats:
+        label: Lives with cats
+        type: reference
+        references: Cat
+        many: true
