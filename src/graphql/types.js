@@ -46,19 +46,7 @@ const processGraphQLfields = function (fields) {
   }
 
   _(fields).forEach((field, _fieldName) => {
-
-    // Validate field contains all the required attributes.
-    if (_(field).isEmpty()) throw TypeError(`Field ${_fieldName} configuration is empty`)
-    if (_(field.type).isEmpty()) throw TypeError(`Field type not defined for ${_fieldName}`)
-    if (_(field.label).isEmpty()) throw TypeError(`Field label not defined for ${_fieldName}`)
-
-    // Transform all field names to camel case so as not to interfere with
-    // the underscores used to identify the entity/field nesting hierarchy.
-    const fieldName = _.camelCase(_fieldName)
-
     Object.keys(output).forEach((refType) => {
-      let fieldDescription = field.description || ''
-
       let fieldType
 
       if (field.type === 'reference') {
@@ -70,15 +58,15 @@ const processGraphQLfields = function (fields) {
       field.required && (fieldType = `${fieldType}!`)
       field.many && (fieldType = `[${fieldType}]`)
 
-      output[refType][fieldName] = {
-        comment: fieldDescription,
-        value: `${fieldName}: ${fieldType}`
+      output[refType][field._meta.camel] = {
+        comment: field.description,
+        value: `${field._meta.camel}: ${fieldType}`
       }
 
       if (field.type === 'object' && field.hasOwnProperty('fields')) {
         // Recurse this function to append output to the fields key.
         // This allows for unlimited nesting of defined fields.
-        output[refType][fieldName].fields = processGraphQLfields(field.fields)
+        output[refType][field._meta.camel].fields = processGraphQLfields(field.fields)
       }
     })
   })
@@ -245,7 +233,7 @@ const formatEnumsToOutput = function (enums) {
  * @returns Promise
  */
 export const graphQLTypeDefinitions = function () {
-  const { loadYmlFiles, _, options, hooks } = DI.container
+  const { entities, _, options, hooks } = DI.container
 
   return new Promise(function (resolve, reject) {
     const output = []
@@ -256,80 +244,68 @@ export const graphQLTypeDefinitions = function () {
     const inputs = {}
     const enums = {}
 
-    const entityTypes = {}
-
-    for (let entitiesPath of options.entities) {
-      const fileEntities = loadYmlFiles(entitiesPath)
-      _.extend(entityTypes, fileEntities)
-    }
-
-    hooks.invoke('core.graphql.definitions.entityTypes', entityTypes)
-
-    if (_(entityTypes).isEmpty()) reject(Error('No entity types found'))
+    const entityTypes = entities.getData(options.entities)
 
     // Get entity types, inputs, queries and mutations.
     _(entityTypes).forEach((entityTypeData, entityTypeName) => {
-      if (_(entityTypeData).isEmpty()) throw TypeError(`No data is set on entity type: ${entityTypeName}`)
-      if (_(entityTypeData.fields).isEmpty()) throw TypeError(`Fields do not exist on entity type: ${entityTypeName}`)
-
-      const entityTypeNameCamel = _.camelCase(entityTypeName)
-      const entityTypeNamePascal = _.upperFirst(entityTypeNameCamel)
-
-      const entityDescription = entityTypeData.description || ''
-      const entityDescriptionLowerFirst = entityDescription.charAt(0).toLowerCase() + entityDescription.slice(1)
-
-      const pluralCamel = _.camelCase(entityTypeData.plural)
-
       const definedFields = processGraphQLfields(entityTypeData.fields)
 
-      types[entityTypeNamePascal] = {
-        comment: `${entityDescription} entity`,
-        name: entityTypeNamePascal,
+      types[entityTypeData._meta.pascal] = {
+        comment: `${entityTypeData.description} entity`,
+        name: entityTypeData._meta.pascal,
         fields: definedFields.refsAsModels
       }
 
-      inputs[entityTypeNamePascal + 'Input'] = {
-        comment: `${entityDescription} input type`,
-        name: `${entityTypeNamePascal}Input`,
+      inputs[entityTypeData._meta.pascal + 'Input'] = {
+        comment: `${entityTypeData.description} input type`,
+        name: `${entityTypeData._meta.pascal}Input`,
         fields: definedFields.refsAsStrings
       }
 
-      mutations[entityTypeNamePascal] = {
+      mutations[entityTypeData._meta.pascal] = {
         create: {
-          comment: `Create ${entityDescriptionLowerFirst}`,
-          name: `create${entityTypeNamePascal}`,
+          comment: `Create ${entityTypeData._meta.descriptionLowerFirst}`,
+          name: `create${entityTypeData._meta.pascal}`,
           arguments: {
-            params: `${entityTypeNamePascal}Input`
+            params: `${entityTypeData._meta.pascal}Input`
           },
-          returnType: `${entityTypeNamePascal}!`
+          returnType: `${entityTypeData._meta.pascal}!`
         },
         update: {
-          comment: `Update ${entityDescriptionLowerFirst}`,
-          name: `update${entityTypeNamePascal}`,
+          comment: `Update ${entityTypeData._meta.descriptionLowerFirst}`,
+          name: `update${entityTypeData._meta.pascal}`,
           arguments: {
             id: `String!`,
-            params: `${entityTypeNamePascal}Input`
+            params: `${entityTypeData._meta.pascal}Input`
           },
-          returnType: `${entityTypeNamePascal}!`
-        }
-      }
-
-      queries[entityTypeNamePascal] = {
-        all: {
-          comment: `Get all ${entityTypeData.plural}`,
-          name: pluralCamel,
-          arguments: {
-            params: `QueryParams`
-          },
-          returnType: `[${entityTypeNamePascal}!]`
+          returnType: `${entityTypeData._meta.pascal}!`
         },
-        single: {
-          comment: `Get a single ${entityTypeNamePascal}`,
-          name: entityTypeNameCamel,
+        delete: {
+          comment: `Delete ${entityTypeData._meta.descriptionLowerFirst}`,
+          name: `delete${entityTypeData._meta.pascal}`,
           arguments: {
             id: `String!`
           },
-          returnType: `${entityTypeNamePascal}`
+          returnType: 'Boolean'
+        }
+      }
+
+      queries[entityTypeData._meta.pascal] = {
+        all: {
+          comment: `Get all ${entityTypeData.plural}`,
+          name: entityTypeData._meta.pluralCamel,
+          arguments: {
+            params: `QueryParams`
+          },
+          returnType: `[${entityTypeData._meta.pascal}!]`
+        },
+        single: {
+          comment: `Get a single ${entityTypeData._meta.pascal}`,
+          name: entityTypeData._meta.camel,
+          arguments: {
+            id: `String!`
+          },
+          returnType: `${entityTypeData._meta.pascal}`
         }
       }
     })

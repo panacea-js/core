@@ -1,0 +1,101 @@
+description: Scaley cold-blooded animal
+storage: db
+plural: Lizards
+fields:
+    _id:
+        label: Unique identifier
+        type: id
+    name:
+        label: Name
+        type: string
+        required: true
+    social:
+        label: Social links
+        description: Add you social media links
+        type: object
+        many: true
+        fields:
+            website:
+                label: The website
+                description: The social media website name
+                type: string
+            username:
+                label: Username
+                description: Your username on the website
+                type: string
+            privacy:
+                label: Display on profile
+                description: Make this public on your profile
+                type: boolean
+            dogs:
+                label: Dogs
+                description: Testing deep references
+                type: reference
+                references: Dog
+                many: true
+            grid:
+                label: Grid reference
+                description: Testing a further object nesting e.g. grid references
+                type: object
+                many: true
+                fields:
+                    x:
+                        label: x
+                        type: int
+                    y:
+                        label: y
+                        type: int
+    paragraphs:
+        label: Paragraphs
+        description: Add paragraphed content to your lizard
+        type: object
+        many: true
+        fields:
+            body_text:
+                label: Body
+                description: Some misc text of your choosing
+                type: string
+            featured_cats:
+                label: Featured cats
+                description: Tag people in your organisation related to this paragraph item
+                type: reference
+                references: Cat
+                many: true
+            grid_reference:
+                label: Grid reference
+                description: Testing a further object nesting
+                type: object
+                many: true
+                fields:
+                    url:
+                        label: URL
+                        type: string
+                        description: The URL of the image
+                    caption:
+                        label: Caption
+                        description: A captions to display next to the images
+                        type: string
+                    preset:
+                        label: Preset
+                        description: Apply an image preset in order to automatically resize the image
+                        type: string
+                    griddy_cat:
+                        label: Griddy cat
+                        description: Add non-sensical nested cat in a grid reference
+                        type: object
+                        many: true
+                        fields:
+                            datestamp:
+                                label: Date and time
+                                description: The time the cat was here
+                                type: int
+                            cat:
+                                label: Cat on a grid
+                                description: Which cat was here
+                                type: reference
+                                references: Cat
+            style_preset:
+                label: Style preset
+                description: A predefined style to be used on this paragraph itme
+                type: string
+                many: true

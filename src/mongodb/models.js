@@ -1,3 +1,5 @@
+const { _, dbConnection, entities, options } = DI.container
+
 /**
  * Converts system field definitions to MongoDB equivalents.
  *
@@ -24,23 +26,35 @@ const convertSystemFieldToMongo = function (type) {
   return map[type]
 }
 
+const complileNestedObjects = function (field) {
+  let fieldDefinition = {}
+
+  // Skip native _id mapping as this is internal to MongoDB.
+  if (field.type !== 'id') {
+    if (field.type === 'object') {
+      _(field.fields).forEach(nestedField => {
+        fieldDefinition[nestedField._meta.camel] = complileNestedObjects(nestedField)
+      })
+    } else {
+      fieldDefinition = convertSystemFieldToMongo(field.type)
+    }
+    if (field.many) {
+      return [fieldDefinition]
+    }
+    return fieldDefinition
+  }
+}
+
 /**
  * Loads entity types from yml files to define MongoDB models.
  * @returns {object}
  */
 export const dbModels = function () {
-  const { loadYmlFiles, _, dbConnection, options } = DI.container
-
   const db = dbConnection
 
   const models = {}
 
-  const entityTypes = {}
-
-  for (let entitiesPath of options.entities) {
-    let fileEntities = loadYmlFiles(entitiesPath)
-    _.extend(entityTypes, fileEntities)
-  }
+  const entityTypes = entities.getData(options.entities)
 
   _(entityTypes).forEach((entityTypeData, entityTypeName) => {
     // Only create a mongoose model if the entity type is for the database.
@@ -49,11 +63,10 @@ export const dbModels = function () {
     const definedFields = {}
 
     if (entityTypeData.hasOwnProperty('fields')) {
-      _(entityTypeData.fields).forEach((field, fieldName) => {
+      _(entityTypeData.fields).forEach(field => {
         // Skip native _id mapping as this is internal to MongoDB.
-        if (fieldName !== '_id') {
-          let fieldType = convertSystemFieldToMongo(field.type)
-          definedFields[fieldName] = field.many ? [fieldType] : fieldType
+        if (field.type !== 'id') {
+          definedFields[field._meta.camel] = complileNestedObjects(field)
         }
       })
     }
