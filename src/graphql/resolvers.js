@@ -42,8 +42,7 @@ const resolveNestedFields = function (types, currentType, fields) {
   })
 }
 
-const panaceaEntityResolvers = function(entityTypes, queries, mutations) {
-
+const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
   queries['ENTITY'] = async (parent, args, models) => {
     if (entityTypes[args.id]) {
       const entityTypeData = entities.stripMeta(entityTypes[args.id])
@@ -51,14 +50,12 @@ const panaceaEntityResolvers = function(entityTypes, queries, mutations) {
         name: args.id,
         data: JSON.stringify(entityTypeData)
       }
-    }
-    else {
+    } else {
       return null
     }
   }
 
   queries['ENTITIES'] = async (parent, args, models) => {
-
     const allEntities = []
 
     _(entityTypes).forEach((entityType, entityTypeName) => {
@@ -126,7 +123,6 @@ export const graphQLResolvers = function () {
 
     // Resolve top-level and nested object references.
     resolveNestedFields(types, entityData._meta.pascal, entityData.fields)
-
   })
 
   panaceaEntityResolvers(entityTypes, queries, mutations)

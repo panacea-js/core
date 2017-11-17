@@ -49,14 +49,12 @@ export default function (params = {}) {
 
       // Allow middle to be dynamically replaced without restarting server.
       hooks.on('core.reload', (reason) => {
-
         const startTime = Date.now()
 
         const { entities } = DI.container
         entities.clearCache()
 
         graphQLTypeDefinitions().then(typeDefs => {
-
           const resolvers = graphQLResolvers()
 
           const schema = makeExecutableSchema({
@@ -68,17 +66,15 @@ export default function (params = {}) {
             schema,
             context: dbModels()
           }))
-
         })
 
         const timeToReplace = Date.now() - startTime
 
         log.info(`Reloaded graphql middleware (in ${timeToReplace}ms) because ${reason}`)
-
       })
 
       setTimeout(() => {
-        //hooks.invoke('core.reload', 'entities were altered')
+        // hooks.invoke('core.reload', 'entities were altered')
       }, 4000)
 
       // GraphiQL endpoint.
@@ -106,7 +102,7 @@ export default function (params = {}) {
         log.info(`Server started. Listening on port ${options.main.port}`)
       }
 
-      //console.log(hooks.getAvailableHooksOutput(true))
+      // console.log(hooks.getAvailableHooksOutput(true))
 
       return resolve(app)
     }).catch(error => reject(new Error(`Server not started. Type definitions error: ${error}`)))

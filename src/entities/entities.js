@@ -27,12 +27,11 @@ Entities.prototype.validateRequiredFields = function (fields) {
   })
 }
 
-Entities.prototype.clearCache = function() {
+Entities.prototype.clearCache = function () {
   this.entityTypes = {}
 }
 
 Entities.prototype.getData = function (entityPaths) {
-
   const { _, loadYmlFiles, hooks } = DI.container
 
   // Ensure that the filesystem is only hit once.
@@ -66,7 +65,7 @@ Entities.prototype.getData = function (entityPaths) {
   return this.entityTypes
 }
 
-Entities.prototype.stripMeta = function(data) {
+Entities.prototype.stripMeta = function (data) {
   const { _ } = DI.container
 
   const clonedData = _(data).cloneDeep(data)

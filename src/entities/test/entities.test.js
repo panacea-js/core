@@ -27,7 +27,7 @@ test('Stripping entity metadata should remove _filePath and _meta keys', t => {
 
   const strippedMetadata = entities.stripMeta(entityTypes)
 
-  //Metadata on entityTypes should still exist.
+  // Metadata on entityTypes should still exist.
   t.true(entityTypes.Dog._filePath !== undefined)
   t.true(entityTypes.Dog._meta !== undefined)
 
