@@ -27,7 +27,12 @@ Entities.prototype.validateRequiredFields = function (fields) {
   })
 }
 
+Entities.prototype.clearCache = function() {
+  this.entityTypes = {}
+}
+
 Entities.prototype.getData = function (entityPaths) {
+
   const { _, loadYmlFiles, hooks } = DI.container
 
   // Ensure that the filesystem is only hit once.
@@ -38,7 +43,7 @@ Entities.prototype.getData = function (entityPaths) {
     })
   }
 
-  hooks.invoke('core.entities', this.entityTypes)
+  hooks.invoke('core.entities.definitions', this.entityTypes)
 
   if (_(this.entityTypes).isEmpty()) throw TypeError(`No entity types found`)
 
@@ -59,6 +64,22 @@ Entities.prototype.getData = function (entityPaths) {
   })
 
   return this.entityTypes
+}
+
+Entities.prototype.stripMeta = function(data) {
+  const { _ } = DI.container
+
+  _(data).forEach((value, key) => {
+    if (typeof data === 'object') {
+      data[key] = Entities.prototype.stripMeta(value)
+    }
+    // Strip any keys with _ but not _id.
+    if (typeof key === 'string' && key.indexOf('_') === 0 && key.indexOf('_id') === -1) {
+      delete data[key]
+    }
+  })
+
+  return data
 }
 
 const entities = new Entities()

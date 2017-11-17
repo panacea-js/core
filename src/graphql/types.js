@@ -105,10 +105,10 @@ const formatRootTypeToOutput = function (rootType, definitions) {
         return args.push(`${key}: ${value}`)
       })
 
-      args = args.join(', ')
+      args = _(args).isEmpty() ? '' : '(' + args.join(', ') + ')'
 
       output.push(`# ${definition.comment}`)
-      output.push(`  ${definition.name}(${args}): ${definition.returnType}`)
+      output.push(`  ${definition.name}${args}: ${definition.returnType}`)
       output.push('')
     })
   })
@@ -237,7 +237,6 @@ export const graphQLTypeDefinitions = function () {
 
   return new Promise(function (resolve, reject) {
     const output = []
-
     const types = {}
     const queries = {}
     const mutations = {}
@@ -311,6 +310,39 @@ export const graphQLTypeDefinitions = function () {
     })
 
     // Non-entity related inputs
+
+    // Panacea entity schemas.
+
+    types['ENTITY'] = {
+      comment: `The panacea entity`,
+      name: 'ENTITY',
+      fields: {
+        name: {
+          comment: 'The entity type name',
+          value: 'name: String!'
+        },
+        data: {
+          comment: 'The JSON structure of the entity schema',
+          value: 'data: String!'
+        }
+      }
+    }
+
+    queries['ENTITIES'] = {
+      all: {
+        comment: 'Get all entity schemas',
+        name: 'ENTITIES',
+        returnType: '[ENTITY]'
+      },
+      single: {
+        comment: 'Get a single schema',
+        name: 'ENTITY',
+        arguments: {
+          id: 'String!'
+        },
+        returnType: 'ENTITY'
+      }
+    }
 
     inputs.QueryParams = {
       comment: 'Limit the number of returned results',

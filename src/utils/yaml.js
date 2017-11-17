@@ -9,7 +9,7 @@
  *   Value is a parsed YAML to JSON.
  */
 export function loadYmlFiles (directory) {
-  const { jsYaml, fs, _, glob } = DI.container
+  const { jsYaml, fs, _, glob, path } = DI.container
 
   let result = {}
 
@@ -19,8 +19,13 @@ export function loadYmlFiles (directory) {
 
   files.map(file => {
     // Entity type name is the file name stub.
+    const filePath = path.resolve(file)
     let filename = _(file).split('/').last().replace('.yml', '')
-    result[filename] = jsYaml.safeLoad(fs.readFileSync(file, 'utf8'))
+    const fileContents = jsYaml.safeLoad(fs.readFileSync(file, 'utf8'))
+    if (fileContents) {
+      fileContents._filePath = filePath
+      result[filename] = fileContents
+    }
   })
 
   return result

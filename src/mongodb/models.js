@@ -71,6 +71,8 @@ export const dbModels = function () {
       })
     }
 
+    // When re-registering model ensure it is removed to prevent mongoose errors.
+    delete db.models[entityTypeName]
     models[entityTypeName] = db.model(entityTypeName, definedFields)
   })
 

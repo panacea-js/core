@@ -142,7 +142,10 @@ ignore:
 patch:
   'npm:marked:20170112':
     - graphql-voyager > marked:
-        patched: '2017-11-08T11:18:58.568Z'
+        patched: '2017-11-17T00:30:06.127Z'
   'npm:marked:20170907':
     - graphql-voyager > marked:
-        patched: '2017-11-08T11:17:27.736Z'
+        patched: '2017-11-17T00:30:06.127Z'
+  'npm:debug:20170905':
+    - dynamic-middleware > debug:
+        patched: '2017-11-17T00:34:13.902Z'
