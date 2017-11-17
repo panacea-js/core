@@ -4,13 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "startdb": "mongod --directoryperdb --dbpath=data/db --logappend --logRotate rename --logpath=data/db_log/mongod.log",
-    "startapp": "npm run startdb & nodemon --inspect --exec babel-node index.js",
-    "start": "npm run startdb & npm run startapp",
     "test": "snyk test && ava",
     "watch:test": "npm t --",
     "cover": "nyc npm run test",
-    "watch:cover": "nodemon --quiet --watch src --exec npm run cover -s",
+    "watch:cover": "nodemon --quiet --exec npm run cover -s",
     "coveralls": "npm run cover && nyc report --reporter=text-lcov | coveralls",
     "lint": "standard",
     "lint:fix": "standard --fix",
@@ -46,7 +43,7 @@
   },
   "ava": {
     "files": [
-      "src/**/*.test.js"
+      "**/*.test.js"
     ],
     "require": [
       "babel-register",

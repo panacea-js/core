@@ -69,17 +69,19 @@ Entities.prototype.getData = function (entityPaths) {
 Entities.prototype.stripMeta = function(data) {
   const { _ } = DI.container
 
-  _(data).forEach((value, key) => {
-    if (typeof data === 'object') {
-      data[key] = Entities.prototype.stripMeta(value)
+  const clonedData = _(data).cloneDeep(data)
+
+  _(clonedData).forEach((value, key) => {
+    if (typeof clonedData === 'object') {
+      clonedData[key] = Entities.prototype.stripMeta(value)
     }
     // Strip any keys with _ but not _id.
     if (typeof key === 'string' && key.indexOf('_') === 0 && key.indexOf('_id') === -1) {
-      delete data[key]
+      delete clonedData[key]
     }
   })
 
-  return data
+  return clonedData
 }
 
 const entities = new Entities()

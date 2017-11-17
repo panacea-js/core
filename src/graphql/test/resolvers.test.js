@@ -2,10 +2,22 @@ import test from 'ava'
 import { initTasks } from '../../test/test-common'
 initTasks(test)
 
-const { graphQLResolvers } = DI.container
+const { options } = DI.container
 
-test('TODO', t => {
-  graphQLResolvers()
+import panacea from '../../../index'
 
-  t.pass()
+test.skip('TODO', t => {
+
+  return new Promise((resolve, reject) => {
+
+    panacea(options).then(app => {
+
+      resolve()
+
+    })
+
+  })
+  //graphQLResolvers()
+
+
 })

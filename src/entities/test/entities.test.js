@@ -2,7 +2,39 @@ import test from 'ava'
 import { initTasks } from '../../test/test-common'
 initTasks(test)
 
-const { entities, options, hooks } = DI.container
+const { entities, options, hooks, _ } = DI.container
+
+test('Clearing entity types cache should remove entityTypes from function cache', t => {
+  t.plan(3)
+
+  t.true(_(entities.entityTypes).isEmpty())
+
+  entities.getData(options.entities)
+  t.false(_(entities.entityTypes).isEmpty())
+
+  entities.clearCache()
+  t.true(_(entities.entityTypes).isEmpty())
+})
+
+test('Stripping entity metadata should remove _filePath and _meta keys', t => {
+  t.plan(6)
+
+  const entityTypes = entities.getData(options.entities)
+
+  // Metadata should exist.
+  t.true(entityTypes.Dog._filePath !== undefined)
+  t.true(entityTypes.Dog._meta !== undefined)
+
+  const strippedMetadata = entities.stripMeta(entityTypes)
+
+  //Metadata on entityTypes should still exist.
+  t.true(entityTypes.Dog._filePath !== undefined)
+  t.true(entityTypes.Dog._meta !== undefined)
+
+  // Metadata should be removed from strippedMetadata.
+  t.true(strippedMetadata.Dog._filePath === undefined)
+  t.true(strippedMetadata.Dog._meta === undefined)
+})
 
 test('When an entity field has empty definition convertSystemFieldToGraphQL() an error should be thrown', t => {
   hooks.on('core.entities.definitions', entityTypes => {

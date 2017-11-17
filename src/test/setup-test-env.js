@@ -7,6 +7,9 @@ const sandboxDir = getSandboxDir()
 // Instead, directly inject configuration into registerServices().
 
 const params = {
+  main: {
+    port: 5555
+  },
   services: {
     options: {
       log: {
