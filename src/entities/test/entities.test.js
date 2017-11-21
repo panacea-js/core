@@ -36,8 +36,30 @@ test('Stripping entity metadata should remove _filePath and _meta keys', t => {
   t.true(strippedMetadata.Dog._meta === undefined)
 })
 
-test('When an entity field has empty definition convertSystemFieldToGraphQL() an error should be thrown', t => {
-  hooks.on('core.entities.definitions', entityTypes => {
+test('When an entity has no label defined an error should be thrown', t => {
+  hooks.once('core.entities.definitions', entityTypes => {
+    delete entityTypes.Cat.plural
+  })
+
+  const error = t.throws(() => entities.getData(options.entities), TypeError)
+  t.is(error.message, `A 'plural' key must be set on entity type: Cat`)
+
+  entities.clearCache()
+})
+
+test('When an entity has no storage defined an error should be thrown', t => {
+  hooks.once('core.entities.definitions', entityTypes => {
+    delete entityTypes.Cat.storage
+  })
+
+  const error = t.throws(() => entities.getData(options.entities), TypeError)
+  t.is(error.message, `A 'storage' key must be set on entity type: Cat`)
+
+  entities.clearCache()
+})
+
+test('When an entity field has empty definition an error should be thrown', t => {
+  hooks.once('core.entities.definitions', entityTypes => {
     entityTypes.Cat.fields.breakingField = {}
   })
 
@@ -46,7 +68,7 @@ test('When an entity field has empty definition convertSystemFieldToGraphQL() an
 })
 
 test('When an entity field has no type defined an error should be thrown', t => {
-  hooks.on('core.entities.definitions', entityTypes => {
+  hooks.once('core.entities.definitions', entityTypes => {
     entityTypes.Cat.fields.breakingField = {
       incorrectTypeKey: 'Incorrect Type',
       incorrectLabelKey: 'Incorrect Label'
@@ -58,9 +80,9 @@ test('When an entity field has no type defined an error should be thrown', t => 
 })
 
 test('When an entity field has no label defined an error should be thrown', t => {
-  hooks.on('core.entities.definitions', entityTypes => {
+  hooks.once('core.entities.definitions', entityTypes => {
     entityTypes.Cat.fields.breakingField = {
-      type: 'String',
+      type: 'string',
       incorrectLabelKey: 'Incorrect Label'
     }
   })
@@ -70,7 +92,7 @@ test('When an entity field has no label defined an error should be thrown', t =>
 })
 
 test('When field definitions key is empty an error is thrown', t => {
-  hooks.on('core.entities.definitions', entityTypes => {
+  hooks.once('core.entities.definitions', entityTypes => {
     entityTypes.Cat.fields = {}
   })
 
@@ -79,7 +101,7 @@ test('When field definitions key is empty an error is thrown', t => {
 })
 
 test('When no entity types are defined an error is thrown', t => {
-  hooks.on('core.entities.definitions', entityTypes => {
+  hooks.once('core.entities.definitions', entityTypes => {
     for (let entityType in entityTypes) {
       delete entityTypes[entityType]
     }
@@ -90,7 +112,7 @@ test('When no entity types are defined an error is thrown', t => {
 })
 
 test('When an entity type definition is empty an error is thrown', t => {
-  hooks.on('core.entities.definitions', entityTypes => {
+  hooks.once('core.entities.definitions', entityTypes => {
     entityTypes.Cat = {}
   })
 

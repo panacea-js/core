@@ -34,6 +34,7 @@ export const registerServices = function (s, options) {
 
   s.add('log', '%core/utils/logger', 'Logger', [servicesOptions.log])
   s.add('loadYmlFiles', '%core/utils/yaml', 'loadYmlFiles')
+  s.add('writeYmlFile', '%core/utils/yaml', 'writeYmlFile')
   s.add('hooks', '%core/utils/hooks', 'hooks')
   s.add('formatters', '%core/utils/formatters')
   s.add('entities', '%core/entities/entities', 'entities')
@@ -80,7 +81,9 @@ export const servicesConfig = function () {
         }
       }
     },
-    entities: ['./config/entities/schemas'],
+    entities: {
+      app: './config/entities/schemas'
+    },
     hooks: ['./config/hooks'],
     graphiql: {
       endpoint: 'graphiql',

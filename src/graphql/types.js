@@ -338,7 +338,20 @@ export const graphQLTypeDefinitions = function () {
         comment: 'Get a single schema',
         name: 'ENTITY',
         arguments: {
-          id: 'String!'
+          name: 'String!'
+        },
+        returnType: 'ENTITY'
+      }
+    }
+
+    mutations['ENTITY'] = {
+      create: {
+        comment: 'Create panacea entity',
+        name: 'createENTITY',
+        arguments: {
+          name: 'String!',
+          data: 'String!',
+          locationKey: 'String'
         },
         returnType: 'ENTITY'
       }
@@ -377,7 +390,7 @@ export const graphQLTypeDefinitions = function () {
     output.push(formatTypesToOutput('type', types))
 
     // Input types.
-    hooks.invoke('core.graphql.definitions.input', inputs)
+    hooks.invoke('core.graphql.definitions.inputs', inputs)
     output.push(formatTypesToOutput('input', inputs))
 
     // Computed queries.

@@ -1,6 +1,6 @@
-const { _, entities, options, hooks, log } = DI.container
+const { _, entities, options, hooks, log, writeYmlFile } = DI.container
 
-const modelQuery = async function (model, parent, args) {
+const modelQuery = function (model, parent, args) {
   const params = args.params || {
     limit: 100,
     sortBy: null,
@@ -13,9 +13,7 @@ const modelQuery = async function (model, parent, args) {
     sortOptions[params.sortBy] = params.sortDirection === 'DESC' ? -1 : 1
   }
 
-  const modelEntities = await model.find().limit(params.limit).sort(sortOptions)
-
-  return modelEntities
+  return model.find().limit(params.limit).sort(sortOptions)
 }
 
 const resolveNestedFields = function (types, currentType, fields) {
@@ -43,11 +41,11 @@ const resolveNestedFields = function (types, currentType, fields) {
 }
 
 const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
-  queries['ENTITY'] = async (parent, args, models) => {
-    if (entityTypes[args.id]) {
-      const entityTypeData = entities.stripMeta(entityTypes[args.id])
+  queries['ENTITY'] = async (parent, { name }, models) => {
+    if (entityTypes[name]) {
+      const entityTypeData = entities.stripMeta(entityTypes[name])
       return {
-        name: args.id,
+        name,
         data: JSON.stringify(entityTypeData)
       }
     } else {
@@ -55,7 +53,7 @@ const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
     }
   }
 
-  queries['ENTITIES'] = async (parent, args, models) => {
+  queries['ENTITIES'] = () => {
     const allEntities = []
 
     _(entityTypes).forEach((entityType, entityTypeName) => {
@@ -67,6 +65,30 @@ const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
     })
 
     return allEntities
+  }
+
+  mutations['createENTITY'] = async (parent, { name, data, locationKey }) => {
+    const dataJSON = JSON.parse(data)
+
+    entities.validateRequiredEntityProperties(dataJSON, name)
+    entities.validateRequiredFields(dataJSON.fields, name)
+
+    if (_(locationKey).isEmpty()) {
+      locationKey = entities.defaults.locationKey
+    }
+
+    name = _.upperFirst(_.camelCase(name))
+
+    const filepath = `${entities.locations[locationKey]}/${name}.yml`
+
+    writeYmlFile(filepath, dataJSON)
+
+    hooks.invoke('core.reload', `entity ${name} was created`)
+
+    return {
+      name,
+      data
+    }
   }
 }
 

@@ -30,3 +30,19 @@ export function loadYmlFiles (directory) {
 
   return result
 }
+
+/**
+ * Write yml output to a file from JSON data.
+ *
+ * @param filepath
+ * @param data
+ * @returns {*}
+ */
+export function writeYmlFile (filepath, data) {
+  const { jsYaml, fs } = DI.container
+  const ymlData = jsYaml.safeDump(data, {
+    sortKeys: true
+  })
+  fs.outputFileSync(filepath, ymlData)
+  return ymlData
+}

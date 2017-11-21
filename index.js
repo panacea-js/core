@@ -74,8 +74,8 @@ export default function (params = {}) {
       })
 
       setTimeout(() => {
-        // hooks.invoke('core.reload', 'entities were altered')
-      }, 4000)
+        console.log(hooks.getAvailableHooksOutput(false))
+      }, 250)
 
       // GraphiQL endpoint.
       if (options.graphiql.enable) {
@@ -101,8 +101,6 @@ export default function (params = {}) {
         app.listen(`${options.main.port}`)
         log.info(`Server started. Listening on port ${options.main.port}`)
       }
-
-      // console.log(hooks.getAvailableHooksOutput(true))
 
       return resolve(app)
     }).catch(error => reject(new Error(`Server not started. Type definitions error: ${error}`)))

@@ -19,6 +19,10 @@ const params = {
       }
     }
   },
-  entities: [ `${__dirname}/fixtures/entities/schemas` ]
+  entities: {
+    test: `${__dirname}/fixtures/entities/schemas`,
+    // Ensure app location doesn't get searched.
+    app: null
+  }
 }
 registerServices(params)

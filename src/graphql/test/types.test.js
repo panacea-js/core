@@ -29,5 +29,5 @@ test('When an entity field defines an invalid type an error is thrown', async t 
   })
 
   const error = await t.throws(graphQLTypeDefinitions(), TypeError)
-  t.is(error.message, `FakeTypeNoExist not found in GraphQL type conversion mapping`)
+  t.is(error.message, `Field type FakeTypeNoExist is invalid for breakingField`)
 })
