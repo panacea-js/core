@@ -97,12 +97,7 @@ export default function (params = {}) {
         )
       }
 
-      if (!options.main.deferListen) {
-        app.listen(`${options.main.port}`)
-        log.info(`Server started. Listening on port ${options.main.port}`)
-      }
-
-      return resolve(app)
+      return resolve({ app, options })
     }).catch(error => reject(new Error(`Server not started. Type definitions error: ${error}`)))
   })
 }
