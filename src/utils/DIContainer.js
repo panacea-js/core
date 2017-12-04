@@ -64,6 +64,7 @@ export const registerServices = function (params) {
   const defaultsDeep = require('lodash/defaultsDeep')
 
   const path = require('path')
+  const fs = require('fs')
 
   const services = new ServicesBuilder()
 
@@ -92,6 +93,12 @@ export const registerServices = function (params) {
     }
 
     bottle.provider(serviceName, provider)
+  }
+
+  // Add options from panacea config file.
+  const panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js')
+  if (fs.existsSync(panaceaConfigFile)) {
+    options.panacea = require(panaceaConfigFile).default()
   }
 
   // Set resolved options to be accessible on the container.
