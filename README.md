@@ -80,7 +80,6 @@ For more information about GraphQL, check out the [Introduction to GraphQL](http
 ## Directory structure
 <pre>
 /PROJECT_NAME
-├ app.config.json  ─  Config file defining directories and hooks locations
 ├ config           ─  All config for you app lives here
 │ ├ entities
 │ │ └ schemas      ─  Main entity schemas directly used in your app
@@ -101,6 +100,7 @@ For more information about GraphQL, check out the [Introduction to GraphQL](http
 │   │ └ public     ─  Managed public files (available without authentication)
 │   └ static       ─  Storage for any static files not managed or editable via the GraphQL API
 │
+├ panacea.js       ─  The Panacea configuration file
 ├ index.js         ─  The application main entry point
 ├ .env             ─  Application environment variables (per environment - don't commit to version control)
 └ .env.example     ─  An example .env file
@@ -171,7 +171,6 @@ The `panacea()` function returns a Promise which resolves to an express applicat
     main: {
       endpoint: 'graphql',              // Change this to alter the main GraphQL endpoint.
       port: env.APP_SERVE_PORT || 3000, // Set this to 80 for default http, but you should really be using 443 (https) in production.
-      deferListen: false,               // You can defer starting the application when calling panacea() if you want to add your own middleware.
     },
     services: {
       file: __filename,                 // Advanced: path to your own services file for dependency injection. You should never need to alter this unless you're heavily customising panacea.

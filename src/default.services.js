@@ -61,8 +61,7 @@ export const servicesConfig = function () {
   return {
     main: {
       endpoint: 'graphql',
-      port: process.env.APP_SERVE_PORT || 3000,
-      deferListen: false
+      port: process.env.APP_SERVE_PORT || 3000
     },
     services: {
       file: __filename,
