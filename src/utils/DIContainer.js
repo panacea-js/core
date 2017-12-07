@@ -62,7 +62,6 @@ ServicesBuilder.prototype.alias = function (alias, location) {
  */
 export const registerServices = function (params) {
   const defaultsDeep = require('lodash/defaultsDeep')
-
   const path = require('path')
   const fs = require('fs')
 
@@ -70,6 +69,8 @@ export const registerServices = function (params) {
 
   const coreServices = path.resolve(__dirname, '../default.services.js')
   const defaultOptions = require(coreServices).servicesConfig()
+
+  // Prioritize passed in params then default.services.js.
   const options = defaultsDeep(params || {}, defaultOptions)
 
   require(options.services.file).registerServices(services, options)
