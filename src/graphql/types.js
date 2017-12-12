@@ -243,7 +243,7 @@ export const graphQLTypeDefinitions = function () {
     const inputs = {}
     const enums = {}
 
-    const entityTypes = entities.getData(options.entities)
+    const entityTypes = entities.getData()
 
     // Get entity types, inputs, queries and mutations.
     _(entityTypes).forEach((entityTypeData, entityTypeName) => {

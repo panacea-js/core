@@ -80,10 +80,6 @@ export const servicesConfig = function () {
         }
       }
     },
-    entities: {
-      app: './config/entities/schemas'
-    },
-    hooks: ['./config/hooks'],
     graphiql: {
       endpoint: 'graphiql',
       enable: true

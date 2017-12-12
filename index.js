@@ -1,5 +1,8 @@
-export default function (params = {}) {
-  require('./src/utils/DIContainer').registerServices(params)
+import bootstrap from './src/utils/bootstrap'
+
+export default function (panaceaConfigPath = '') {
+
+  new bootstrap(panaceaConfigPath).all()
 
   const {
     makeExecutableSchema,
@@ -18,10 +21,6 @@ export default function (params = {}) {
   } = DI.container
 
   return new Promise((resolve, reject) => {
-    // Load application level hooks.
-    if (options.hooks.length > 0) {
-      hooks.loadFromDirectories(options.hooks)
-    }
 
     graphQLTypeDefinitions().then(typeDefs => {
       const resolvers = graphQLResolvers()
@@ -74,7 +73,7 @@ export default function (params = {}) {
       })
 
       setTimeout(() => {
-        console.log(hooks.getAvailableHooksOutput(false))
+        //console.log(hooks.getAvailableHooksOutput(false))
       }, 250)
 
       // GraphiQL endpoint.

@@ -81,22 +81,21 @@ Hooks.prototype.getAvailableHooksOutput = function (nested = true) {
  *   A list of directories to load application level hooks which register listeners via the standard 'on' method.
  */
 Hooks.prototype.loadFromDirectories = function (paths) {
-  const { fs, requireDir, _, log } = DI.container
+  const { path, fs, requireDir, _, log } = DI.container
 
   let result = ''
 
-  paths.forEach(function (path) {
-    if (_(path).startsWith('./')) path = _(path).trimStart('./')
+  paths.forEach(function (hooksDirectory) {
 
-    const pathFromBase = `${process.cwd()}/${path}`
+    const resolvedPath = path.resolve(hooksDirectory)
 
-    if (!fs.pathExistsSync(pathFromBase)) {
-      result = `Could not load hooks from ${path}. Please check the file exists.`
+    if (!fs.pathExistsSync(resolvedPath)) {
+      result = `Could not load hooks from ${resolvedPath}`
       log.warn(result)
       return
     }
 
-    const moduleHookFiles = requireDir(pathFromBase)
+    const moduleHookFiles = requireDir(resolvedPath)
 
     _(moduleHookFiles).forEach(function (exports, file) {
       if (!exports.hasOwnProperty('default')) {
@@ -112,7 +111,7 @@ Hooks.prototype.loadFromDirectories = function (paths) {
 
       exports.default.register(hooks)
 
-      result = `Registered hooks in ${path}/${file}.js`
+      result = `Registered hooks in ${resolvedPath}/${file}.js`
       log.info(result)
     })
   })

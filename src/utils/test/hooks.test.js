@@ -87,7 +87,7 @@ test('Can load hooks from a directory', async t => {
 
 test('Fails with error message when hooks directory does not exist', async t => {
   const result = await hooks.loadFromDirectories(['./src/test/fixtures/hooks-dir-doesnt-exist'])
-  t.true(result.indexOf('Could not load hooks from src/test/fixtures/hooks-dir-doesnt-exist') !== -1)
+  t.true(result.indexOf('Could not load hooks from') !== -1)
 })
 
 // Executes before other tests

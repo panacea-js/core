@@ -54,7 +54,7 @@ export const dbModels = function () {
 
   const models = {}
 
-  const entityTypes = entities.getData(options.entities)
+  const entityTypes = entities.getData()
 
   _(entityTypes).forEach((entityTypeData, entityTypeName) => {
     // Only create a mongoose model if the entity type is for the database.

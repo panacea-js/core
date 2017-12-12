@@ -82,12 +82,16 @@ For more information about GraphQL, check out the [Introduction to GraphQL](http
 /PROJECT_NAME
 ├ config           ─  All config for you app lives here
 │ ├ entities
-│ │ └ schemas      ─  Main entity schemas directly used in your app
+│ │ └ schemas      ─  Entity schemas directly used in your app
 │ │   ├ Cat.yml    ─  An example schema for a Cat
 │ │   └ Dog.yml    ─  An example schema for a Dog
-│ │ 
-│ └ hooks
-│   └ hooks.js     ─  Example hooks file to interact and override Panacea's behaviors and triggered events
+│ └ settings
+│   ├ schemas      ─  Settings schemas directly used in your app
+│   │ └ Site.yml   ─  An example settings schema for general site information
+│   └ Site.yml     ─  The saved configuration for general site information
+│
+├ hooks
+│ └ hooks.js       ─  Example hooks file to interact and override Panacea's behaviors and triggered events
 │
 ├ data             ─  Everything in this directory should be git ignored
 │ ├ app_log        ─  The default log directory for your application - debugging starts here
@@ -163,6 +167,8 @@ The `panacea()` function returns a Promise which resolves to an express applicat
 
 > Note: `cwd` and `env` are simply pointers to existing globals. If the environment variable aren't found then a hard-coded default option can be seen, e.g. `env.APP_SERVE_PORT || 3000` - this means that Panacea will first look for the `APP_SERVE_PORT` key in you .env file, otherwise the default of 3000 will be used.
 
+@todo - provide a simpler less comprehensive version of panacea.js file for typical customization options.
+
 ```js
   const cwd = process.cwd()
   const env = process.env
@@ -172,8 +178,19 @@ The `panacea()` function returns a Promise which resolves to an express applicat
       endpoint: 'graphql',              // Change this to alter the main GraphQL endpoint.
       port: env.APP_SERVE_PORT || 3000, // Set this to 80 for default http, but you should really be using 443 (https) in production.
     },
+    cms: {                              // Content Management System configuration. Run `npm run build:cms` after changing any cms values.
+      head: {
+        title: 'Panacea CMS'            // The title shown in the CMS header.
+      },
+      build: {
+        publicPath: '/cms'              // The path where the CMS should load.
+      }
+    },
+    plugins: [                          // Register application specific and 3rd party (contributed) plugins.
+      '@panaceajs/meta_tag'             // Example plugin of the meta_tag plugin.
+    ]
     services: {
-      file: __filename,                 // Advanced: path to your own services file for dependency injection. You should never need to alter this unless you're heavily customising panacea.
+      file: __filename,                 // Advanced: path to your own services file for dependency injection. You should never need to alter this unless you're heavily customizing panacea.
       globalVariable: 'DI',             // All injected services are available in the global: DI.container. Injected options can be inspected at DI.container.options
       options: {                        // Options available to each registered service.
         log: {
@@ -189,15 +206,16 @@ The `panacea()` function returns a Promise which resolves to an express applicat
         }
       }
     },
-    entities: ['./config/entities/schemas'], // The directory location where your entity schemas live.
-    hooks: ['./config/hooks'],               // The directory location where your hooks live.
+    entities: [],             // Advanced: The directory locations where your entity schemas live. You should never need to alter this unless you're heavily customizing panacea.
+    settings: [],             // Advanced: The directory locations where your saved settings and related schemas live. You should never need to alter this unless you're heavily customizing panacea.
+    hooks: [],                // Advanced: The directory locations where your hooks live. You should never need to alter this unless you're heavily customizing panacea.
     graphiql: {
       endpoint: 'graphiql',
-      enable: true                           // Set to false to disable GraphiQL.
+      enable: true            // Set to false to disable GraphiQL.
     },
     voyager: {
       endpoint: 'voyager',
-      enable: true                           // Set to false to disable Voyager.
+      enable: true            // Set to false to disable Voyager.
     }
   }
 ```

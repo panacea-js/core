@@ -1,4 +1,4 @@
-const { _, loadYmlFiles, hooks, path } = DI.container
+const { _, loadYmlFiles, hooks, path, registry } = DI.container
 
 const Entities = function () {
   this.entityTypes = {}
@@ -97,7 +97,10 @@ Entities.prototype.clearCache = function () {
   this.entityTypes = {}
 }
 
-Entities.prototype.getData = function (entityPaths) {
+Entities.prototype.getData = function () {
+
+  const entityPaths = _(registry.entities).map(x => x.path)
+
   // Ensure that the filesystem is only hit once.
   if (_(this.entityTypes).isEmpty()) {
     _(entityPaths).forEach((entitiesPath, locationKey) => {

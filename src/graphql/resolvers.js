@@ -93,7 +93,7 @@ const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
 }
 
 export const graphQLResolvers = function () {
-  const entityTypes = entities.getData(options.entities)
+  const entityTypes = entities.getData()
 
   const queries = {}
   const mutations = {}
