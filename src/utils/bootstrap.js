@@ -88,7 +88,7 @@ Bootstrap.prototype.stage4 = function() {
     return
   }
 
-  const { options, path, fs } = DI.container
+  const { options, path, fs, chalk } = DI.container
 
   registry.plugins = {}
 
@@ -104,19 +104,36 @@ Bootstrap.prototype.stage4 = function() {
 
     plugin.priority = plugin.priority || this.defaultPluginPriority
 
-    const resolvedPluginPath = path.resolve(plugin.path)
+    const resolvePluginPath = (pluginPath) => {
+      // First try to find plugin directly in the process path, otherwise try to resolve an absolute or relative path..
+      const processRelativeNodeModulePluginPath = path.resolve(process.cwd(), 'node_modules', pluginPath)
+      if (fs.existsSync(processRelativeNodeModulePluginPath)) {
+        return processRelativeNodeModulePluginPath
+      }
+      else if (fs.existsSync(path.resolve(pluginPath))) {
+        return path.resolve(pluginPath)
+      }
+      return false
+    }
+
+    const resolvedPluginPath = resolvePluginPath(plugin.path)
 
     // Only add plugin to the registry if its path can be resolved.
-    if (!fs.existsSync(resolvedPluginPath)) {
-      console.error(`Plugin ${plugin.path} was not found as defined in panacea.js.
-      If this is a external (contributed) plugin: Check that you have run \`npm install ${plugin.path}\`
-      If this plugin is part of your application: Check that it can be resolved in the <app_root>/plugins/ directory`)
+    if (!resolvedPluginPath) {
+      console.error(chalk.bgRed(' 😕  \n' +
+      `Plugin ${chalk.underline(plugin.path)} was not found as defined in panacea.js.\n` +
+      `If this is a external (contributed) plugin: Check that you have run \`npm install ${plugin.path}\`\n` +
+      `If this plugin is part of your application: Check that it can be resolved in the <app_root>/plugins/ directory`))
       return
     }
+
+    console.log(chalk.green(`✔ ${plugin.path} plugin loaded`))
 
     registry.plugins[plugin.path] = plugin
 
   })
+
+  console.log('')
 }
 
 /**

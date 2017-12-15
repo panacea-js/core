@@ -17,6 +17,8 @@ export const registerServices = function (s, options) {
   s.add('glob', 'glob')
   s.add('jsYaml', 'js-yaml')
   s.add('requireDir', 'require-dir')
+  s.add('rimraf', 'rimraf')
+  s.add('mkdirp', 'mkdirp')
   s.add('express', 'express')
   s.add('voyagerMiddleware', 'graphql-voyager/middleware', 'express')
   s.add('bodyParser', 'body-parser')
@@ -26,12 +28,15 @@ export const registerServices = function (s, options) {
   s.add('makeExecutableSchema', 'graphql-tools', 'makeExecutableSchema')
   s.add('mongoose', 'mongoose')
   s.add('winston', 'winston')
+  s.add('chalk', 'chalk')
   s.add('moment', 'moment')
 
   // Panacea.
   // Alias to panacea core module src directory.
   s.alias('%core', __dirname)
 
+  s.add('bootstrap', '%core/utils/bootstrap')
+  s.add('resolvePluginPath', '%core/utils/plugins', 'resolvePluginPath')
   s.add('log', '%core/utils/logger', 'Logger', [servicesOptions.log])
   s.add('loadYmlFiles', '%core/utils/yaml', 'loadYmlFiles')
   s.add('writeYmlFile', '%core/utils/yaml', 'writeYmlFile')

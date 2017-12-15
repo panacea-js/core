@@ -81,7 +81,7 @@ Hooks.prototype.getAvailableHooksOutput = function (nested = true) {
  *   A list of directories to load application level hooks which register listeners via the standard 'on' method.
  */
 Hooks.prototype.loadFromDirectories = function (paths) {
-  const { path, fs, requireDir, _, log } = DI.container
+  const { path, fs, requireDir, _, log, chalk } = DI.container
 
   let result = ''
 
@@ -111,8 +111,7 @@ Hooks.prototype.loadFromDirectories = function (paths) {
 
       exports.default.register(hooks)
 
-      result = `Registered hooks in ${resolvedPath}/${file}.js`
-      log.info(result)
+      log.info(chalk.green(`Registered hooks in ${resolvedPath}/${file}.js`))
     })
   })
 
