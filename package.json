@@ -1,7 +1,10 @@
 {
   "name": "@panaceajs/core",
   "version": "0.0.0",
-  "description": "",
+  "description": "Panacea Core",
+  "repository" : "panacea-js/core",
+  "author": "Barry Fisher <hello@reallifedigital.com> (https://www.reallifedigital.com)",
+  "license": "Apache-2.0",
   "main": "index.js",
   "scripts": {
     "test": "snyk test && ava",
@@ -52,8 +55,6 @@
     "babel": "inherit",
     "failWithoutAssertions": false
   },
-  "author": "Barry Fisher <hello@reallifedigital.com> (https://www.reallifedigital.com)",
-  "license": "Apache-2.0",
   "devDependencies": {
     "ava": "^0.23.0",
     "babel-cli": "^6.24.1",
