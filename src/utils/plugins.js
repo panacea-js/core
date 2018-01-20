@@ -1,5 +1,7 @@
 /**
- * Resolves path for a plugin force the basis of path.resolve to check the running process node_module directory first.
+ * Resolves path for a plugin to force the basis of path.resolve
+ * to check the running process node_module directory first.
+ *
  * @param {*} pluginPath
  */
 const resolvePluginPath = function (pluginPath) {
