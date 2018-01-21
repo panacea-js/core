@@ -2,7 +2,7 @@ import test from 'ava'
 import { initTasks, getSandboxDir } from '../../test/test-common'
 initTasks(test)
 
-const { loadYmlFiles, writeYmlFile, glob, path, fs } = DI.container
+const { loadYmlFiles, writeYmlFile, glob, path } = DI.container
 
 test('Calling loadYmlFiles should throw Error when no directory is provided', t => {
   t.throws(() => loadYmlFiles(), Error)

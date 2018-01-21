@@ -21,7 +21,6 @@ test.serial('Cat entity should resolve to GraphQL type, input and query', t => {
 })
 
 test.serial('When an entity field defines an invalid type an error is thrown', async t => {
-
   // Append via a hook.
   hooks.once('core.entities.definitions', entityTypes => {
     entityTypes.Cat.fields.breakingField = {
@@ -43,7 +42,6 @@ test.serial('When an convertSystemFieldToGraphQL() does not have a field mapping
 
   const error = await t.throws(graphQLTypeDefinitions(), TypeError)
   t.is(error.message, `notValid not found in GraphQL type conversion mapping`)
-
 })
 
 test.beforeEach(t => entities.clearCache())
