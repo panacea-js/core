@@ -86,7 +86,6 @@ Hooks.prototype.loadFromDirectories = function (paths) {
   let result = ''
 
   paths.forEach(function (hooksDirectory) {
-
     const resolvedPath = path.resolve(hooksDirectory)
 
     if (!fs.pathExistsSync(resolvedPath)) {

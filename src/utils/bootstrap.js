@@ -1,8 +1,7 @@
 import path from 'path'
 import fs from 'fs-extra'
 
-const Bootstrap = function(panaceaConfigFile = '') {
-
+const Bootstrap = function (panaceaConfigFile = '') {
   if (panaceaConfigFile === '') {
     panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js')
   }
@@ -19,7 +18,7 @@ const Bootstrap = function(panaceaConfigFile = '') {
 }
 
 Bootstrap.prototype.executeStage = function (stage) {
-  if (!typeof this[stage] == 'function') {
+  if (typeof this[stage] !== 'function') {
     throw Error(`${stage} is not a valid bootstrap stage`)
   }
   this[stage]()
@@ -34,7 +33,7 @@ Bootstrap.prototype.all = function () {
   }
 }
 
-Bootstrap.prototype.registryPathDiscoveryProcessor = function(registryType, subPath) {
+Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, subPath) {
   const { _, path, fs, registry } = DI.container
 
   registry[registryType] = this.params[registryType] || {}
@@ -55,7 +54,7 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function(registryType, subP
 
   const directories = prioritizedRegistrants.filter(x => fs.existsSync(x.path))
 
-  directories.map(x => registry[registryType][x.path] = x)
+  directories.forEach(x => (registry[registryType][x.path] = x))
 
   return directories
 }
@@ -63,7 +62,7 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function(registryType, subP
 /**
  * Register services.
  */
-Bootstrap.prototype.stage1 = function() {
+Bootstrap.prototype.stage1 = function () {
   require('./DIContainer').registerServices(this.params)
 }
 
@@ -72,15 +71,14 @@ Bootstrap.prototype.stage1 = function() {
  *
  * Adds the application level hooks.
  */
-Bootstrap.prototype.stage3 = function() {
+Bootstrap.prototype.stage3 = function () {
   DI.value('registry', {})
 }
 
 /**
  * Add plugins to the registry.
  */
-Bootstrap.prototype.stage4 = function() {
-
+Bootstrap.prototype.stage4 = function () {
   const { registry } = DI.container
 
   if (!this.params.hasOwnProperty('plugins')) {
@@ -88,12 +86,11 @@ Bootstrap.prototype.stage4 = function() {
     return
   }
 
-  const { options, path, fs, chalk, resolvePluginPath } = DI.container
+  const { chalk, resolvePluginPath } = DI.container
 
   registry.plugins = {}
 
   this.params.plugins.map(plugin => {
-
     // Allows plugins to be declared in panacea.js as single string without a priority.
     // Mutate plugin into plugin object structure.
     if (typeof plugin === 'string') {
@@ -107,16 +104,15 @@ Bootstrap.prototype.stage4 = function() {
     // Only add plugin to the registry if its path can be resolved.
     if (!resolvePluginPath(plugin.path)) {
       console.error(chalk.bgRed(' 😕  \n' +
-      `Plugin ${chalk.underline(plugin.path)} was not found as defined in panacea.js.\n` +
-      `If this is a external (contributed) plugin: Check that you have run \`npm install ${plugin.path}\`\n` +
-      `If this plugin is part of your application: Check that it can be resolved in the <app_root>/plugins/ directory`))
+        `Plugin ${chalk.underline(plugin.path)} was not found as defined in panacea.js.\n` +
+        `If this is a external (contributed) plugin: Check that you have run \`npm install ${plugin.path}\`\n` +
+        `If this plugin is part of your application: Check that it can be resolved in the <app_root>/plugins/ directory`))
       return
     }
 
     console.log(chalk.green(`✔ ${plugin.path} plugin loaded`))
 
     registry.plugins[plugin.path] = plugin
-
   })
 
   console.log('')
@@ -125,7 +121,7 @@ Bootstrap.prototype.stage4 = function() {
 /**
  * Load application and plugins hooks.
  */
-Bootstrap.prototype.stage5 = function() {
+Bootstrap.prototype.stage5 = function () {
   const { hooks } = DI.container
   const directories = this.registryPathDiscoveryProcessor('hooks', 'hooks')
   hooks.loadFromDirectories(directories.map(x => x.path))
@@ -134,14 +130,14 @@ Bootstrap.prototype.stage5 = function() {
 /**
  * Discover and register application and plugins entities.
  */
-Bootstrap.prototype.stage6 = function() {
+Bootstrap.prototype.stage6 = function () {
   this.registryPathDiscoveryProcessor('entities', 'config/entities/schemas')
 }
 
 /**
  * Discover and register application and plugins settings.
  */
-Bootstrap.prototype.stage7 = function() {
+Bootstrap.prototype.stage7 = function () {
   this.registryPathDiscoveryProcessor('settings', 'config/settings/schemas')
 }
 

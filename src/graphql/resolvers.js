@@ -1,4 +1,4 @@
-const { _, entities, options, hooks, log, writeYmlFile } = DI.container
+const { _, entities, hooks, log, writeYmlFile } = DI.container
 
 const modelQuery = function (model, parent, args) {
   const params = args.params || {

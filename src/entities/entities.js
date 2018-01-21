@@ -98,7 +98,6 @@ Entities.prototype.clearCache = function () {
 }
 
 Entities.prototype.getData = function () {
-
   const entityPaths = _(registry.entities).map(x => x.path)
 
   // Ensure that the filesystem is only hit once.

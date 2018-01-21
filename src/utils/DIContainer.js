@@ -63,7 +63,6 @@ ServicesBuilder.prototype.alias = function (alias, location) {
 export const registerServices = function (params) {
   const defaultsDeep = require('lodash/defaultsDeep')
   const path = require('path')
-  const fs = require('fs')
 
   const services = new ServicesBuilder()
 
@@ -82,7 +81,7 @@ export const registerServices = function (params) {
     const property = services.services[serviceName].property
     const callbackArguments = services.services[serviceName].callbackArguments
 
-    const provider = function () {}
+    const provider = function () { }
     provider.prototype.$get = function (container) {
       if (property) {
         if (Array.isArray(callbackArguments)) {

@@ -1,4 +1,4 @@
-const { _, dbConnection, entities, options } = DI.container
+const { _, dbConnection, entities } = DI.container
 
 /**
  * Converts system field definitions to MongoDB equivalents.

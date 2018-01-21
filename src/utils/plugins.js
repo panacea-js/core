@@ -5,15 +5,13 @@
  * @param {*} pluginPath
  */
 const resolvePluginPath = function (pluginPath) {
-
   const { path, fs } = DI.container
 
   // First try to find plugin directly in the process path, otherwise try to resolve an absolute or relative path..
   const processRelativeNodeModulePluginPath = path.resolve(process.cwd(), 'node_modules', pluginPath)
   if (fs.existsSync(processRelativeNodeModulePluginPath)) {
     return processRelativeNodeModulePluginPath
-  }
-  else if (fs.existsSync(path.resolve(pluginPath))) {
+  } else if (fs.existsSync(path.resolve(pluginPath))) {
     return path.resolve(pluginPath)
   }
   return false

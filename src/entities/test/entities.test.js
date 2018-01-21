@@ -2,7 +2,7 @@ import test from 'ava'
 import { initTasks } from '../../test/test-common'
 initTasks(test)
 
-const { entities, options, hooks, _ } = DI.container
+const { entities, hooks, _ } = DI.container
 
 test('Clearing entity types cache should remove entityTypes from function cache', t => {
   t.plan(3)

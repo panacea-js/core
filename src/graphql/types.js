@@ -233,7 +233,7 @@ const formatEnumsToOutput = function (enums) {
  * @returns Promise
  */
 export const graphQLTypeDefinitions = function () {
-  const { entities, _, options, hooks } = DI.container
+  const { entities, _, hooks } = DI.container
 
   return new Promise(function (resolve, reject) {
     const output = []
