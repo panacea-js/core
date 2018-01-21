@@ -86,7 +86,7 @@ Entities.prototype.addFieldsMeta = function (fields) {
 
     if (field.type === 'object' && field.hasOwnProperty('fields')) {
       // Recurse this function to add nest fields meta.
-      fields[fieldName].fields = this.validateRequiredFields(field.fields)
+      fields[fieldName].fields = this.addFieldsMeta(field.fields)
     }
   })
 

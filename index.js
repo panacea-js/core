@@ -45,7 +45,7 @@ export default function (panaceaConfigPath = '') {
           graphqlExpressDynamicMiddleware.handler()
         )
 
-        // Allow middle to be dynamically replaced without restarting server.
+        // Allow middleware to be dynamically replaced without restarting server.
         hooks.on('core.reload', reason => {
           const startTime = Date.now()
 

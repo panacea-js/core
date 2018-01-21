@@ -1,8 +1,8 @@
 import test from 'ava'
-import { initTasks } from '../../test/test-common'
+import { initTasks, getSandboxDir } from '../../test/test-common'
 initTasks(test)
 
-const { loadYmlFiles, glob } = DI.container
+const { loadYmlFiles, writeYmlFile, glob, path, fs } = DI.container
 
 test('Calling loadYmlFiles should throw Error when no directory is provided', t => {
   t.throws(() => loadYmlFiles(), Error)
@@ -30,4 +30,20 @@ test('Call to loadYmlFiles returns correct structured data', t => {
   const test4 = results.Cat.fields.breed.label === 'Breed'
 
   t.true(test1 && test2 && test3 && test4)
+})
+
+test('Writing a yaml file is successful', t => {
+  const sandboxDir = getSandboxDir()
+  const testFile = path.join(sandboxDir, 'writeYamlFileWithData.yml')
+  const testData = {
+    something: {
+      appears: 'here'
+    }
+  }
+
+  writeYmlFile(testFile, testData)
+
+  const loadedYmlFiles = loadYmlFiles(sandboxDir)
+
+  t.true(loadedYmlFiles.writeYamlFileWithData.something.appears === 'here')
 })

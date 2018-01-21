@@ -2,9 +2,9 @@ import test from 'ava'
 import { initTasks } from '../../test/test-common'
 initTasks(test)
 
-const { graphQLTypeDefinitions, hooks } = DI.container
+const { graphQLTypeDefinitions, hooks, entities } = DI.container
 
-test('Cat entity should resolve to GraphQL type, input and query', t => {
+test.serial('Cat entity should resolve to GraphQL type, input and query', t => {
   t.plan(4)
 
   return graphQLTypeDefinitions().then(data => {
@@ -20,8 +20,10 @@ test('Cat entity should resolve to GraphQL type, input and query', t => {
   })
 })
 
-test('When an entity field defines an invalid type an error is thrown', async t => {
-  hooks.on('core.entities.definitions', entityTypes => {
+test.serial('When an entity field defines an invalid type an error is thrown', async t => {
+
+  // Append via a hook.
+  hooks.once('core.entities.definitions', entityTypes => {
     entityTypes.Cat.fields.breakingField = {
       type: 'FakeTypeNoExist',
       label: 'A valid label'
@@ -31,3 +33,17 @@ test('When an entity field defines an invalid type an error is thrown', async t 
   const error = await t.throws(graphQLTypeDefinitions(), TypeError)
   t.is(error.message, `Field type FakeTypeNoExist is invalid for breakingField`)
 })
+
+test.serial('When an convertSystemFieldToGraphQL() does not have a field mapping related to an entity field type an error is thrown from entities.js', async t => {
+  entities.getData()
+  entities.entityTypes.Cat.fields.name.type = 'notValid'
+  entities.fieldTypes.notValid = {
+    description: 'Setting an known invalid type to test whether convertSystemFieldToGraphQL() throws an error'
+  }
+
+  const error = await t.throws(graphQLTypeDefinitions(), TypeError)
+  t.is(error.message, `notValid not found in GraphQL type conversion mapping`)
+
+})
+
+test.beforeEach(t => entities.clearCache())
