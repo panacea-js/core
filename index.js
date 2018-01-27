@@ -10,6 +10,7 @@ export default function (panaceaConfigPath = '') {
     graphqlExpress,
     bodyParser,
     express,
+    cors,
     voyagerMiddleware,
     graphQLTypeDefinitions,
     graphQLResolvers,
@@ -41,6 +42,7 @@ export default function (panaceaConfigPath = '') {
         // Main GraphQL endpoint.
         app.use(
           `/${options.main.endpoint}`,
+          cors(),
           bodyParser.json(),
           graphqlExpressDynamicMiddleware.handler()
         )

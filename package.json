@@ -76,6 +76,7 @@
     "body-parser": "^1.17.2",
     "bottlejs": "^1.6.1",
     "chalk": "^2.3.0",
+    "cors": "^2.8.4",
     "dotenv-safe": "^4.0.4",
     "dynamic-middleware": "^4.0.1",
     "express": "^4.15.3",

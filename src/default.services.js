@@ -20,6 +20,7 @@ export const registerServices = function (s, options) {
   s.add('rimraf', 'rimraf')
   s.add('mkdirp', 'mkdirp')
   s.add('express', 'express')
+  s.add('cors', 'cors')
   s.add('voyagerMiddleware', 'graphql-voyager/middleware', 'express')
   s.add('bodyParser', 'body-parser')
   s.add('graphqlExpress', 'apollo-server-express', 'graphqlExpress')
