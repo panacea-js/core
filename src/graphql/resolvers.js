@@ -43,10 +43,9 @@ const resolveNestedFields = function (types, currentType, fields) {
 const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
   queries['ENTITY'] = async (parent, { name }, models) => {
     if (entityTypes[name]) {
-      const entityTypeData = entities.stripMeta(entityTypes[name])
       return {
         name,
-        data: JSON.stringify(entityTypeData)
+        data: JSON.stringify(entityTypes[name])
       }
     } else {
       return null
