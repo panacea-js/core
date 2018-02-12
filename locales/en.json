@@ -1,0 +1,9 @@
+{
+  "core": {
+    "fields": {
+      "int": {
+        "description": "An integer (whole number)"
+      }
+    }
+  }
+}

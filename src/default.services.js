@@ -31,12 +31,15 @@ export const registerServices = function (s, options) {
   s.add('winston', 'winston')
   s.add('chalk', 'chalk')
   s.add('moment', 'moment')
+  s.add('vue', 'vue')
+  s.add('vueI18n', 'vue-i18n')
 
   // Panacea.
   // Alias to panacea core module src directory.
   s.alias('%core', __dirname)
 
   s.add('bootstrap', '%core/utils/bootstrap')
+  s.add('i18n', '%core/utils/i18n', 'i18n')
   s.add('resolvePluginPath', '%core/utils/plugins', 'resolvePluginPath')
   s.add('log', '%core/utils/logger', 'Logger', [servicesOptions.log])
   s.add('loadYmlFiles', '%core/utils/yaml', 'loadYmlFiles')
@@ -68,6 +71,9 @@ export const servicesConfig = function () {
     main: {
       endpoint: 'graphql',
       port: process.env.APP_SERVE_PORT || 3000
+    },
+    locales: {
+      default: 'en'
     },
     services: {
       file: __filename,

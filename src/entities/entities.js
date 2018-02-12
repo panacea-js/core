@@ -1,4 +1,4 @@
-const { _, loadYmlFiles, hooks, path, registry } = DI.container
+const { _, loadYmlFiles, hooks, path, registry, i18n } = DI.container
 
 const Entities = function () {
   this.entityTypes = {}
@@ -23,7 +23,7 @@ const Entities = function () {
       description: 'A number with decimals'
     },
     int: {
-      description: 'An integer (whole number)'
+      description: i18n.t('core.fields.int.description')
     },
     boolean: {
       description: 'On/Off'
