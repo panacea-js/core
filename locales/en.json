@@ -1,8 +1,43 @@
 {
   "core": {
-    "fields": {
-      "int": {
-        "description": "An integer (whole number)"
+    "entities": {
+      "fields": {
+        "id": {
+          "label": "ID",
+          "description": "A unique identifier for the entity"
+        },
+        "string": {
+          "label": "String",
+          "description": "A text string"
+        },
+        "password": {
+          "label": "Password",
+          "description": "A password (encrypted) string"
+        },
+        "text": {
+          "label": "Long text",
+          "description": "A long text string"
+        },
+        "float": {
+          "label": "Float",
+          "description": "A number with decimals"
+        },
+        "int": {
+          "label": "Integer",
+          "description": "An integer (whole number)"
+        },
+        "boolean": {
+          "label": "Boolean",
+          "description": "On/Off"
+        },
+        "reference": {
+          "label": "Reference",
+          "description": "A reference to another entity"
+        },
+        "object": {
+          "label": "Object",
+          "description": "A nested data object"
+        }
       }
     }
   }

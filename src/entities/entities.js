@@ -6,33 +6,47 @@ const Entities = function () {
   this.defaults = {
     locationKey: 'app'
   }
+  this.registerFieldTypes()
+
+}
+
+Entities.prototype.registerFieldTypes = function () {
   this.fieldTypes = {
     id: {
-      description: 'A unique identifier for the entity'
+      label: i18n.t('core.entities.fields.id.label'),
+      description: i18n.t('core.entities.fields.id.description')
     },
     string: {
-      description: 'A text string'
+      label: i18n.t('core.entities.fields.string.label'),
+      description: i18n.t('core.entities.fields.string.description')
     },
     password: {
-      description: 'A password (encrypted) string'
+      label: i18n.t('core.entities.fields.password.label'),
+      description: i18n.t('core.entities.fields.password.description')
     },
     text: {
-      description: 'A long text string'
+      label: i18n.t('core.entities.fields.text.label'),
+      description: i18n.t('core.entities.fields.text.description')
     },
     float: {
-      description: 'A number with decimals'
+      label: i18n.t('core.entities.fields.float.label'),
+      description: i18n.t('core.entities.fields.float.description')
     },
     int: {
-      description: i18n.t('core.fields.int.description')
+      label: i18n.t('core.entities.fields.int.label'),
+      description: i18n.t('core.entities.fields.int.description')
     },
     boolean: {
-      description: 'On/Off'
+      label: i18n.t('core.entities.fields.boolean.label'),
+      description: i18n.t('core.entities.fields.boolean.description')
     },
     reference: {
-      description: 'A reference to another entity'
+      label: i18n.t('core.entities.fields.reference.label'),
+      description: i18n.t('core.entities.fields.reference.description')
     },
     object: {
-      description: 'A nested data object'
+      label: i18n.t('core.entities.fields.object.label'),
+      description: i18n.t('core.entities.fields.object.description')
     }
   }
 

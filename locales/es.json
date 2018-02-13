@@ -1,8 +1,43 @@
 {
   "core": {
-    "fields": {
-      "int": {
-        "description": "Un número entero"
+    "entities": {
+      "fields": {
+        "id": {
+          "label": "ID",
+          "description": "Un identificador único para la entidad"
+        },
+        "string": {
+          "label": "Cadena",
+          "description": "Una cadena de texto"
+        },
+        "password": {
+          "label": "Contraseña",
+          "description": "Una cadena de contraseña (encriptada)"
+        },
+        "text": {
+          "label": "Texto largo",
+          "description": "Una cadena de texto larga"
+        },
+        "float": {
+          "label": "Flotante",
+          "description": "Un número de coma flotante"
+        },
+        "int": {
+          "label": "Entero",
+          "description": "Un número entero"
+        },
+        "boolean": {
+          "label": "Booleano",
+          "description": "Encendido o apagado"
+        },
+        "reference": {
+          "label": "Referencia",
+          "description": "Una referencia a otra entidad"
+        },
+        "object": {
+          "label": "Objeto",
+          "description": "Un objeto de datos anidados"
+        }
       }
     }
   }
