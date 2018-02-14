@@ -18,6 +18,7 @@ export const registerServices = function (s, options) {
   s.add('jsYaml', 'js-yaml')
   s.add('requireDir', 'require-dir')
   s.add('rimraf', 'rimraf')
+  s.add('rsync', 'rsync')
   s.add('mkdirp', 'mkdirp')
   s.add('express', 'express')
   s.add('cors', 'cors')
