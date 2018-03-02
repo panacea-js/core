@@ -138,6 +138,24 @@ ignore:
     - snyk > snyk-resolve-deps > clite > debug:
         reason: No option but to ignore!
         expires: '2017-12-08T03:51:45.849Z'
+  'npm:bson:20180225':
+    - mongoose > bson:
+        reason: None given
+        expires: '2018-04-01T02:40:36.753Z'
+    - mongoose > mongodb > mongodb-core > bson:
+        reason: None given
+        expires: '2018-04-01T02:40:36.753Z'
+  'npm:lodash:20180130':
+    - graphql-voyager > lodash:
+        reason: None given
+        expires: '2018-04-01T02:40:36.753Z'
+    - dynamic-middleware > lodash:
+        reason: None given
+        expires: '2018-04-01T02:40:36.753Z'
+  'npm:vue:20180222':
+    - vue:
+        reason: None given
+        expires: '2018-04-01T02:40:36.753Z'
 # patches apply the minimum changes required to fix a vulnerability
 patch:
   'npm:marked:20170112':
