@@ -34,21 +34,27 @@ Bootstrap.prototype.all = function () {
 }
 
 Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, subPath) {
-  const { _, path, fs, registry } = DI.container
+  const { _, path, fs, registry, entities, resolvePluginPath } = DI.container
 
   registry[registryType] = this.params[registryType] || {}
 
-  const pluginsRegistrants = _(registry.plugins).toArray().value().map(x => {
-    x.path = path.resolve(x.path, subPath)
-    return x
+  const unprioritizedRegistrants = []
+
+  // Plugin Registrants.
+  _(registry.plugins).forEach((plugin, pluginKey) => {
+    unprioritizedRegistrants.push({
+      locationKey: pluginKey,
+      path: resolvePluginPath(pluginKey),
+      priority: this.defaultPluginPriority
+    })
   })
 
-  const applicationRegistrant = [{
+  // Application Registrant.
+  unprioritizedRegistrants.push({
+    locationKey: entities.defaults.locationKey,
     path: path.resolve(process.cwd(), subPath),
     priority: this.defaultAppPriority
-  }]
-
-  const unprioritizedRegistrants = _.union(applicationRegistrant, pluginsRegistrants)
+  })
 
   const prioritizedRegistrants = unprioritizedRegistrants.sort((a, b) => Number(a.priority) - Number(b.priority))
 
@@ -114,8 +120,6 @@ Bootstrap.prototype.stage4 = function () {
 
     registry.plugins[plugin.path] = plugin
   })
-
-  console.log('')
 }
 
 /**

@@ -1,4 +1,4 @@
-const { _, loadYmlFiles, hooks, path, registry, i18n } = DI.container
+const { _, loadYmlFiles, hooks, registry, i18n } = DI.container
 
 const Entities = function () {
   this.entityTypes = {}
@@ -7,7 +7,6 @@ const Entities = function () {
     locationKey: 'app'
   }
   this.registerFieldTypes()
-
 }
 
 Entities.prototype.registerFieldTypes = function () {
@@ -112,19 +111,15 @@ Entities.prototype.clearCache = function () {
 }
 
 Entities.prototype.getData = function () {
-  const entityPaths = _(registry.entities).map(x => x.path)
-
   // Ensure that the filesystem is only hit once.
   if (_(this.entityTypes).isEmpty()) {
-    _(entityPaths).forEach((entitiesPath, locationKey) => {
-      if (entitiesPath !== null) {
-        this.locations[locationKey] = path.resolve(entitiesPath)
-        const fileEntities = loadYmlFiles(entitiesPath)
-        _(fileEntities).forEach((entity, entityName) => {
-          fileEntities[entityName]._locationKey = locationKey
-        })
-        _.extend(this.entityTypes, fileEntities)
-      }
+    _.forIn(registry.entities, entitiesRegistrant => {
+      this.locations[entitiesRegistrant.locationKey] = entitiesRegistrant.path
+      const fileEntities = loadYmlFiles(entitiesRegistrant.path)
+      _(fileEntities).forEach((entity, entityName) => {
+        fileEntities[entityName]._locationKey = entitiesRegistrant.locationKey
+      })
+      _.extend(this.entityTypes, fileEntities)
     })
   }
 

@@ -91,7 +91,7 @@ test('Fails with error message when hooks directory does not exist', async t => 
 })
 
 // Executes before other tests
-test.serial('Logging of available hooks displays "None" when there are no hook invocations found', t => {
+test.skip.serial('Logging of available hooks displays "None" when there are no hook invocations found', t => {
   const availableHooks = hooks.getAvailableHooksOutput(false)
 
   t.true(availableHooks.indexOf('Available hooks: None') !== -1)

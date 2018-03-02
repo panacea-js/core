@@ -1,4 +1,4 @@
-const { _, entities, hooks, log, writeYmlFile } = DI.container
+const { _, entities, hooks, log, fs, writeYmlFile } = DI.container
 
 const modelQuery = function (model, parent, args) {
   const params = args.params || {
@@ -43,9 +43,12 @@ const resolveNestedFields = function (types, currentType, fields) {
 const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
   queries['ENTITY'] = async (parent, { name }, models) => {
     if (entityTypes[name]) {
+      const entityType = entityTypes[name]
+      // Don't expose the native file path.
+      delete entityType._filePath
       return {
         name,
-        data: JSON.stringify(entityTypes[name])
+        data: JSON.stringify(entityType)
       }
     } else {
       return null
@@ -76,11 +79,17 @@ const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
       locationKey = entities.defaults.locationKey
     }
 
+    const basePath = entities.locations[locationKey]
+
+    if (!fs.existsSync(basePath)) {
+      return new Error(`Location key ${locationKey} does not have a valid file path to save the entity.`)
+    }
+
     name = _.upperFirst(_.camelCase(name))
 
-    const filepath = `${entities.locations[locationKey]}/${name}.yml`
+    const filePath = `${basePath}/${name}.yml`
 
-    writeYmlFile(filepath, dataJSON)
+    writeYmlFile(filePath, dataJSON)
 
     hooks.invoke('core.reload', `entity ${name} was created`)
 
