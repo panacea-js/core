@@ -70,33 +70,22 @@ const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
   }
 
   mutations['createENTITY'] = async (parent, { name, data, locationKey }) => {
-    const dataJSON = JSON.parse(data)
 
-    entities.validateRequiredEntityProperties(dataJSON, name)
-    entities.validateRequiredFields(dataJSON.fields, name)
+    let response
 
-    if (_(locationKey).isEmpty()) {
-      locationKey = entities.defaults.locationKey
+    const saveResult = entities.save(name, data, locationKey)
+
+    if (saveResult.success) {
+      response = {
+        name,
+        data
+      }
+    }
+    else {
+      response = new Error(saveResult.errorMessage)
     }
 
-    const basePath = entities.locations[locationKey]
-
-    if (!fs.existsSync(basePath)) {
-      return new Error(`Location key ${locationKey} does not have a valid file path to save the entity.`)
-    }
-
-    name = _.upperFirst(_.camelCase(name))
-
-    const filePath = `${basePath}/${name}.yml`
-
-    writeYmlFile(filePath, dataJSON)
-
-    hooks.invoke('core.reload', `entity ${name} was created`)
-
-    return {
-      name,
-      data
-    }
+    return response
   }
 }
 

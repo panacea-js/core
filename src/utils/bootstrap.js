@@ -77,14 +77,14 @@ Bootstrap.prototype.stage1 = function () {
  *
  * Adds the application level hooks.
  */
-Bootstrap.prototype.stage3 = function () {
+Bootstrap.prototype.stage2 = function () {
   DI.value('registry', {})
 }
 
 /**
  * Add plugins to the registry.
  */
-Bootstrap.prototype.stage4 = function () {
+Bootstrap.prototype.stage3 = function () {
   const { registry } = DI.container
 
   if (!this.params.hasOwnProperty('plugins')) {
@@ -125,7 +125,7 @@ Bootstrap.prototype.stage4 = function () {
 /**
  * Load application and plugins hooks.
  */
-Bootstrap.prototype.stage5 = function () {
+Bootstrap.prototype.stage4 = function () {
   const { hooks } = DI.container
   const directories = this.registryPathDiscoveryProcessor('hooks', 'hooks')
   hooks.loadFromDirectories(directories.map(x => x.path))
@@ -134,14 +134,14 @@ Bootstrap.prototype.stage5 = function () {
 /**
  * Discover and register application and plugins entities.
  */
-Bootstrap.prototype.stage6 = function () {
+Bootstrap.prototype.stage5 = function () {
   this.registryPathDiscoveryProcessor('entities', 'config/entities/schemas')
 }
 
 /**
  * Discover and register application and plugins settings.
  */
-Bootstrap.prototype.stage7 = function () {
+Bootstrap.prototype.stage6 = function () {
   this.registryPathDiscoveryProcessor('settings', 'config/settings/schemas')
 }
 

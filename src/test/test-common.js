@@ -23,4 +23,8 @@ const initTasks = function (test) {
   })
 }
 
-export { initTasks, getSandboxDir, getTestingKey }
+const entityHasErrorMessage = function(entity, message) {
+  return entity._errors.filter(error => error.message === message).length > 0
+}
+
+export { initTasks, getSandboxDir, getTestingKey, entityHasErrorMessage }

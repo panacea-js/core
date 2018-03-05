@@ -1,5 +1,5 @@
 import test from 'ava'
-import { initTasks } from '../../test/test-common'
+import { initTasks, entityHasErrorMessage } from '../../test/test-common'
 initTasks(test)
 
 const { entities, hooks, _ } = DI.container
@@ -41,9 +41,7 @@ test('When an entity has no label defined an error should be thrown', t => {
     delete entityTypes.Cat.plural
   })
 
-  const error = t.throws(() => entities.getData(), TypeError)
-  t.is(error.message, `A 'plural' key must be set on entity type: Cat`)
-
+  t.true(entityHasErrorMessage(entities.getData().Cat, `A 'plural' key must be set on entity type: Cat`))
   entities.clearCache()
 })
 
@@ -52,9 +50,7 @@ test('When an entity has no storage defined an error should be thrown', t => {
     delete entityTypes.Cat.storage
   })
 
-  const error = t.throws(() => entities.getData(), TypeError)
-  t.is(error.message, `A 'storage' key must be set on entity type: Cat`)
-
+  t.true(entityHasErrorMessage(entities.getData().Cat, `A 'storage' key must be set on entity type: Cat`))
   entities.clearCache()
 })
 
@@ -63,8 +59,7 @@ test('When an entity field has empty definition an error should be thrown', t =>
     entityTypes.Cat.fields.breakingField = {}
   })
 
-  const error = t.throws(() => entities.getData(), TypeError)
-  t.is(error.message, `Field breakingField configuration is empty`)
+  t.true(entityHasErrorMessage(entities.getData().Cat, 'Field breakingField configuration is empty'))
 })
 
 test('When an entity field has no type defined an error should be thrown', t => {
@@ -75,8 +70,7 @@ test('When an entity field has no type defined an error should be thrown', t => 
     }
   })
 
-  const error = t.throws(() => entities.getData(), TypeError)
-  t.is(error.message, `Field type not defined for breakingField`)
+  t.true(entityHasErrorMessage(entities.getData().Cat, 'Field type not defined for breakingField'))
 })
 
 test('When an entity field has no label defined an error should be thrown', t => {
@@ -87,8 +81,7 @@ test('When an entity field has no label defined an error should be thrown', t =>
     }
   })
 
-  const error = t.throws(() => entities.getData(), TypeError)
-  t.is(error.message, `Field label not defined for breakingField`)
+  t.true(entityHasErrorMessage(entities.getData().Cat, 'Field label not defined for breakingField'))
 })
 
 test('When field definitions key is empty an error is thrown', t => {
@@ -96,8 +89,8 @@ test('When field definitions key is empty an error is thrown', t => {
     entityTypes.Cat.fields = {}
   })
 
-  const error = t.throws(() => entities.getData(), TypeError)
-  t.is(error.message, `Fields do not exist on entity type: Cat`)
+  t.true(entityHasErrorMessage(entities.getData().Cat, 'Fields do not exist on entity type: Cat'))
+
 })
 
 test('When no entity types are defined an error is thrown', t => {
@@ -107,15 +100,5 @@ test('When no entity types are defined an error is thrown', t => {
     }
   })
 
-  const error = t.throws(() => entities.getData(), TypeError)
-  t.is(error.message, `No entity types found`)
-})
-
-test('When an entity type definition is empty an error is thrown', t => {
-  hooks.once('core.entities.definitions', entityTypes => {
-    entityTypes.Cat = {}
-  })
-
-  const error = t.throws(() => entities.getData(), TypeError)
-  t.is(error.message, `No data is set on entity type: Cat`)
+  const error = t.true(_(entities.getData()).isEmpty())
 })

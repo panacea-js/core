@@ -1,4 +1,4 @@
-const { _, loadYmlFiles, hooks, registry, i18n } = DI.container
+const { _, log, loadYmlFiles, writeYmlFile, hooks, registry, i18n } = DI.container
 
 const Entities = function () {
   this.entityTypes = {}
@@ -6,11 +6,11 @@ const Entities = function () {
   this.defaults = {
     locationKey: 'app'
   }
-  this.registerFieldTypes()
+  this.fieldTypes = this.registerFieldTypes()
 }
 
 Entities.prototype.registerFieldTypes = function () {
-  this.fieldTypes = {
+  const fieldTypes = {
     id: {
       label: i18n.t('core.entities.fields.id.label'),
       description: i18n.t('core.entities.fields.id.description')
@@ -49,28 +49,56 @@ Entities.prototype.registerFieldTypes = function () {
     }
   }
 
-  hooks.invoke('core.entities.fields.definitions', this.fieldTypes)
+  hooks.invoke('core.entities.fields.definitions', fieldTypes)
+
+  return fieldTypes
 }
 
-Entities.prototype.validateRequiredEntityProperties = function (entityTypeData, entityTypeName) {
-  if (_(entityTypeData).isEmpty()) throw TypeError(`No data is set on entity type: ${entityTypeName}`)
-  if (_(entityTypeData.fields).isEmpty()) throw TypeError(`Fields do not exist on entity type: ${entityTypeName}`)
-  if (_(entityTypeData.plural).isEmpty()) throw TypeError(`A 'plural' key must be set on entity type: ${entityTypeName}`)
-  if (_(entityTypeData.storage).isEmpty()) throw TypeError(`A 'storage' key must be set on entity type: ${entityTypeName}`)
+Entities.prototype.addEntityTypeError = function(entityTypeName, error) {
+  this.entityTypes[entityTypeName]._errors.push(error)
 }
 
-Entities.prototype.validateRequiredFields = function (fields) {
+Entities.prototype.validateEntityType = function(entityTypeData, entityTypeName) {
+
+  // Ensure the _errors array exists.
+  typeof entityTypeData._errors === 'undefined' && (entityTypeData._errors = [])
+
+  const entityTypeValidators = [
+    this._validateEntityTypeRequiredProperties.bind(this)
+  ]
+
+  hooks.invoke('core.entities.entityTypeValidators', entityTypeValidators)
+
+  entityTypeValidators.map(validator => validator(entityTypeData, entityTypeName))
+
+  const entityTypeFieldsValidators = [
+    this._validateEntityTypeRequiredFields.bind(this)
+  ]
+
+  hooks.invoke('core.entities.entityTypeFieldsValidators', entityTypeFieldsValidators)
+
+  entityTypeFieldsValidators.map(validator => validator(entityTypeData, entityTypeName, entityTypeData.fields))
+
+}
+
+Entities.prototype._validateEntityTypeRequiredProperties = function (entityTypeData, entityTypeName) {
+  if (_(entityTypeData.fields).isEmpty()) this.addEntityTypeError(entityTypeName, TypeError(`Fields do not exist on entity type: ${entityTypeName}`))
+  if (_(entityTypeData.plural).isEmpty()) this.addEntityTypeError(entityTypeName, TypeError(`A 'plural' key must be set on entity type: ${entityTypeName}`))
+  if (_(entityTypeData.storage).isEmpty()) this.addEntityTypeError(entityTypeName, TypeError(`A 'storage' key must be set on entity type: ${entityTypeName}`))
+}
+
+Entities.prototype._validateEntityTypeRequiredFields = function (entityTypeData, entityTypeName, fields) {
   _(fields).forEach((field, fieldName) => {
     // Validate field contains all the required attributes.
-    if (_(field).isEmpty()) throw TypeError(`Field ${fieldName} configuration is empty`)
-    if (_(field.type).isEmpty()) throw TypeError(`Field type not defined for ${fieldName}`)
-    if (this.fieldTypes[field.type] === undefined) throw TypeError(`Field type ${field.type} is invalid for ${fieldName}`)
-    if (_(field.label).isEmpty()) throw TypeError(`Field label not defined for ${fieldName}`)
+    if (_(field).isEmpty()) this.addEntityTypeError(entityTypeName, TypeError(`Field ${fieldName} configuration is empty`))
+    if (_(field.type).isEmpty()) this.addEntityTypeError(entityTypeName, TypeError(`Field type not defined for ${fieldName}`))
+    if (this.fieldTypes[field.type] === undefined) this.addEntityTypeError(entityTypeName, TypeError(`Field type ${field.type} is invalid for ${fieldName}`))
+    if (_(field.label).isEmpty()) this.addEntityTypeError(entityTypeName, TypeError(`Field label not defined for ${fieldName}`))
 
     if (field.type === 'object' && field.hasOwnProperty('fields')) {
       // Recurse this function to append output to the fields key.
       // This allows for unlimited nesting of defined fields.
-      this.validateRequiredFields(field.fields)
+      this._validateEntityTypeRequiredFields(entityTypeData, entityTypeName, field.fields)
     }
   })
 }
@@ -78,13 +106,14 @@ Entities.prototype.validateRequiredFields = function (fields) {
 Entities.prototype.addEntityTypeMeta = function (entityTypeData, entityTypeName) {
   entityTypeData.description = entityTypeData.description || ''
 
-  // Add entityType meta.
   this.entityTypes[entityTypeName]._meta = {
     camel: _.camelCase(entityTypeName),
     pascal: _.upperFirst(_.camelCase(entityTypeName)),
     descriptionLowerFirst: entityTypeData.description.charAt(0).toLowerCase() + entityTypeData.description.slice(1),
     pluralCamel: _.camelCase(entityTypeData.plural)
   }
+
+  hooks.invoke('core.entities.meta', this.entityTypes[entityTypeName], entityTypeName)
 }
 
 Entities.prototype.addFieldsMeta = function (fields) {
@@ -103,6 +132,8 @@ Entities.prototype.addFieldsMeta = function (fields) {
     }
   })
 
+  hooks.invoke('core.entities.fields.meta', fields)
+
   return fields
 }
 
@@ -113,11 +144,12 @@ Entities.prototype.clearCache = function () {
 Entities.prototype.getData = function () {
   // Ensure that the filesystem is only hit once.
   if (_(this.entityTypes).isEmpty()) {
-    _.forIn(registry.entities, entitiesRegistrant => {
-      this.locations[entitiesRegistrant.locationKey] = entitiesRegistrant.path
-      const fileEntities = loadYmlFiles(entitiesRegistrant.path)
+    _.forIn(registry.entities, registrantData => {
+      this.locations[registrantData.locationKey] = registrantData.path
+      const fileEntities = loadYmlFiles(registrantData.path)
       _(fileEntities).forEach((entity, entityName) => {
-        fileEntities[entityName]._locationKey = entitiesRegistrant.locationKey
+        fileEntities[entityName]._locationKey = registrantData.locationKey
+        fileEntities[entityName]._errors = []
       })
       _.extend(this.entityTypes, fileEntities)
     })
@@ -125,16 +157,62 @@ Entities.prototype.getData = function () {
 
   hooks.invoke('core.entities.definitions', this.entityTypes)
 
-  if (_(this.entityTypes).isEmpty()) throw TypeError(`No entity types found`)
-
   _(this.entityTypes).forEach((entityTypeData, entityTypeName) => {
-    this.validateRequiredEntityProperties(entityTypeData, entityTypeName)
     this.addEntityTypeMeta(entityTypeData, entityTypeName)
-    this.validateRequiredFields(entityTypeData.fields)
+    this.validateEntityType(entityTypeData, entityTypeName)
     entityTypeData.fields = this.addFieldsMeta(entityTypeData.fields)
   })
 
   return this.entityTypes
+}
+
+Entities.prototype.saveEntityType = function (name, data, locationKey) {
+  const result = {
+    success: true,
+    errorMessage: ''
+  }
+
+  // Clone the incoming data.
+  const dataJSON = JSON.parse(entities.stripMeta(data))
+
+  hooks.invoke('core.entities.preSaveEntityType', name, dataJSON, locationKey)
+
+  this.validateEntityType(dataJSON, name)
+
+  if (_(locationKey).isEmpty()) {
+    locationKey = this.defaults.locationKey
+  }
+
+  const basePath = this.locations[locationKey]
+
+  if (!fs.existsSync(basePath)) {
+    const errorMessage = `Location key ${locationKey} does not have a valid file path to save the entity.`
+    log.error(errorMessage)
+    result.success = false
+    result.errorMessage = errorMessage
+  }
+  else {
+    name = _.upperFirst(_.camelCase(name))
+
+    const filePath = `${basePath}/${name}.yml`
+
+    try {
+      writeYmlFile(filePath, dataJSON)
+      hooks.invoke('core.reload', `entity ${name} was created`)
+    }
+    catch(error) {
+      const errorMessage = `Could not write entity file ${name}.yml to ${basePath}: ${error}`
+      log.error(errorMessage)
+      result.success = false
+      result.errorMessage = errorMessage
+    }
+  }
+
+  if (result.success) {
+    hooks.invoke('core.entities.postSaveEntityType', name, dataJSON, locationKey)
+  }
+
+  return result
 }
 
 Entities.prototype.stripMeta = function (data) {
@@ -144,8 +222,8 @@ Entities.prototype.stripMeta = function (data) {
     if (typeof clonedData === 'object') {
       clonedData[key] = Entities.prototype.stripMeta(value)
     }
-    // Strip any keys with _ but not _id.
-    if (typeof key === 'string' && key.indexOf('_') === 0 && key.indexOf('_id') === -1) {
+    // Strip any keys with _.
+    if (typeof key === 'string' && key.indexOf('_') === 0) {
       delete clonedData[key]
     }
   })

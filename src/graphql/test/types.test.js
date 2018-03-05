@@ -1,5 +1,5 @@
 import test from 'ava'
-import { initTasks } from '../../test/test-common'
+import { initTasks, entityHasErrorMessage } from '../../test/test-common'
 initTasks(test)
 
 const { graphQLTypeDefinitions, hooks, entities } = DI.container
@@ -30,7 +30,7 @@ test.serial('When an entity field defines an invalid type an error is thrown', a
   })
 
   const error = await t.throws(graphQLTypeDefinitions(), TypeError)
-  t.is(error.message, `Field type FakeTypeNoExist is invalid for breakingField`)
+  t.is(error.message, `FakeTypeNoExist not found in GraphQL type conversion mapping`)
 })
 
 test.serial('When an convertSystemFieldToGraphQL() does not have a field mapping related to an entity field type an error is thrown from entities.js', async t => {
