@@ -1,3 +1,4 @@
+// @flow
 const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry, i18n } = DI.container
 
 const Entities = function () {
@@ -10,7 +11,7 @@ const Entities = function () {
 }
 
 Entities.prototype.registerFieldTypes = function () {
-  const fieldTypes = {
+  const fieldTypes: FieldTypes = {
     id: {
       label: i18n.t('core.entities.fields.id.label'),
       description: i18n.t('core.entities.fields.id.description')
@@ -54,14 +55,13 @@ Entities.prototype.registerFieldTypes = function () {
   return fieldTypes
 }
 
-Entities.prototype.addEntityTypeError = function (entityTypeData, error) {
+Entities.prototype.addEntityTypeError = function (entityTypeData: EntityType, error: Error) {
+  // Ensure the _errors array exists.
+  if (!entityTypeData._errors) entityTypeData._errors = []
   entityTypeData._errors.push(error)
 }
 
-Entities.prototype.validateEntityType = function (entityTypeData, entityTypeName) {
-  // Ensure the _errors array exists.
-  typeof entityTypeData._errors === 'undefined' && (entityTypeData._errors = [])
-
+Entities.prototype.validateEntityType = function (entityTypeData: EntityType, entityTypeName: string) {
   const entityTypeValidators = [
     this._validateEntityTypeRequiredProperties.bind(this)
   ]
@@ -79,13 +79,13 @@ Entities.prototype.validateEntityType = function (entityTypeData, entityTypeName
   entityTypeFieldsValidators.map(validator => validator(entityTypeData, entityTypeName, entityTypeData.fields))
 }
 
-Entities.prototype._validateEntityTypeRequiredProperties = function (entityTypeData, entityTypeName) {
+Entities.prototype._validateEntityTypeRequiredProperties = function (entityTypeData: EntityType, entityTypeName: string) {
   if (_(entityTypeData.fields).isEmpty()) this.addEntityTypeError(entityTypeData, TypeError(`Fields do not exist on entity type: ${entityTypeName}`))
   if (_(entityTypeData.plural).isEmpty()) this.addEntityTypeError(entityTypeData, TypeError(`A 'plural' key must be set on entity type: ${entityTypeName}`))
   if (_(entityTypeData.storage).isEmpty()) this.addEntityTypeError(entityTypeData, TypeError(`A 'storage' key must be set on entity type: ${entityTypeName}`))
 }
 
-Entities.prototype._validateEntityTypeRequiredFields = function (entityTypeData, entityTypeName, fields) {
+Entities.prototype._validateEntityTypeRequiredFields = function (entityTypeData: EntityType, entityTypeName: string, fields: EntityTypeFields) {
   _(fields).forEach((field, fieldName) => {
     // Validate field contains all the required attributes.
     if (_(field).isEmpty()) this.addEntityTypeError(entityTypeData, TypeError(`Field ${fieldName} configuration is empty`))
@@ -101,7 +101,7 @@ Entities.prototype._validateEntityTypeRequiredFields = function (entityTypeData,
   })
 }
 
-Entities.prototype.addEntityTypeMeta = function (entityTypeData, entityTypeName) {
+Entities.prototype.addEntityTypeMeta = function (entityTypeData: EntityType, entityTypeName: string) {
   entityTypeData.description = entityTypeData.description || ''
 
   this.entityTypes[entityTypeName]._meta = {
@@ -114,7 +114,7 @@ Entities.prototype.addEntityTypeMeta = function (entityTypeData, entityTypeName)
   hooks.invoke('core.entities.meta', this.entityTypes[entityTypeName], entityTypeName)
 }
 
-Entities.prototype.addFieldsMeta = function (fields) {
+Entities.prototype.addFieldsMeta = function (fields: EntityTypeFields) {
   _(fields).forEach((field, fieldName) => {
     // Provide field names as camel case so as not to interfere with
     // the underscores used to identify the entity/field object nesting hierarchy.
@@ -164,7 +164,7 @@ Entities.prototype.getData = function () {
   return this.entityTypes
 }
 
-Entities.prototype.saveEntityType = function (name, data, locationKey) {
+Entities.prototype.saveEntityType = function (name: string, data: EntityType, locationKey: string) {
   const result = {
     success: true,
     errorMessage: ''
@@ -177,7 +177,7 @@ Entities.prototype.saveEntityType = function (name, data, locationKey) {
 
   this.validateEntityType(dataJSON, name)
 
-  if (dataJSON._errors.length > 0) {
+  if (dataJSON._errors && dataJSON._errors.length > 0) {
     result.success = false
     const validationErrors = dataJSON._errors.join('\n')
     result.errorMessage = `Entity validation failed on: ${validationErrors}`
@@ -219,7 +219,7 @@ Entities.prototype.saveEntityType = function (name, data, locationKey) {
   return result
 }
 
-Entities.prototype.stripMeta = function (data) {
+Entities.prototype.stripMeta = function (data: EntityType) {
   const clonedData = _(data).cloneDeep(data)
 
   _(clonedData).forEach((value, key) => {
@@ -235,7 +235,7 @@ Entities.prototype.stripMeta = function (data) {
   return clonedData
 }
 
-Entities.prototype.removeFalsyFields = function (fields) {
+Entities.prototype.removeFalsyFields = function (fields: EntityTypeFields) {
   _(fields).forEach((field, fieldName) => {
     _(field).forEach((value, key) => {
       _(value).isEmpty() && delete fields[fieldName][key]

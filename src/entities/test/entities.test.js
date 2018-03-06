@@ -1,8 +1,10 @@
+// @flow
 import test from 'ava'
-import { initTasks, entityHasErrorMessage } from '../../test/test-common'
+import { initTasks, entityHasErrorMessage, getSandboxDir } from '../../test/test-common'
 initTasks(test)
+const sandboxDir = getSandboxDir()
 
-const { entities, hooks, _ } = DI.container
+const { entities, hooks, _, fs } = DI.container
 
 test('Clearing entity types cache should remove entityTypes from function cache', t => {
   t.plan(3)
@@ -100,4 +102,31 @@ test('When no entity types are defined an error is thrown', t => {
   })
 
   t.true(_(entities.getData()).isEmpty())
+})
+
+test('When validating and EntityType without _errors property, it is added by the call to entities.validateEntityType', t => {
+  const entityTypeData = {}
+  entities.validateEntityType(entityTypeData, 'testEmptyArray')
+  t.true(entityTypeData.hasOwnProperty('_errors'))
+})
+
+test('Saving an EntityType in the correct required format writes a yml file to disk', t => {
+  t.plan(2)
+
+  const entityTypeData: EntityType = {
+    storage: 'db',
+    fields: {
+      id: {
+        type: 'id',
+        label: 'ID'
+      }
+    },
+    plural: 'Happies',
+    description: 'A successful created entity type'
+  }
+
+  const saveResult = entities.saveEntityType('Happy', entityTypeData, 'sandbox')
+
+  t.true(saveResult.success)
+  t.true(fs.existsSync(`${sandboxDir}/Happy.yml`))
 })

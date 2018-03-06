@@ -18,7 +18,12 @@ export default function () {
     },
     entities: {
       test: {
-        path: `${__dirname}/fixtures/entities/schemas`
+        path: `${__dirname}/fixtures/entities/schemas`,
+        locationKey: 'test'
+      },
+      sandbox: {
+        path: `${sandboxDir}`,
+        locationKey: 'sandbox'
       }
     }
   }
