@@ -156,6 +156,10 @@ ignore:
     - vue:
         reason: None given
         expires: '2018-04-01T02:40:36.753Z'
+  'npm:cookie-signature:20180111':
+    - express > cookie-signature:
+        reason: No patch yet available
+        expires: '2018-04-05T13:23:37.941Z'
 # patches apply the minimum changes required to fix a vulnerability
 patch:
   'npm:marked:20170112':
