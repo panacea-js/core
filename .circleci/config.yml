@@ -33,6 +33,5 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      # Run tests and coverage
-      - run: npm test
-      - run: npm coveralls
+      # Run tests via coveralls
+      - run: npm run cover
