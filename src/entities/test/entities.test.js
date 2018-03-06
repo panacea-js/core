@@ -90,7 +90,6 @@ test('When field definitions key is empty an error is thrown', t => {
   })
 
   t.true(entityHasErrorMessage(entities.getData().Cat, 'Fields do not exist on entity type: Cat'))
-
 })
 
 test('When no entity types are defined an error is thrown', t => {
@@ -100,5 +99,5 @@ test('When no entity types are defined an error is thrown', t => {
     }
   })
 
-  const error = t.true(_(entities.getData()).isEmpty())
+  t.true(_(entities.getData()).isEmpty())
 })

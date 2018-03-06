@@ -36,13 +36,12 @@ export function loadYmlFiles (directory) {
  *
  * @param filepath
  * @param data
+ * @param options
  * @returns {*}
  */
-export function writeYmlFile (filepath, data) {
+export function writeYmlFile (filepath, data, options = {}) {
   const { jsYaml, fs } = DI.container
-  const ymlData = jsYaml.safeDump(data, {
-    sortKeys: true
-  })
+  const ymlData = jsYaml.safeDump(data, options)
   fs.outputFileSync(filepath, ymlData)
   return ymlData
 }

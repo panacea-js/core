@@ -1,5 +1,5 @@
 import test from 'ava'
-import { initTasks, entityHasErrorMessage } from '../../test/test-common'
+import { initTasks } from '../../test/test-common'
 initTasks(test)
 
 const { graphQLTypeDefinitions, hooks, entities } = DI.container

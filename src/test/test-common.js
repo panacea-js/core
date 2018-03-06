@@ -23,7 +23,7 @@ const initTasks = function (test) {
   })
 }
 
-const entityHasErrorMessage = function(entity, message) {
+const entityHasErrorMessage = function (entity, message) {
   return entity._errors.filter(error => error.message === message).length > 0
 }
 

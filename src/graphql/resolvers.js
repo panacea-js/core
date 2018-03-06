@@ -1,4 +1,4 @@
-const { _, entities, hooks, log, fs, writeYmlFile } = DI.container
+const { _, entities, hooks, log } = DI.container
 
 const modelQuery = function (model, parent, args) {
   const params = args.params || {
@@ -70,18 +70,16 @@ const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
   }
 
   mutations['createENTITY'] = async (parent, { name, data, locationKey }) => {
-
     let response
 
-    const saveResult = entities.save(name, data, locationKey)
+    const saveResult = entities.saveEntityType(name, JSON.parse(data), locationKey)
 
     if (saveResult.success) {
       response = {
         name,
         data
       }
-    }
-    else {
+    } else {
       response = new Error(saveResult.errorMessage)
     }
 

@@ -350,8 +350,7 @@ export const graphQLTypeDefinitions = function () {
         name: 'createENTITY',
         arguments: {
           name: 'String!',
-          data: 'String!',
-          locationKey: 'String'
+          data: 'String!'
         },
         returnType: 'ENTITY'
       }
