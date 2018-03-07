@@ -1,3 +1,4 @@
+// @flow
 /**
  * Converts system field definitions to GraphQL equivalents.
  *
@@ -37,7 +38,7 @@ const convertSystemFieldToGraphQL = function (type) {
  *
  * @returns {{refsAsStrings: object, refsAsModels: object}}
  */
-const processGraphQLfields = function (fields) {
+const processGraphQLfields = function (fields: EntityTypeFields) {
   const { _ } = DI.container
 
   let output = {
@@ -90,25 +91,25 @@ const processGraphQLfields = function (fields) {
  *
  * @returns String
  */
-const formatRootTypeToOutput = function (rootType, definitions) {
+const formatRootTypeToOutput = function (rootType: string, definitions: GraphQLRootDefinitions): string {
   const { _ } = DI.container
 
   let output = []
 
   output.push(`type ${rootType} {`)
 
-  _(definitions).forEach(function (entityTypeDefinitions) {
-    _(entityTypeDefinitions).forEach(function (definition) {
-      let args = []
+  _(definitions).forEach(function (entityTypeDefinitions: GraphQLEntityTypeDefinitions) {
+    _(entityTypeDefinitions).forEach(function (definition: GraphQLEntityTypeDefinition) {
+      const args = []
 
       _(definition.arguments).forEach(function (value, key) {
-        return args.push(`${key}: ${value}`)
+        args.push(`${key}: ${value}`)
       })
 
-      args = _(args).isEmpty() ? '' : '(' + args.join(', ') + ')'
+      const argsOutput = _(args).isEmpty() ? '' : '(' + args.join(', ') + ')'
 
-      output.push(`# ${definition.comment}`)
-      output.push(`  ${definition.name}${args}: ${definition.returnType}`)
+      output.push(`# ${definition.comment || ''}`)
+      output.push(`  ${definition.name}${argsOutput}: ${definition.returnType}`)
       output.push('')
     })
   })
@@ -136,7 +137,7 @@ const formatRootTypeToOutput = function (rootType, definitions) {
  *
  * @returns String
  */
-const formatTypesToOutput = function (type, definitions) {
+const formatTypesToOutput = function (type, definitions: GraphQLAllDefinitionsTypes): string {
   const { _ } = DI.container
 
   let output = []
@@ -144,8 +145,8 @@ const formatTypesToOutput = function (type, definitions) {
   // Nested types (objects in fields) are deferred to be concatenated to the final output.
   let nestedTypes = []
 
-  _(definitions).forEach(function (data, entityType) {
-    output.push(`# ${data.comment}`)
+  _(definitions).forEach(function (data: GraphQLEntityTypeDefinition, entityType) {
+    output.push(`# ${data.comment || ''}`)
 
     output.push(`${type} ${data.name} {`)
 
@@ -235,18 +236,18 @@ const formatEnumsToOutput = function (enums) {
 export const graphQLTypeDefinitions = function () {
   const { entities, _, hooks } = DI.container
 
-  return new Promise(function (resolve, reject) {
+  const definitions: Promise<string> = new Promise(function (resolve, reject) {
     const output = []
-    const types = {}
-    const queries = {}
-    const mutations = {}
-    const inputs = {}
-    const enums = {}
+    const types: GraphQLTypeDefinitions = {}
+    const queries: GraphQLQueryDefinitions = {}
+    const mutations: GraphQLMutationDefinitions = {}
+    const inputs: GraphQLInputDefinitions = {}
+    const enums: GraphQLEnumsDefinitions = {}
 
     const entityTypes = entities.getData()
 
     // Get entity types, inputs, queries and mutations.
-    _(entityTypes).forEach((entityTypeData, entityTypeName) => {
+    _(entityTypes).forEach((entityTypeData: EntityType, entityTypeName) => {
       const definedFields = processGraphQLfields(entityTypeData.fields)
 
       types[entityTypeData._meta.pascal] = {
@@ -407,4 +408,6 @@ export const graphQLTypeDefinitions = function () {
     // log.info(output.join('\n\n'))
     resolve(output.join('\n\n'))
   })
+
+  return definitions
 }

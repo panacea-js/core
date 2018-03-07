@@ -101,7 +101,7 @@ Entities.prototype._validateEntityTypeRequiredFields = function (entityTypeData:
   })
 }
 
-Entities.prototype.addEntityTypeMeta = function (entityTypeData: EntityType, entityTypeName: string) {
+Entities.prototype.addEntityTypeMeta = function (entityTypeData: EntityTypeNoMeta, entityTypeName: string) {
   entityTypeData.description = entityTypeData.description || ''
 
   this.entityTypes[entityTypeName]._meta = {
