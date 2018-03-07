@@ -12,7 +12,7 @@
     "watch:test": "npm t --",
     "cover": "nyc npm run test",
     "watch:cover": "nodemon --quiet --exec npm run cover -s",
-    "coveralls": "npm run cover && nyc report --reporter=text-lcov | coveralls",
+    "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
     "lint": "standard",
     "lint:fix": "standard --fix",
     "snyk-protect": "snyk protect",
