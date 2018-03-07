@@ -33,7 +33,6 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      # Run tests via coveralls
-      - run: npm run test
+      # Run tests as part of codecov
       - run: npm run codecov-report
-
+      - run: npm run flow
