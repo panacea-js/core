@@ -13,7 +13,7 @@
     "cover": "nyc npm run test",
     "watch:cover": "nodemon --quiet --exec npm run cover -s",
     "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
-    "codecov-report": "nyc report --reporter=text-lcov | codecov",
+    "codecov-report": "nyc npm test && nyc report --reporter=text-lcov | codecov",
     "lint": "standard",
     "lint:fix": "standard --fix",
     "snyk-protect": "snyk protect",
