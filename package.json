@@ -28,7 +28,7 @@
       "flowtype"
     ],
     "ignore": [
-      "flow-typed"
+      "flow"
     ]
   },
   "nyc": {

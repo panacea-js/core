@@ -1,52 +1,6 @@
-// @flow
-declare var DI: {
-  container: Object
-}
-
-declare type EntityTypeFields = {
-  [string] : {
-    type: string,
-    label: string,
-    description?: string,
-    many?: boolean,
-    references?: string,
-    required?: boolean,
-    fields?: EntityTypeFields,
-    _meta?: {
-      pascal: string,
-      descriptionLowerFirst: string,
-      pluralCamel: string,
-      camel: string
-    }
-  }
-}
-
-declare type EntityTypeNoMeta = {
-  description: string,
-  fields: EntityTypeFields,
-  plural: string,
-  storage: string,
-  _errors?: Array<Error>,
-}
-
-declare type EntityType = EntityTypeNoMeta & {
-  _meta: {
-    pascal: string,
-    descriptionLowerFirst: string,
-    pluralCamel: string,
-    camel: string
-  }
-}
-
-declare type FieldTypes = {
-  [string] : {
-    label: string,
-    description: string
-  }
-}
-
-declare type GraphQLRootDefinitions = GraphQLEntityTypeDefinitions | GraphQLQueryDefinitions | GraphQLMutationDefinitions
-
+/**
+ * Entity Type Definitions.
+ */
 declare type GraphQLEntityTypeDefinitions = {
   [string] : {
     [string] : GraphQLEntityTypeDefinition
@@ -66,6 +20,9 @@ declare type GraphQLEntityTypeDefinition = {|
   comment? : string
 |}
 
+/**
+ * Query Definitions.
+ */
 declare type GraphQLQueryDefinitions = {
   [string]: {
     [string]: GraphQLQueryDefinition
@@ -79,6 +36,9 @@ declare type GraphQLQueryDefinition = {|
   arguments?: {},
 |}
 
+/**
+ * Mutation Definitions.
+ */
 declare type GraphQLMutationDefinitions = {
   [string]: {
     [string]: GraphQLMutationDefinition
@@ -92,6 +52,9 @@ declare type GraphQLMutationDefinition = {|
   comment? : string,
 |}
 
+/**
+ * Type Definitions.
+ */
 declare type GraphQLTypeDefinitions = {
   [string] : GraphQLTypeDefinition
 }
@@ -107,6 +70,9 @@ declare type GraphQLTypeDefinition = {|
   }
 |}
 
+/**
+ * Input Definitions.
+ */
 declare type GraphQLInputDefinitions = {
   [string] : GraphQLInputDefinition
 }
@@ -117,8 +83,9 @@ declare type GraphQLInputDefinition = {
   fields: {}
 }
 
-declare type GraphQLAllDefinitionsTypes = GraphQLRootDefinitions | GraphQLTypeDefinitions | GraphQLInputDefinitions
-
+/**
+ * Enums Definitions.
+ */
 declare type GraphQLEnumsDefinitions = {
   [string] : GraphQLEnumsDefinition
 }
@@ -133,3 +100,9 @@ declare type GraphQLEnumsDefinition = {
   >,
   comment?: string
 }
+
+/**
+ * Aggregates.
+ */
+declare type GraphQLRootDefinitions = GraphQLEntityTypeDefinitions | GraphQLQueryDefinitions | GraphQLMutationDefinitions
+declare type GraphQLAllDefinitionsTypes = GraphQLRootDefinitions | GraphQLTypeDefinitions | GraphQLInputDefinitions
