@@ -1,7 +1,8 @@
 import test from 'ava'
-import { initTasks } from '../../test/test-common'
+import { bootstrap, initTasks } from '../../test/test-common'
 import { registerServices } from '../DIContainer'
 initTasks(test)
+bootstrap()
 
 test('DI container registers correctly to global DI object with no params passed in', t => {
   registerServices()

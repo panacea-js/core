@@ -1,6 +1,7 @@
 import test from 'ava'
-import { initTasks, getSandboxDir } from '../../test/test-common'
+import { bootstrap, initTasks, getSandboxDir } from '../../test/test-common'
 initTasks(test)
+bootstrap()
 
 const { loadYmlFiles, writeYmlFile, glob, path } = DI.container
 

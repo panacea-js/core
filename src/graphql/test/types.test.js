@@ -1,6 +1,7 @@
 import test from 'ava'
-import { initTasks } from '../../test/test-common'
+import { bootstrap, initTasks } from '../../test/test-common'
 initTasks(test)
+bootstrap()
 
 const { graphQLTypeDefinitions, hooks, entities } = DI.container
 

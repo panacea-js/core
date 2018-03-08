@@ -1,7 +1,9 @@
 // @flow
 import test from 'ava'
-import { initTasks, entityHasErrorMessage, getSandboxDir } from '../../test/test-common'
+import { bootstrap, initTasks, entityHasErrorMessage, getSandboxDir } from '../../test/test-common'
 initTasks(test)
+bootstrap()
+
 const sandboxDir = getSandboxDir()
 
 const { entities, hooks, _, fs } = DI.container

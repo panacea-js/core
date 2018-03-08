@@ -1,4 +1,5 @@
 import fs from 'fs-extra'
+import Bootstrap from '../utils/bootstrap'
 
 const getTestingKey = function () {
   return `ava-test-${process.pid}`
@@ -27,4 +28,9 @@ const entityHasErrorMessage = function (entity, message) {
   return entity._errors.filter(error => error.message === message).length > 0
 }
 
-export { initTasks, getSandboxDir, getTestingKey, entityHasErrorMessage }
+const bootstrap = function (panaceaFile = 'default') {
+  const panaceaConfigFile = `${__dirname}/fixtures/panaceaConfigFiles/${panaceaFile}.js`
+  new Bootstrap(panaceaConfigFile).all()
+}
+
+export { bootstrap, initTasks, getSandboxDir, getTestingKey, entityHasErrorMessage }

@@ -1,7 +1,8 @@
 import test from 'ava'
-import { initTasks } from '../../test/test-common'
+import { bootstrap, initTasks } from '../../test/test-common'
 import panacea from '../../../index'
 initTasks(test)
+bootstrap()
 
 const { options } = DI.container
 

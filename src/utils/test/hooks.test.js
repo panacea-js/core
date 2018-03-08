@@ -1,6 +1,8 @@
 import test from 'ava'
-import { initTasks } from '../../test/test-common'
+import { bootstrap, initTasks } from '../../test/test-common'
 initTasks(test)
+bootstrap()
+
 const { hooks } = DI.container
 
 test('Hook listener can be registered and stored in the _events list', t => {

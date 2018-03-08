@@ -1,8 +1,10 @@
 import test from 'ava'
-import { initTasks, getSandboxDir } from '../../test/test-common'
-import { Logger } from '../logger'
-initTasks(test)
+import { bootstrap, initTasks, getSandboxDir } from '../../test/test-common'
 
+initTasks(test)
+bootstrap()
+
+const { Logger } = require('../logger')
 const { fs, log } = DI.container
 
 test('Check log sandbox directory exists', async t => {

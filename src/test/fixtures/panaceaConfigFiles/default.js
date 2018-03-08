@@ -1,4 +1,5 @@
-import { getSandboxDir } from './test-common'
+import { getSandboxDir } from '../../test-common'
+import path from 'path'
 
 const sandboxDir = getSandboxDir()
 
@@ -18,7 +19,7 @@ export default function () {
     },
     entities: {
       test: {
-        path: `${__dirname}/fixtures/entities/schemas`,
+        path: path.resolve(__dirname, '..', 'entities/schemas'),
         locationKey: 'test'
       },
       sandbox: {
