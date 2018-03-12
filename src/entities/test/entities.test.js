@@ -8,16 +8,17 @@ const sandboxDir = getSandboxDir()
 
 const { entities, hooks, _, fs } = DI.container
 
-test('Clearing entity types cache should remove entityTypes from function cache', t => {
+test('Clearing entity types cache should remove entityTypes from function cache and getData() should successful repopulate the cache', t => {
   t.plan(3)
-
-  t.true(_(entities.entityTypes).isEmpty())
 
   entities.getData()
   t.false(_(entities.entityTypes).isEmpty())
 
   entities.clearCache()
   t.true(_(entities.entityTypes).isEmpty())
+
+  entities.getData()
+  t.false(_(entities.entityTypes).isEmpty())
 })
 
 test('Stripping entity metadata should remove _filePath and _meta keys', t => {

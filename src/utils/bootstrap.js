@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs-extra'
 
 const Bootstrap = function (panaceaConfigFile = '') {
-  if (panaceaConfigFile === '') {
+  if (!panaceaConfigFile) {
     panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js')
   }
 
@@ -17,20 +17,19 @@ const Bootstrap = function (panaceaConfigFile = '') {
   this.defaultPluginPriority = 0
 }
 
-Bootstrap.prototype.executeStage = function (stage) {
-  if (typeof this[stage] !== 'function') {
-    throw Error(`${stage} is not a valid bootstrap stage`)
-  }
-  this[stage]()
-}
-
 Bootstrap.prototype.all = function () {
+  const startTime = Date.now()
+
   for (const method in this) {
     if (method.indexOf('stage') === 0) {
       const stage = method
       this[stage]()
     }
   }
+
+  const completedTime = Date.now() - startTime
+
+  return Promise.resolve(`Completed full bootstrap (in ${completedTime}ms)`)
 }
 
 Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, subPath) {
@@ -143,6 +142,105 @@ Bootstrap.prototype.stage5 = function () {
  */
 Bootstrap.prototype.stage6 = function () {
   this.registryPathDiscoveryProcessor('settings', 'config/settings/schemas')
+}
+
+Bootstrap.prototype.stage7 = function () {
+  const {
+    makeExecutableSchema,
+    dbModels,
+    graphiqlExpress,
+    graphqlExpress,
+    bodyParser,
+    express,
+    cors,
+    voyagerMiddleware,
+    graphQLTypeDefinitions,
+    graphQLResolvers,
+    dynamicMiddleware,
+    hooks,
+    log,
+    options
+  } = DI.container
+
+  graphQLTypeDefinitions()
+    .then(typeDefs => {
+      const resolvers = graphQLResolvers()
+
+      const schema = makeExecutableSchema({
+        typeDefs,
+        resolvers
+      })
+
+      const app = express()
+
+      const graphqlExpressDynamicMiddleware = dynamicMiddleware.create(
+        graphqlExpress({
+          schema,
+          context: dbModels()
+        })
+      )
+
+      // Main GraphQL endpoint.
+      app.use(
+        `/${options.main.endpoint}`,
+        cors(),
+        bodyParser.json(),
+        graphqlExpressDynamicMiddleware.handler()
+      )
+
+      // Allow middleware to be dynamically replaced without restarting server.
+      hooks.on('core.reload', reason => {
+        const startTime = Date.now()
+
+        const { entities } = DI.container
+        entities.clearCache()
+
+        graphQLTypeDefinitions().then(typeDefs => {
+          const resolvers = graphQLResolvers()
+
+          const schema = makeExecutableSchema({
+            typeDefs,
+            resolvers
+          })
+
+          graphqlExpressDynamicMiddleware.replace(
+            graphqlExpress({
+              schema,
+              context: dbModels()
+            })
+          )
+        })
+
+        const timeToReplace = Date.now() - startTime
+
+        log.info(`Reloaded graphql middleware (in ${timeToReplace}ms) because ${reason}`)
+      })
+
+      // GraphiQL endpoint.
+      if (options.graphiql.enable) {
+        app.use(
+          `/${options.graphiql.endpoint}`,
+          graphiqlExpress({
+            endpointURL: `/${options.main.endpoint}`
+          })
+        )
+      }
+
+      // Voyager endpoint.
+      if (options.voyager.enable) {
+        app.use(
+          `/${options.voyager.endpoint}`,
+          voyagerMiddleware({
+            endpointUrl: `/${options.main.endpoint}`
+          })
+        )
+      }
+
+      DI.value('app', app)
+    })
+    .catch(error =>
+      log.error(new Error(`Server not started. Type definitions error: ${error}`))
+    )
 }
 
 export default Bootstrap

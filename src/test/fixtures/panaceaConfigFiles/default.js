@@ -14,6 +14,13 @@ export default function () {
           directory: `${sandboxDir}/logs`,
           maxSize: '1024k',
           showLogsInConsole: false
+        },
+        db: {
+          type: 'mongodb',
+          host: 'localhost',
+          dbName: `panacea-test-${process.pid}`,
+          // Not using default port 27017 to prevent a possible clash with non-test mongo instance.
+          port: 27018
         }
       }
     },

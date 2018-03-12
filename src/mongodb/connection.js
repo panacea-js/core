@@ -5,13 +5,13 @@
  */
 
 const dbConnection = function (options) {
-  const { host, dbName } = options
+  const { host, dbName, port } = options
 
   const { mongoose } = DI.container
 
   mongoose.Promise = Promise
 
-  return mongoose.createConnection(`mongodb://${host}/${dbName}`, {
+  return mongoose.createConnection(`mongodb://${host}:${port}/${dbName}`, {
     useMongoClient: true
   })
 }

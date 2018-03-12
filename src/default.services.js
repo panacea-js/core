@@ -89,7 +89,8 @@ export const servicesConfig = function () {
         db: {
           type: env.DB_TYPE || 'mongodb',
           host: env.DB_HOST || 'localhost',
-          dbName: env.DB_NAME || 'panacea'
+          dbName: env.DB_NAME || 'panacea',
+          port: 27017
         }
       }
     },
