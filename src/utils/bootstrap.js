@@ -41,19 +41,25 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, sub
 
   // Plugin Registrants.
   _(registry.plugins).forEach((plugin, pluginKey) => {
-    unprioritizedRegistrants.push({
-      locationKey: pluginKey,
-      path: resolvePluginPath(pluginKey),
-      priority: this.defaultPluginPriority
-    })
+    const pluginSubPath = path.resolve(resolvePluginPath(pluginKey), subPath)
+    if (fs.existsSync(pluginSubPath)) {
+      unprioritizedRegistrants.push({
+        locationKey: pluginKey,
+        path: pluginSubPath,
+        priority: this.defaultPluginPriority
+      })
+    }
   })
 
   // Application Registrant.
-  unprioritizedRegistrants.push({
-    locationKey: entities.defaults.locationKey,
-    path: path.resolve(process.cwd(), subPath),
-    priority: this.defaultAppPriority
-  })
+  const applicationSubPath = path.resolve(process.cwd(), subPath)
+  if (fs.existsSync(applicationSubPath)) {
+    unprioritizedRegistrants.push({
+      locationKey: entities.defaults.locationKey,
+      path: applicationSubPath,
+      priority: this.defaultAppPriority
+    })
+  }
 
   const prioritizedRegistrants = unprioritizedRegistrants.sort((a, b) => Number(a.priority) - Number(b.priority))
 

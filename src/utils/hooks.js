@@ -98,7 +98,7 @@ Hooks.prototype.loadFromDirectories = function (paths) {
 
     _(moduleHookFiles).forEach(function (exports, file) {
       if (!exports.hasOwnProperty('default')) {
-        result = `Hook file ${file} should export as default.`
+        result = `Hook file ${hooksDirectory}/${file}.js should export an object. See the Panacea hooks documentation.`
         log.warn(result)
         return
       }
