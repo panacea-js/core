@@ -49,7 +49,7 @@ const compileNestFromDotSeparated = function (hook, nest) {
  * @returns String
  */
 const formatNestedObjectKeys = function (nest, indentSize = 2, _level = 0) {
-  const { _ } = DI.container
+  const { _ } = Panacea.container
 
   let output = ''
 

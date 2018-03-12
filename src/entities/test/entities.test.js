@@ -6,7 +6,7 @@ bootstrap()
 
 const sandboxDir = getSandboxDir()
 
-const { entities, hooks, _, fs } = DI.container
+const { entities, hooks, _, fs } = Panacea.container
 
 test('Clearing entity types cache should remove entityTypes from function cache and getData() should successful repopulate the cache', t => {
   t.plan(3)

@@ -27,8 +27,8 @@
   "standard": {
     "parser": "babel-eslint",
     "globals": [
-      "DI",
-      "DI_Testing"
+      "Panacea",
+      "Panacea_Testing"
     ],
     "plugins": [
       "flowtype"

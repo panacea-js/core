@@ -33,7 +33,7 @@ Bootstrap.prototype.all = function () {
 }
 
 Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, subPath) {
-  const { _, path, fs, registry, entities, resolvePluginPath } = DI.container
+  const { _, path, fs, registry, entities, resolvePluginPath } = Panacea.container
 
   registry[registryType] = this.params[registryType] || {}
 
@@ -72,26 +72,26 @@ Bootstrap.prototype.stage1 = function () {
 }
 
 /**
- * Initialize the registry onto the DI container.
+ * Initialize the registry onto the Panacea.container.
  *
  * Adds the application level hooks.
  */
 Bootstrap.prototype.stage2 = function () {
-  DI.value('registry', {})
+  Panacea.value('registry', {})
 }
 
 /**
  * Add plugins to the registry.
  */
 Bootstrap.prototype.stage3 = function () {
-  const { registry } = DI.container
+  const { registry } = Panacea.container
 
   if (!this.params.hasOwnProperty('plugins')) {
     registry.plugins = {}
     return
   }
 
-  const { chalk, resolvePluginPath } = DI.container
+  const { chalk, resolvePluginPath } = Panacea.container
 
   registry.plugins = {}
 
@@ -125,7 +125,7 @@ Bootstrap.prototype.stage3 = function () {
  * Load application and plugins hooks.
  */
 Bootstrap.prototype.stage4 = function () {
-  const { hooks } = DI.container
+  const { hooks } = Panacea.container
   const directories = this.registryPathDiscoveryProcessor('hooks', 'hooks')
   hooks.loadFromDirectories(directories.map(x => x.path))
 }
@@ -160,7 +160,7 @@ Bootstrap.prototype.stage7 = function () {
     hooks,
     log,
     options
-  } = DI.container
+  } = Panacea.container
 
   graphQLTypeDefinitions()
     .then(typeDefs => {
@@ -192,7 +192,7 @@ Bootstrap.prototype.stage7 = function () {
       hooks.on('core.reload', reason => {
         const startTime = Date.now()
 
-        const { entities } = DI.container
+        const { entities } = Panacea.container
         entities.clearCache()
 
         graphQLTypeDefinitions().then(typeDefs => {
@@ -236,7 +236,7 @@ Bootstrap.prototype.stage7 = function () {
         )
       }
 
-      DI.value('app', app)
+      Panacea.value('app', app)
     })
     .catch(error =>
       log.error(new Error(`Server not started. Type definitions error: ${error}`))

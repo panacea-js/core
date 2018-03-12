@@ -1,4 +1,4 @@
-const { fs, winston, formatters, moment } = DI.container
+const { fs, winston, formatters, moment } = Panacea.container
 
 const getFileTransports = function (options) {
   const fileFormatter = winston.format.printf(info => {

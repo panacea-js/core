@@ -4,18 +4,18 @@ import { registerServices } from '../DIContainer'
 initTasks(test)
 bootstrap()
 
-test('DI container registers correctly to global DI object with no params passed in', t => {
+test('Panacea.container registers correctly to global Panacea object with no params passed in', t => {
   registerServices()
-  t.true(DI.container.hasOwnProperty('options'))
+  t.true(Panacea.container.hasOwnProperty('options'))
 })
 
-test('DI container successfully overrides injected arguments', t => {
+test('Panacea.container successfully overrides injected arguments', t => {
   t.plan(2)
   registerServices({
     services: {
-      globalVariable: 'DI_Testing'
+      globalVariable: 'Panacea_Testing'
     }
   })
-  t.true(DI_Testing.container.hasOwnProperty('options'))
-  t.true(DI_Testing.container.options.services.globalVariable === 'DI_Testing')
+  t.true(Panacea_Testing.container.hasOwnProperty('options'))
+  t.true(Panacea_Testing.container.options.services.globalVariable === 'Panacea_Testing')
 })

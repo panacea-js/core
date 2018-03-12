@@ -3,7 +3,7 @@ import { bootstrap, initTasks } from '../../test/test-common'
 initTasks(test)
 bootstrap()
 
-const { hooks } = DI.container
+const { hooks } = Panacea.container
 
 test('Hook listener can be registered and stored in the _events list', t => {
   hooks.on('listenerIsRegistered', data => {

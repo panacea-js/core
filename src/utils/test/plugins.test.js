@@ -2,7 +2,7 @@ import test from 'ava'
 import { bootstrap, initTasks } from '../../test/test-common'
 initTasks(test)
 bootstrap('emptyPlugin')
-const { hooks, registry } = DI.container
+const { hooks, registry } = Panacea.container
 
 test('Hook listener can be registered and stored in the _events list', t => {
   hooks.on('listenerIsRegistered', data => {

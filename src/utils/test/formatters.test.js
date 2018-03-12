@@ -3,7 +3,7 @@ import { bootstrap, initTasks } from '../../test/test-common'
 initTasks(test)
 bootstrap()
 
-const { formatters } = DI.container
+const { formatters } = Panacea.container
 
 test('compileNestFromDotSeparated can successfully create a nest', t => {
   t.plan(2)

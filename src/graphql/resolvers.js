@@ -1,4 +1,4 @@
-const { _, entities, hooks, log } = DI.container
+const { _, entities, hooks, log } = Panacea.container
 
 const modelQuery = function (model, parent, args) {
   const params = args.params || {

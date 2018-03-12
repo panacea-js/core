@@ -1,5 +1,5 @@
 /**
- * Add services to the DI container.
+ * Add services to the Panacea.container.
  *
  * @param s
  *   Services builder object from src/utils/DIContainer::servicesBuilder()
@@ -78,7 +78,7 @@ export const servicesConfig = function () {
     },
     services: {
       file: __filename,
-      globalVariable: 'DI',
+      globalVariable: 'Panacea',
       options: {
         log: {
           directory: env.APP_LOG || `${cwd}/data/app_log`,

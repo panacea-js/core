@@ -16,7 +16,7 @@ test.serial('Fully loaded and bootstrapped panacea core works without errors', a
 test.serial('core.reload hook reloads the graphql middleware with a CopyCat entity newly available in graphQLTypeDefinitions and entities registry', async t => {
   t.plan(3)
 
-  const { _, hooks, log, fs, entities, graphQLTypeDefinitions } = DI.container
+  const { _, hooks, log, fs, entities, graphQLTypeDefinitions } = Panacea.container
 
   await panacea(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.js')).then(message => {
     t.true(message.indexOf('Completed full bootstrap') !== -1)

@@ -1,5 +1,5 @@
 // @flow
-const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry, i18n } = DI.container
+const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry, i18n } = Panacea.container
 
 const Entities = function () {
   this.entityTypes = {}

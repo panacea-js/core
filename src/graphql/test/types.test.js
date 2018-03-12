@@ -3,7 +3,7 @@ import { bootstrap, initTasks } from '../../test/test-common'
 initTasks(test)
 bootstrap()
 
-const { graphQLTypeDefinitions, hooks, entities } = DI.container
+const { graphQLTypeDefinitions, hooks, entities } = Panacea.container
 
 test.serial('Cat entity should resolve to GraphQL type, input and query', t => {
   t.plan(4)

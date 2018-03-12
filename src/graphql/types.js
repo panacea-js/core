@@ -39,7 +39,7 @@ const convertSystemFieldToGraphQL = function (type) {
  * @returns {{refsAsStrings: object, refsAsModels: object}}
  */
 const processGraphQLfields = function (fields: EntityTypeFields) {
-  const { _ } = DI.container
+  const { _ } = Panacea.container
 
   let output = {
     refsAsStrings: {},
@@ -92,7 +92,7 @@ const processGraphQLfields = function (fields: EntityTypeFields) {
  * @returns String
  */
 const formatRootTypeToOutput = function (rootType: string, definitions: GraphQLRootDefinitions): string {
-  const { _ } = DI.container
+  const { _ } = Panacea.container
 
   let output = []
 
@@ -138,7 +138,7 @@ const formatRootTypeToOutput = function (rootType: string, definitions: GraphQLR
  * @returns String
  */
 const formatTypesToOutput = function (type, definitions: GraphQLAllDefinitionsTypes): string {
-  const { _ } = DI.container
+  const { _ } = Panacea.container
 
   let output = []
 
@@ -206,7 +206,7 @@ const formatTypesToOutput = function (type, definitions: GraphQLAllDefinitionsTy
  * @returns String
  */
 const formatEnumsToOutput = function (enums) {
-  const { _ } = DI.container
+  const { _ } = Panacea.container
 
   let output = []
 
@@ -234,7 +234,7 @@ const formatEnumsToOutput = function (enums) {
  * @returns Promise
  */
 export const graphQLTypeDefinitions = function () {
-  const { entities, _, hooks } = DI.container
+  const { entities, _, hooks } = Panacea.container
 
   const definitions: Promise<string> = new Promise(function (resolve, reject) {
     const output = []

@@ -1,4 +1,4 @@
-const { vue, vueI18n: VueI18n, options, registry, hooks, glob, path, _, fs } = DI.container
+const { vue, vueI18n: VueI18n, options, registry, hooks, glob, path, _, fs } = Panacea.container
 
 vue.use(VueI18n)
 

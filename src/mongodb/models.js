@@ -1,4 +1,4 @@
-const { _, dbConnection, entities } = DI.container
+const { _, dbConnection, entities } = Panacea.container
 
 /**
  * Converts system field definitions to MongoDB equivalents.

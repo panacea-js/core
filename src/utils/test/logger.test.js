@@ -5,7 +5,7 @@ initTasks(test)
 bootstrap()
 
 const { Logger } = require('../logger')
-const { fs, log } = DI.container
+const { fs, log } = Panacea.container
 
 test('Check log sandbox directory exists', async t => {
   const sandboxDir = getSandboxDir()

@@ -55,7 +55,7 @@ Hooks.prototype.getAvailableHooks = function () {
  * @returns void
  */
 Hooks.prototype.getAvailableHooksOutput = function (nested = true) {
-  const { formatters } = DI.container
+  const { formatters } = Panacea.container
 
   let output = ''
 
@@ -81,7 +81,7 @@ Hooks.prototype.getAvailableHooksOutput = function (nested = true) {
  *   A list of directories to load application level hooks which register listeners via the standard 'on' method.
  */
 Hooks.prototype.loadFromDirectories = function (paths) {
-  const { path, fs, requireDir, _, log, chalk } = DI.container
+  const { path, fs, requireDir, _, log, chalk } = Panacea.container
 
   let result = ''
 

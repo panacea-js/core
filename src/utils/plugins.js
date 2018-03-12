@@ -5,7 +5,7 @@
  * @param {*} pluginPath
  */
 const resolvePluginPath = function (pluginPath) {
-  const { path, fs } = DI.container
+  const { path, fs } = Panacea.container
 
   // First try to find plugin directly in the process path, otherwise try to resolve an absolute or relative path..
   const processRelativeNodeModulePluginPath = path.resolve(process.cwd(), 'node_modules', pluginPath)

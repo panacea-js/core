@@ -7,7 +7,7 @@
 const dbConnection = function (options) {
   const { host, dbName, port } = options
 
-  const { mongoose } = DI.container
+  const { mongoose } = Panacea.container
 
   mongoose.Promise = Promise
 

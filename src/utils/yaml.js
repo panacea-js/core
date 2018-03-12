@@ -9,7 +9,7 @@
  *   Value is a parsed YAML to JSON.
  */
 export function loadYmlFiles (directory) {
-  const { jsYaml, fs, _, glob, path } = DI.container
+  const { jsYaml, fs, _, glob, path } = Panacea.container
 
   let result = {}
 
@@ -40,7 +40,7 @@ export function loadYmlFiles (directory) {
  * @returns {*}
  */
 export function writeYmlFile (filepath, data, options = {}) {
-  const { jsYaml, fs } = DI.container
+  const { jsYaml, fs } = Panacea.container
   const ymlData = jsYaml.safeDump(data, options)
   fs.outputFileSync(filepath, ymlData)
   return ymlData

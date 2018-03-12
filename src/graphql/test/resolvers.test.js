@@ -4,7 +4,7 @@ import panacea from '../../../index'
 initTasks(test)
 bootstrap()
 
-const { options } = DI.container
+const { options } = Panacea.container
 
 test.skip('TODO', t => {
   return new Promise((resolve, reject) => {

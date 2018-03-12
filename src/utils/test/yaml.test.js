@@ -3,7 +3,7 @@ import { bootstrap, initTasks, getSandboxDir } from '../../test/test-common'
 initTasks(test)
 bootstrap()
 
-const { loadYmlFiles, writeYmlFile, glob, path } = DI.container
+const { loadYmlFiles, writeYmlFile, glob, path } = Panacea.container
 
 test('Calling loadYmlFiles should throw Error when no directory is provided', t => {
   t.throws(() => loadYmlFiles(), Error)

@@ -191,7 +191,7 @@ The `panacea()` function returns a Promise which resolves to an express applicat
     ]
     services: {
       file: __filename,                 // Advanced: path to your own services file for dependency injection. You should never need to alter this unless you're heavily customizing panacea.
-      globalVariable: 'DI',             // All injected services are available in the global: DI.container. Injected options can be inspected at DI.container.options
+      globalVariable: 'Panacea',        // All injected services are available in the global: Panacea.container. Injected options can be inspected at Panacea.container.options
       options: {                        // Options available to each registered service.
         log: {
           directory: env.APP_LOG || `${cwd}/data/app_log`,
