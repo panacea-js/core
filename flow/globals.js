@@ -1,5 +1,5 @@
 // @flow
-declare var DI: {
+declare var Panacea: {
   container: Object
 }
 
