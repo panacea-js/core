@@ -9,9 +9,13 @@
   "scripts": {
     "flow": "flow",
     "test": "snyk test && ava",
+    "test:no-snyk": "ava",
     "watch:test": "npm t --",
+    "watch:test:no-snyk": "npm run test:no-snyk --",
     "cover": "nyc npm run test",
-    "watch:cover": "nodemon --quiet --exec npm run cover -s",
+    "cover:no-snyk": "nyc npm run test:no-snyk",
+    "watch:cover": "nodemon --exec npm run cover -s",
+    "watch:cover:no-snyk": "nodemon --exec npm run cover:no-snyk",
     "codecov-report": "nyc npm test && nyc report --reporter=text-lcov | codecov",
     "lint": "standard",
     "lint:fix": "standard --fix",
@@ -75,7 +79,7 @@
     "eslint-plugin-flowtype": "^2.46.1",
     "eslint-plugin-import": "^2.8.0",
     "flow-bin": "^0.66.0",
-    "nodemon": "^1.11.0",
+    "nodemon": "^1.17.1",
     "nyc": "^11.2.0",
     "standard": "^10.0.3"
   },
