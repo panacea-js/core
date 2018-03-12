@@ -150,6 +150,9 @@ Bootstrap.prototype.stage6 = function () {
   this.registryPathDiscoveryProcessor('settings', 'config/settings/schemas')
 }
 
+/**
+ * Prepares GraphQL schema and prepares express app ready to be served.
+ */
 Bootstrap.prototype.stage7 = function () {
   const {
     makeExecutableSchema,
@@ -194,7 +197,7 @@ Bootstrap.prototype.stage7 = function () {
         graphqlExpressDynamicMiddleware.handler()
       )
 
-      // Allow middleware to be dynamically replaced without restarting server.
+      // Allow middleware to be dynamically replaced via core.reload hook without needing to restart the server.
       hooks.on('core.reload', reason => {
         const startTime = Date.now()
 
@@ -242,6 +245,7 @@ Bootstrap.prototype.stage7 = function () {
         )
       }
 
+      // Assign the express app onto the Panacea container so the bootstrap caller can serve it.
       Panacea.value('app', app)
     })
     .catch(error =>
