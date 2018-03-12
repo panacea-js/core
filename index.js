@@ -77,10 +77,6 @@ export default function (panaceaConfigPath = '') {
           )
         })
 
-        setTimeout(() => {
-          // console.log(hooks.getAvailableHooksOutput(false))
-        }, 250)
-
         // GraphiQL endpoint.
         if (options.graphiql.enable) {
           app.use(

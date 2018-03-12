@@ -10,7 +10,7 @@ const Hooks = events.EventEmitter
 Hooks.availableHooks = []
 
 /**
- * Invoke method sets a one-time listener to capture the resulting data.
+ * Invoke method sets a one-time listener to capture the resulting data and then invokes all listeners.
  *
  * @param type
  *   The event type (i.e. the hook name)
