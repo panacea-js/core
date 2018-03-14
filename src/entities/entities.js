@@ -238,7 +238,9 @@ Entities.prototype.stripMeta = function (data: EntityType) {
 Entities.prototype.removeFalsyFields = function (fields: EntityTypeFields) {
   _(fields).forEach((field, fieldName) => {
     _(field).forEach((value, key) => {
-      _(value).isEmpty() && delete fields[fieldName][key]
+      if (_(value).isEmpty() && value !== true) {
+        delete fields[fieldName][key]
+      }
       field.type === 'object' && field.hasOwnProperty('fields') && this.removeFalsyFields(field.fields)
     })
   })
