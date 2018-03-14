@@ -27,7 +27,7 @@ jobs:
           - node-dependencies-
 
       - run:
-          name: Install node dependencies
+          name: Install node dependencies and perform snyk vunerabilities checker
           command: npm install
 
       - run:
@@ -40,9 +40,9 @@ jobs:
           key: node-dependencies-{{ checksum "package.json" }}
 
       - run:
-          name: Send coverage report to codecov
-          command: npm run codecov-report
-
-      - run:
           name: Run flow type checks
           command: npm run flow
+
+      - run:
+          name: Run tests and send coverage report to codecov
+          command: npm run codecov-report
