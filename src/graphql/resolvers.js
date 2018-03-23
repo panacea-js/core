@@ -59,7 +59,9 @@ const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
     const allEntities = []
 
     _(entityTypes).forEach((entityType, entityTypeName) => {
-      const entityTypeData = entities.stripMeta(entityTypes[entityTypeName])
+      const entityTypeData = entityTypes[entityTypeName]
+      // Don't expose the native file path.
+      delete entityTypeData._filePath
       allEntities.push({
         name: entityTypeName,
         data: JSON.stringify(entityTypeData)
