@@ -314,9 +314,9 @@ export const graphQLTypeDefinitions = function () {
 
     // Panacea entity schemas.
 
-    types['ENTITY'] = {
-      comment: `The panacea entity`,
-      name: 'ENTITY',
+    types['ENTITY_TYPE'] = {
+      comment: `The panacea entity type`,
+      name: 'ENTITY_TYPE',
       fields: {
         name: {
           comment: 'The entity type name',
@@ -329,31 +329,31 @@ export const graphQLTypeDefinitions = function () {
       }
     }
 
-    queries['ENTITIES'] = {
+    queries['ENTITY_TYPES'] = {
       all: {
         comment: 'Get all entity schemas',
-        name: 'ENTITIES',
-        returnType: '[ENTITY]'
+        name: 'ENTITY_TYPES',
+        returnType: '[ENTITY_TYPE]'
       },
       single: {
         comment: 'Get a single schema',
-        name: 'ENTITY',
+        name: 'ENTITY_TYPE',
         arguments: {
           name: 'String!'
         },
-        returnType: 'ENTITY'
+        returnType: 'ENTITY_TYPE'
       }
     }
 
-    mutations['ENTITY'] = {
+    mutations['ENTITY_TYPE'] = {
       create: {
         comment: 'Create panacea entity',
-        name: 'createENTITY',
+        name: 'createENTITY_TYPE',
         arguments: {
           name: 'String!',
           data: 'String!'
         },
-        returnType: 'ENTITY'
+        returnType: 'ENTITY_TYPE'
       }
     }
 

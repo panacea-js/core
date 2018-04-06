@@ -40,8 +40,8 @@ const resolveNestedFields = function (types, currentType, fields) {
   })
 }
 
-const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
-  queries['ENTITY'] = async (parent, { name }, models) => {
+const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
+  queries['ENTITY_TYPE'] = async (parent, { name }, models) => {
     if (entityTypes[name]) {
       const entityType = entityTypes[name]
       // Don't expose the native file path.
@@ -55,7 +55,7 @@ const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
     }
   }
 
-  queries['ENTITIES'] = () => {
+  queries['ENTITY_TYPES'] = () => {
     const allEntities = []
 
     _(entityTypes).forEach((entityType, entityTypeName) => {
@@ -64,14 +64,14 @@ const panaceaEntityResolvers = function (entityTypes, queries, mutations) {
       delete entityTypeData._filePath
       allEntities.push({
         name: entityTypeName,
-        data: JSON.stringify(entityTypeData)
+        data: JSON.stringify(entityTypeData),
       })
     })
 
     return allEntities
   }
 
-  mutations['createENTITY'] = async (parent, { name, data, locationKey }) => {
+  mutations['createENTITY_TYPE'] = async (parent, { name, data, locationKey }) => {
     let response
 
     const saveResult = entities.saveEntityType(name, JSON.parse(data), locationKey)
@@ -144,7 +144,7 @@ export const graphQLResolvers = function () {
     resolveNestedFields(types, entityData._meta.pascal, entityData.fields)
   })
 
-  panaceaEntityResolvers(entityTypes, queries, mutations)
+  panaceaEntityTypeResolvers(entityTypes, queries, mutations)
 
   const resolvers = {
     Query: queries,
