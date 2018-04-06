@@ -35,7 +35,7 @@ The following need to be installed:
 * [Node + npm](https://docs.npmjs.com/getting-started/installing-node)
 * [MongoDB](https://docs.mongodb.com/manual/installation/)
 
-## Quick start (5 easy steps)
+## Quick start (in 5 steps)
 
 1. Install the Panacea cli tool globally:
 
@@ -55,13 +55,15 @@ where `PROJECT_NAME` is the sub-directory you wish to create your application.
 
 3. Navigate into your directory created for `PROJECT_NAME`.
 
-4. Panacea requires a .env environment file to be set up.
+4. Panacea requires a `.env` environment file to be set up.
 
 If this is your first time using Panacea let Panacea scaffold this file for you:
 
 ```sh
 panacea generate-env
 ```
+
+This file is where you store the configurable options for your application, such as the MongoDB database location. Once generated with the above command, be sure to view/edit this file to suit your requirements.
 
 5. Finally, run:
 
@@ -70,6 +72,8 @@ npm start
 ```
 
 That's it! You should see in the final output: "Server listening on port 3000"
+
+> Having issues? We've love to know what went wrong, so we can improve your experience. Please open a [support request](https://github.com/panacea-js/core/issues/new).
 
 To explore you GraphQL schema with [Voyager](https://github.com/APIs-guru/graphql-voyager) go to [http://localhost:3000/voyager](http://localhost:3000/voyager)
 
@@ -155,19 +159,21 @@ const options = {
 }
 
 panacea(options).then(app => {
-  // Any code than should run after panacea has been bootstrapped.
+  // Any code that should run after panacea has been bootstrapped.
 }).catch(error => console.log(`An error occurred: ${error}`))
 ```
 
 In your index.js file you can pass various options to alter the Panacea's bootstrap process.
 
-The `panacea()` function returns a Promise which resolves to an express application, however in most instances you can simply call `panacea()`
+The `panacea()` function returns a [Promise](https://www.promisejs.org/) which resolves to an [Express](https://expressjs.com/) application which can be seen in the example above as the `app` parameter in the `then` clause.
 
-**Advanced**: Available options to pass to `panacea()` are as follows with defaults shown, however please bear in mind that many of the options are available from your .env file. Consider changing your configuration there first before considering these more flexible/advanced injected bootstrap options.
+In most instances you can simply call `panacea()` without the `options` argument.
 
-> Note: `cwd` and `env` are simply pointers to existing globals. If the environment variable aren't found then a hard-coded default option can be seen, e.g. `env.APP_SERVE_PORT || 3000` - this means that Panacea will first look for the `APP_SERVE_PORT` key in you .env file, otherwise the default of 3000 will be used.
+**Advanced**: Available options to pass to `panacea()` are as follows with defaults shown,however please bear in mind that many of the options are available from your `.env` file located in the root of your application. Consider changing your configuration in this `.env` first before considering these more flexible/advanced injected bootstrap options.
 
-@todo - provide a simpler less comprehensive version of panacea.js file for typical customization options.
+> Note: `cwd` and `env` are pointers to existing globals. If the environment variable aren't found then a hard-coded default option can be seen, e.g. `env.APP_SERVE_PORT || 3000` - this means that Panacea will first look for the `APP_SERVE_PORT` key in you .env file, otherwise the default of 3000 will be used.
+
+@todo - provide a simpler and less comprehensive version of panacea.js file for typical customization options. Separate into a Get Started guide and Advanced guide for clarity.
 
 ```js
   const cwd = process.cwd()
