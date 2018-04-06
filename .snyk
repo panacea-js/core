@@ -149,6 +149,9 @@ ignore:
     - graphql-voyager > lodash:
         reason: None given
         expires: '2018-04-01T02:40:36.753Z'
+      dynamic-middleware > lodash:
+        reason: No available patch
+        expires: '2018-05-06T03:18:59.004Z'
     - dynamic-middleware > lodash:
         reason: None given
         expires: '2018-04-01T02:40:36.753Z'
