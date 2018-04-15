@@ -70,7 +70,9 @@ export const servicesConfig = function () {
 
   return {
     main: {
-      endpoint: 'graphql',
+      protocol: process.env.APP_SERVE_PROTOCOL || 'https',
+      host: process.env.APP_SERVE_HOST || 'localhost',
+      endpoint: process.env.APP_SERVE_ENDPOINT || 'graphql',
       port: process.env.APP_SERVE_PORT || 3000
     },
     locales: {
