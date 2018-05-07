@@ -101,7 +101,7 @@
     "glob": "^7.1.2",
     "graphql": "^0.10.5",
     "graphql-tools": "^1.1.0",
-    "graphql-voyager": "^1.0.0-rc.11",
+    "graphql-voyager": "^1.0.0-rc.15",
     "js-yaml": "github:nodeca/js-yaml",
     "lodash": "^4.17.5",
     "mkdirp": "^0.5.1",
@@ -110,7 +110,7 @@
     "require-dir": "^0.3.2",
     "rimraf": "^2.6.2",
     "rsync": "^0.6.1",
-    "snyk": "^1.69.1",
+    "snyk": "^1.78.1",
     "vue": "^2.5.15",
     "vue-i18n": "^7.4.2",
     "winston": "^3.0.0-rc1"
