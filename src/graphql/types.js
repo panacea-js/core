@@ -329,6 +329,25 @@ export const graphQLTypeDefinitions = function () {
       }
     }
 
+    types['fieldType'] = {
+      comment: `The panacea field type`,
+      name: 'fieldType',
+      fields: {
+        type: {
+          comment: 'The field type',
+          value: 'type: String!'
+        },
+        label: {
+          comment: 'The field label',
+          value: 'label: String!'
+        },
+        description: {
+          comment: 'The field description',
+          value: 'description: String!'
+        }
+      }
+    }
+
     queries['ENTITY_TYPES'] = {
       all: {
         comment: 'Get all entity schemas',
@@ -342,6 +361,14 @@ export const graphQLTypeDefinitions = function () {
           name: 'String!'
         },
         returnType: 'ENTITY_TYPE'
+      }
+    }
+
+    queries['fieldTypes'] = {
+      all: {
+        comment: 'Get all entity field types',
+        name: 'fieldTypes',
+        returnType: '[fieldType]'
       }
     }
 

@@ -1,4 +1,4 @@
-const { vue, vueI18n: VueI18n, options, registry, hooks, glob, path, _, fs } = Panacea.container
+const { vue, vueI18n: VueI18n, options, registry, glob, path, _, fs } = Panacea.container
 
 vue.use(VueI18n)
 
@@ -18,11 +18,8 @@ const messages = _([
 
 const i18n = new VueI18n({
   locale: options.locales.default,
+  fallbackLocale: options.locales.default,
   messages
-})
-
-hooks.on('core.locale.change', function (locale) {
-  i18n.locale = locale
 })
 
 export { i18n }

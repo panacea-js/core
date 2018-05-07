@@ -1,5 +1,5 @@
 // @flow
-const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry, i18n } = Panacea.container
+const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry } = Panacea.container
 
 const Entities = function () {
   this.entityTypes = {}
@@ -13,40 +13,40 @@ const Entities = function () {
 Entities.prototype.registerFieldTypes = function () {
   const fieldTypes: FieldTypes = {
     id: {
-      label: i18n.t('core.entities.fields.id.label'),
-      description: i18n.t('core.entities.fields.id.description')
+      label: 'core.entities.fields.id.label',
+      description: 'core.entities.fields.id.description'
     },
     string: {
-      label: i18n.t('core.entities.fields.string.label'),
-      description: i18n.t('core.entities.fields.string.description')
+      label: 'core.entities.fields.string.label',
+      description: 'core.entities.fields.string.description'
     },
     password: {
-      label: i18n.t('core.entities.fields.password.label'),
-      description: i18n.t('core.entities.fields.password.description')
+      label: 'core.entities.fields.password.label',
+      description: 'core.entities.fields.password.description'
     },
     text: {
-      label: i18n.t('core.entities.fields.text.label'),
-      description: i18n.t('core.entities.fields.text.description')
+      label: 'core.entities.fields.text.label',
+      description: 'core.entities.fields.text.description'
     },
     float: {
-      label: i18n.t('core.entities.fields.float.label'),
-      description: i18n.t('core.entities.fields.float.description')
+      label: 'core.entities.fields.float.label',
+      description: 'core.entities.fields.float.description'
     },
     int: {
-      label: i18n.t('core.entities.fields.int.label'),
-      description: i18n.t('core.entities.fields.int.description')
+      label: 'core.entities.fields.int.label',
+      description: 'core.entities.fields.int.description'
     },
     boolean: {
-      label: i18n.t('core.entities.fields.boolean.label'),
-      description: i18n.t('core.entities.fields.boolean.description')
+      label: 'core.entities.fields.boolean.label',
+      description: 'core.entities.fields.boolean.description'
     },
     reference: {
-      label: i18n.t('core.entities.fields.reference.label'),
-      description: i18n.t('core.entities.fields.reference.description')
+      label: 'core.entities.fields.reference.label',
+      description: 'core.entities.fields.reference.description'
     },
     object: {
-      label: i18n.t('core.entities.fields.object.label'),
-      description: i18n.t('core.entities.fields.object.description')
+      label: 'core.entities.fields.object.label',
+      description: 'core.entities.fields.object.description'
     }
   }
 

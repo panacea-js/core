@@ -1,5 +1,44 @@
-const { _, entities, hooks, log } = Panacea.container
+const { _, entities, hooks, log, i18n, accepts } = Panacea.container
 
+/**
+ * Get the client's preferred language based on the request's
+ * PANACEA-CMS-LANGUAGE cookie value. Falls back to the client's Accept-Language
+ * header using the accepts module.
+ *
+ * @param {Request} req The request object
+ *
+ * @returns {String|Boolean} If an available language match is found then a
+ *   string is returned, otherwise false
+ */
+const getClientLanguage = function (req) {
+  const availableLanguages = Object.keys(i18n.messages)
+
+  let cookieLanguage = ''
+
+  if (typeof req.headers.cookie !== 'undefined') {
+    req.headers.cookie.split('; ').map(cookie => {
+      const [ key, value ] = cookie.split('=')
+      if (key === 'PANACEA-CMS-LANGUAGE') {
+        cookieLanguage = value
+      }
+    })
+
+    if (cookieLanguage.length > 0 && i18n.messages.hasOwnProperty(cookieLanguage)) {
+      return cookieLanguage
+    }
+  }
+
+  // Fallback to client's Accept-Language header.
+  return accepts(req).language(availableLanguages)
+}
+
+/**
+ * Generic entity model query.
+ *
+ * @param {*} model
+ * @param {*} parent
+ * @param {*} args
+ */
 const modelQuery = function (model, parent, args) {
   const params = args.params || {
     limit: 100,
@@ -25,15 +64,15 @@ const resolveNestedFields = function (types, currentType, fields) {
     if (field.type === 'reference') {
       types[currentType] = {}
 
-      types[currentType][field._meta.camel] = function (sourceDocument, args, models) {
+      types[currentType][field._meta.camel] = function (sourceDocument, args, { dbModels }) {
         if (field.many) {
           let targetEntities = []
           sourceDocument[field._meta.camel].map(targetId => {
-            targetEntities.push(models[field.references].findById(targetId))
+            targetEntities.push(dbModels[field.references].findById(targetId))
           })
           return targetEntities
         } else {
-          return models[field.references].findById(sourceDocument[field._meta.camel])
+          return dbModels[field.references].findById(sourceDocument[field._meta.camel])
         }
       }
     }
@@ -41,7 +80,7 @@ const resolveNestedFields = function (types, currentType, fields) {
 }
 
 const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
-  queries['ENTITY_TYPE'] = async (parent, { name }, models) => {
+  queries['ENTITY_TYPE'] = async (parent, { name }, { dbModels }) => {
     if (entityTypes[name]) {
       const entityType = entityTypes[name]
       // Don't expose the native file path.
@@ -64,11 +103,24 @@ const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
       delete entityTypeData._filePath
       allEntities.push({
         name: entityTypeName,
-        data: JSON.stringify(entityTypeData),
+        data: JSON.stringify(entityTypeData)
       })
     })
 
     return allEntities
+  }
+
+  queries['fieldTypes'] = (parent, args, { req }) => {
+    const language = getClientLanguage(req)
+
+    return _(entities.fieldTypes).reduce((result, attributes, type) => {
+      result.push({
+        type,
+        label: i18n.t(attributes.label, language),
+        description: i18n.t(attributes.description, language)
+      })
+      return result
+    }, [])
   }
 
   mutations['createENTITY_TYPE'] = async (parent, { name, data, locationKey }) => {
@@ -101,26 +153,26 @@ export const graphQLResolvers = function () {
     types[entityData._meta.pascal] = {}
 
     // Get single entity.
-    queries[entityData._meta.camel] = async (parent, args, models) => {
-      return models[entityData._meta.pascal].findById(args.id)
+    queries[entityData._meta.camel] = async (parent, args, { dbModels }) => {
+      return dbModels[entityData._meta.pascal].findById(args.id)
     }
 
     // Get many entities.
-    queries[entityData._meta.pluralCamel] = async (parent, args, models) => {
-      return modelQuery(models[entityData._meta.pascal], parent, args)
+    queries[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => {
+      return modelQuery(dbModels[entityData._meta.pascal], parent, args)
     }
 
     // Create entity.
-    mutations[`create${entityData._meta.pascal}`] = async (parent, args, models) => {
-      const EntityModel = models[entityData._meta.pascal]
+    mutations[`create${entityData._meta.pascal}`] = async (parent, args, { dbModels }) => {
+      const EntityModel = dbModels[entityData._meta.pascal]
       const entity = await new EntityModel(args.params).save()
       entity._id = entity._id.toString()
       return entity
     }
 
     // Delete entity.
-    mutations[`delete${entityData._meta.pascal}`] = (parent, args, models) => {
-      return models[entityData._meta.pascal].findById(args.id).exec(function (err, entity) {
+    mutations[`delete${entityData._meta.pascal}`] = (parent, args, { dbModels }) => {
+      return dbModels[entityData._meta.pascal].findById(args.id).exec(function (err, entity) {
         if (err) {
           throw new Error(err)
         }
