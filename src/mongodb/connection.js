@@ -11,9 +11,7 @@ const dbConnection = function (options) {
 
   mongoose.Promise = Promise
 
-  return mongoose.createConnection(`mongodb://${host}:${port}/${dbName}`, {
-    useMongoClient: true
-  })
+  return mongoose.createConnection(`mongodb://${host}:${port}/${dbName}`)
 }
 
 export { dbConnection }

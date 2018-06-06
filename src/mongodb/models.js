@@ -1,4 +1,4 @@
-const { _, dbConnection, entities } = Panacea.container
+const { _, mongoose, dbConnection, entities } = Panacea.container
 
 /**
  * Converts system field definitions to MongoDB equivalents.
@@ -36,11 +36,12 @@ const complileNestedObjects = function (field) {
         fieldDefinition[nestedField._meta.camel] = complileNestedObjects(nestedField)
       })
     } else {
-      fieldDefinition = convertSystemFieldToMongo(field.type)
+      fieldDefinition = {
+        type: field.many ? [convertSystemFieldToMongo(field.type)] : convertSystemFieldToMongo(field.type),
+        index: !!field.index
+      }
     }
-    if (field.many) {
-      return [fieldDefinition]
-    }
+
     return fieldDefinition
   }
 }
@@ -71,9 +72,11 @@ export const dbModels = function () {
       })
     }
 
+    const schema = mongoose.Schema(definedFields)
+
     // When re-registering model ensure it is removed to prevent mongoose errors.
     delete db.models[entityTypeName]
-    models[entityTypeName] = db.model(entityTypeName, definedFields)
+    models[entityTypeName] = db.model(entityTypeName, schema)
   })
 
   return models
