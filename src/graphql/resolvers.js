@@ -58,6 +58,7 @@ const modelQuery = function (model, parent, args) {
 const resolveNestedFields = function (types, currentType, fields) {
   _(fields).forEach((field, fieldName) => {
     if (field.type === 'object') {
+      // @todo Fix for if object is many "Expected Iterable, but did not find one for field Cat.toys."
       resolveNestedFields(types, `${currentType}_${field._meta.camel}`, field.fields)
     }
 
