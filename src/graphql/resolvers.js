@@ -35,9 +35,9 @@ const getClientLanguage = function (req) {
 /**
  * Generic entity model query.
  *
- * @param {*} model
- * @param {*} parent
- * @param {*} args
+ * @param {Model} model The Mongoose model for a collection.
+ * @param {*} parent The parent resolver.
+ * @param {object} args The GraphQL query arguments.
  */
 const modelQuery = function (model, parent, args) {
   const params = args.params || {
@@ -55,10 +55,23 @@ const modelQuery = function (model, parent, args) {
   return model.find().limit(params.limit).sort(sortOptions)
 }
 
+/**
+ * Resolves nested objects as separates types using an underscore to delineate
+ * the nesting levels.
+ *
+ * These nested types are required as GraphQL does not natively allow types
+ * beyond an array of scalars or defined types.
+ *
+ * @param {object} types A mutable object of the base types. This is appended to
+ *   as this function recurses.
+ * @param {string} currentType The current type being used at the current level
+ *   of recursion.
+ * @param {object} fields The list of fields defined at the current level of
+ *   recursion.
+ */
 const resolveNestedFields = function (types, currentType, fields) {
   _(fields).forEach((field, fieldName) => {
     if (field.type === 'object') {
-      // @todo Fix for if object is many "Expected Iterable, but did not find one for field Cat.toys."
       resolveNestedFields(types, `${currentType}_${field._meta.camel}`, field.fields)
     }
 
@@ -80,6 +93,14 @@ const resolveNestedFields = function (types, currentType, fields) {
   })
 }
 
+/**
+ * Defines resolvers for introspection into the defined entity types and field
+ * types.
+ *
+ * @param {*} entityTypes The entity type definitions.
+ * @param {*} queries A mutable object of query resolver definitions.
+ * @param {*} mutations A mutable object of mutation resolver definitions.
+ */
 const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
   queries['ENTITY_TYPE'] = async (parent, { name }, { dbModels }) => {
     if (entityTypes[name]) {
@@ -159,9 +180,7 @@ export const graphQLResolvers = function () {
     }
 
     // Get many entities.
-    queries[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => {
-      return modelQuery(dbModels[entityData._meta.pascal], parent, args)
-    }
+    queries[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => modelQuery(dbModels[entityData._meta.pascal], parent, args)
 
     // Create entity.
     mutations[`create${entityData._meta.pascal}`] = async (parent, args, { dbModels }) => {

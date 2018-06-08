@@ -26,16 +26,35 @@ const convertSystemFieldToMongo = function (type) {
   return map[type]
 }
 
-const complileNestedObjects = function (field) {
+/**
+ * Evaluates and recurses an entity type's field definition resolving to a
+ * Mongoose schema field definition.
+ *
+ * @param {*} field
+ */
+const compileNestedObjects = function (field) {
   let fieldDefinition = {}
 
   // Skip native _id mapping as this is internal to MongoDB.
   if (field.type !== 'id') {
     if (field.type === 'object') {
-      _(field.fields).forEach(nestedField => {
-        fieldDefinition[nestedField._meta.camel] = complileNestedObjects(nestedField)
-      })
+      // Objects require recursion to resolve each nested field which themselves
+      // could be objects.
+      const nestedFields = _(field.fields).map(nestedField => {
+        let nestedFieldDefinition = {}
+        nestedFieldDefinition[nestedField._meta.camel] = compileNestedObjects(nestedField)
+        return nestedFieldDefinition
+      }).value()
+
+      // Apply the resolved nested fields to the field definition wrapping in
+      // an array if the field allows many values.
+      fieldDefinition = {
+        type: field.many ? [nestedFields] : nestedFields,
+        index: !!field.index
+      }
     } else {
+      // Non nested objects only need their field type resolving and wrapping in
+      // an array if the field allows many values.
       fieldDefinition = {
         type: field.many ? [convertSystemFieldToMongo(field.type)] : convertSystemFieldToMongo(field.type),
         index: !!field.index
@@ -67,7 +86,7 @@ export const dbModels = function () {
       _(entityTypeData.fields).forEach(field => {
         // Skip native _id mapping as this is internal to MongoDB.
         if (field.type !== 'id') {
-          definedFields[field._meta.camel] = complileNestedObjects(field)
+          definedFields[field._meta.camel] = compileNestedObjects(field)
         }
       })
     }
