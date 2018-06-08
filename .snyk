@@ -150,8 +150,8 @@ ignore:
         reason: None given
         expires: '2018-04-01T02:40:36.753Z'
       dynamic-middleware > lodash:
-        reason: None given
-        expires: '2018-06-06T22:30:07.975Z'
+        reason: No available patch
+        expires: '2018-07-08T23:21:09.530Z'
     - dynamic-middleware > lodash:
         reason: None given
         expires: '2018-04-01T02:40:36.753Z'
@@ -161,6 +161,9 @@ ignore:
     - dynamic-middleware > lodash:
         reason: No available patch
         expires: '2018-06-06T22:26:54.992Z'
+    - dynamic-middleware > lodash:
+        reason: None given
+        expires: '2018-06-06T22:30:07.975Z'
   'npm:vue:20180222':
     - vue:
         reason: None given
