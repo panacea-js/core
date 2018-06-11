@@ -81,8 +81,7 @@ const resolveNestedFields = function (
   fields: EntityTypeFields
 ) : void {
   _(fields).forEach((field: EntityTypeField, fieldName) => {
-    // Defensive check for when _meta is not set.
-    const fieldCamel = !!field._meta && !!field._meta.camel ? field._meta.camel : _.camelCase(fieldName)
+    const fieldCamel = field._meta.camel
 
     if (field.type === 'object' && field.fields) {
       resolveNestedFields(types, `${currentType}_${fieldCamel}`, field.fields)

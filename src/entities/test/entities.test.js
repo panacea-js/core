@@ -116,7 +116,7 @@ test('When validating and EntityType without _errors property, it is added by th
 test('Saving an EntityType in the correct required format writes a yml file to disk', t => {
   t.plan(2)
 
-  const entityTypeData: EntityType = {
+  const entityTypeData: EntityTypePublic = {
     storage: 'db',
     fields: {
       id: {
@@ -124,12 +124,12 @@ test('Saving an EntityType in the correct required format writes a yml file to d
         label: 'ID'
       }
     },
-    plural: 'Happies',
+    plural: 'Mice',
     description: 'A successful created entity type'
   }
 
-  const saveResult = entities.saveEntityType('Happy', entityTypeData, 'sandbox')
+  const saveResult = entities.saveEntityType('Mouse', entityTypeData, 'sandbox')
 
   t.true(saveResult.success)
-  t.true(fs.existsSync(`${sandboxDir}/Happy.yml`))
+  t.true(fs.existsSync(`${sandboxDir}/Mouse.yml`))
 })

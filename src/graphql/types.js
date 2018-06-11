@@ -160,7 +160,7 @@ const formatTypesToOutput = function (type, definitions: GraphQLAllDefinitionsTy
         // and strings for GraphQL inputs.
         const refsType = (type === 'type') ? 'refsAsModels' : 'refsAsStrings'
 
-        // The nested fieldname is appended with an underscore to ALL parent fields and top level entityType.
+        // The nested field name is appended with an underscore to ALL parent fields and top level entityType.
         // For example: 'User_subField_anotherSubField_yetAnotherSubField'
         const nestedFieldName = `${entityType}_${fieldName}`
 
@@ -250,11 +250,10 @@ export const graphQLTypeDefinitions = function () {
     _(entityTypes).forEach((entityTypeData: EntityType, entityTypeName) => {
       const definedFields = processGraphQLfields(entityTypeData.fields)
 
-      // Defensive checks and assignments to metadata for when _meta is missing.
-      const entityTypePascal = !!entityTypeData._meta && !!entityTypeData._meta.pascal ? entityTypeData._meta.pascal : _.upperFirst(_.camelCase(entityTypeName))
-      const descriptionLowerFirst = !!entityTypeData._meta && !!entityTypeData._meta.descriptionLowerFirst ? entityTypeData._meta.descriptionLowerFirst : entityTypeData.description.charAt(0).toLowerCase() + entityTypeData.description.slice(1)
-      const camel = !!entityTypeData._meta && !!entityTypeData._meta.camel ? entityTypeData._meta.camel : _.camelCase(entityTypeName)
-      const pluralCamel = !!entityTypeData._meta && !!entityTypeData._meta.pluralCamel ? entityTypeData._meta.pluralCamel : _.camelCase(entityTypeData.plural)
+      const entityTypePascal = entityTypeData._meta.pascal
+      const descriptionLowerFirst = entityTypeData._meta.descriptionLowerFirst
+      const camel = entityTypeData._meta.camel
+      const pluralCamel = entityTypeData._meta.pluralCamel
 
       types[entityTypePascal] = {
         comment: `${entityTypeData.description} entity`,
@@ -262,7 +261,7 @@ export const graphQLTypeDefinitions = function () {
         fields: definedFields.refsAsModels
       }
 
-      inputs[entityTypePascal + 'Input'] = {
+      inputs[`${entityTypePascal}Input`] = {
         comment: `${entityTypeData.description} input type`,
         name: `${entityTypePascal}Input`,
         fields: definedFields.refsAsStrings
