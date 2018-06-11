@@ -116,7 +116,7 @@ test('When validating and EntityType without _errors property, it is added by th
 test('Saving an EntityType in the correct required format writes a yml file to disk', t => {
   t.plan(2)
 
-  const entityTypeData: EntityTypeNoMeta = {
+  const entityTypeData: EntityType = {
     storage: 'db',
     fields: {
       id: {

@@ -250,39 +250,45 @@ export const graphQLTypeDefinitions = function () {
     _(entityTypes).forEach((entityTypeData: EntityType, entityTypeName) => {
       const definedFields = processGraphQLfields(entityTypeData.fields)
 
-      types[entityTypeData._meta.pascal] = {
+      // Defensive checks and assignments to metadata for when _meta is missing.
+      const entityTypePascal = !!entityTypeData._meta && !!entityTypeData._meta.pascal ? entityTypeData._meta.pascal : _.upperFirst(_.camelCase(entityTypeName))
+      const descriptionLowerFirst = !!entityTypeData._meta && !!entityTypeData._meta.descriptionLowerFirst ? entityTypeData._meta.descriptionLowerFirst : entityTypeData.description.charAt(0).toLowerCase() + entityTypeData.description.slice(1)
+      const camel = !!entityTypeData._meta && !!entityTypeData._meta.camel ? entityTypeData._meta.camel : _.camelCase(entityTypeName)
+      const pluralCamel = !!entityTypeData._meta && !!entityTypeData._meta.pluralCamel ? entityTypeData._meta.pluralCamel : _.camelCase(entityTypeData.plural)
+
+      types[entityTypePascal] = {
         comment: `${entityTypeData.description} entity`,
-        name: entityTypeData._meta.pascal,
+        name: entityTypePascal,
         fields: definedFields.refsAsModels
       }
 
-      inputs[entityTypeData._meta.pascal + 'Input'] = {
+      inputs[entityTypePascal + 'Input'] = {
         comment: `${entityTypeData.description} input type`,
-        name: `${entityTypeData._meta.pascal}Input`,
+        name: `${entityTypePascal}Input`,
         fields: definedFields.refsAsStrings
       }
 
-      mutations[entityTypeData._meta.pascal] = {
+      mutations[entityTypePascal] = {
         create: {
-          comment: `Create ${entityTypeData._meta.descriptionLowerFirst}`,
-          name: `create${entityTypeData._meta.pascal}`,
+          comment: `Create ${descriptionLowerFirst}`,
+          name: `create${entityTypePascal}`,
           arguments: {
-            params: `${entityTypeData._meta.pascal}Input`
+            params: `${entityTypePascal}Input`
           },
-          returnType: `${entityTypeData._meta.pascal}!`
+          returnType: `${entityTypePascal}!`
         },
         update: {
-          comment: `Update ${entityTypeData._meta.descriptionLowerFirst}`,
-          name: `update${entityTypeData._meta.pascal}`,
+          comment: `Update ${descriptionLowerFirst}`,
+          name: `update${entityTypePascal}`,
           arguments: {
             id: `String!`,
-            params: `${entityTypeData._meta.pascal}Input`
+            params: `${entityTypePascal}Input`
           },
-          returnType: `${entityTypeData._meta.pascal}!`
+          returnType: `${entityTypePascal}!`
         },
         delete: {
-          comment: `Delete ${entityTypeData._meta.descriptionLowerFirst}`,
-          name: `delete${entityTypeData._meta.pascal}`,
+          comment: `Delete ${descriptionLowerFirst}`,
+          name: `delete${entityTypePascal}`,
           arguments: {
             id: `String!`
           },
@@ -290,22 +296,22 @@ export const graphQLTypeDefinitions = function () {
         }
       }
 
-      queries[entityTypeData._meta.pascal] = {
+      queries[entityTypePascal] = {
         all: {
           comment: `Get all ${entityTypeData.plural}`,
-          name: entityTypeData._meta.pluralCamel,
+          name: pluralCamel,
           arguments: {
             params: `QueryParams`
           },
-          returnType: `[${entityTypeData._meta.pascal}!]`
+          returnType: `[${entityTypePascal}!]`
         },
         single: {
-          comment: `Get a single ${entityTypeData._meta.pascal}`,
-          name: entityTypeData._meta.camel,
+          comment: `Get a single ${entityTypePascal}`,
+          name: camel,
           arguments: {
             id: `String!`
           },
-          returnType: `${entityTypeData._meta.pascal}`
+          returnType: `${entityTypePascal}`
         }
       }
     })

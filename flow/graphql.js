@@ -106,3 +106,12 @@ declare type GraphQLEnumsDefinition = {
  */
 declare type GraphQLRootDefinitions = GraphQLEntityTypeDefinitions | GraphQLQueryDefinitions | GraphQLMutationDefinitions
 declare type GraphQLAllDefinitionsTypes = GraphQLRootDefinitions | GraphQLTypeDefinitions | GraphQLInputDefinitions
+
+declare type SortOrder = 'ASC' | 'DESC';
+
+declare type QueryParams = {
+  limit: number,
+  sortBy: string,
+  sortDirection: SortOrder | null,
+  [string]: any
+}

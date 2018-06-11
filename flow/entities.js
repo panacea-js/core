@@ -1,39 +1,35 @@
 /**
  * Entities Types.
  */
-declare type EntityTypeFields = {
-  [string] : {
-    type: string,
-    label: string,
-    description?: string,
-    many?: boolean,
-    references?: string,
-    required?: boolean,
-    fields?: EntityTypeFields,
-    _meta?: {
-      pascal: string,
-      descriptionLowerFirst: string,
-      pluralCamel: string,
-      camel: string
-    }
-  }
+declare type Meta = {
+  pascal: string,
+  descriptionLowerFirst: string,
+  pluralCamel: string,
+  camel: string
 }
 
-declare type EntityTypeNoMeta = {
+declare type EntityTypeFields = {
+  [string]: EntityTypeField
+}
+
+declare type EntityTypeField = {
+  type: string,
+  label: string,
+  description?: string,
+  many?: boolean,
+  references?: string,
+  required?: boolean,
+  fields?: EntityTypeFields,
+  _meta?: Meta
+}
+
+declare type EntityType = {
   description: string,
   fields: EntityTypeFields,
   plural: string,
   storage: string,
   _errors?: Array<Error>,
-}
-
-declare type EntityType = EntityTypeNoMeta & {
-  _meta: {
-    pascal: string,
-    descriptionLowerFirst: string,
-    pluralCamel: string,
-    camel: string
-  }
+  _meta?: Meta
 }
 
 /**

@@ -1,3 +1,5 @@
+// @flow
+import { IResolvers } from 'graphql-tools/dist/Interfaces' // eslint-disable-line no-unused-vars
 const { _, entities, hooks, log, i18n, accepts } = Panacea.container
 
 /**
@@ -10,7 +12,7 @@ const { _, entities, hooks, log, i18n, accepts } = Panacea.container
  * @returns {String|Boolean} If an available language match is found then a
  *   string is returned, otherwise false
  */
-const getClientLanguage = function (req) {
+const getClientLanguage = function (req: express$Request) {
   const availableLanguages = Object.keys(i18n.messages)
 
   let cookieLanguage = ''
@@ -39,7 +41,11 @@ const getClientLanguage = function (req) {
  * @param {*} parent The parent resolver.
  * @param {object} args The GraphQL query arguments.
  */
-const modelQuery = function (model, parent, args) {
+const modelQuery = function (
+  model: Mongoose$Collection,
+  parent: {},
+  args: { params: QueryParams }
+) : Mongoose$Query<any, any> {
   const params = args.params || {
     limit: 100,
     sortBy: null,
@@ -69,24 +75,31 @@ const modelQuery = function (model, parent, args) {
  * @param {object} fields The list of fields defined at the current level of
  *   recursion.
  */
-const resolveNestedFields = function (types, currentType, fields) {
-  _(fields).forEach((field, fieldName) => {
-    if (field.type === 'object') {
-      resolveNestedFields(types, `${currentType}_${field._meta.camel}`, field.fields)
+const resolveNestedFields = function (
+  types: {},
+  currentType: string,
+  fields: EntityTypeFields
+) : void {
+  _(fields).forEach((field: EntityTypeField, fieldName) => {
+    // Defensive check for when _meta is not set.
+    const fieldCamel = !!field._meta && !!field._meta.camel ? field._meta.camel : _.camelCase(fieldName)
+
+    if (field.type === 'object' && field.fields) {
+      resolveNestedFields(types, `${currentType}_${fieldCamel}`, field.fields)
     }
 
     if (field.type === 'reference') {
       types[currentType] = {}
 
-      types[currentType][field._meta.camel] = function (sourceDocument, args, { dbModels }) {
+      types[currentType][fieldCamel] = function (sourceDocument, args, { dbModels }) {
         if (field.many) {
           let targetEntities = []
-          sourceDocument[field._meta.camel].map(targetId => {
+          sourceDocument[fieldCamel].map(targetId => {
             targetEntities.push(dbModels[field.references].findById(targetId))
           })
           return targetEntities
         } else {
-          return dbModels[field.references].findById(sourceDocument[field._meta.camel])
+          return dbModels[field.references].findById(sourceDocument[fieldCamel])
         }
       }
     }
@@ -102,7 +115,11 @@ const resolveNestedFields = function (types, currentType, fields) {
  * @param {*} mutations A mutable object of mutation resolver definitions.
  */
 const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
-  queries['ENTITY_TYPE'] = async (parent, { name }, { dbModels }) => {
+  queries['ENTITY_TYPE'] = async (
+    parent: {},
+    { name } : { name : String },
+    { dbModels } : { dbModels: {} }
+  ) => {
     if (entityTypes[name]) {
       const entityType = entityTypes[name]
       // Don't expose the native file path.
@@ -132,7 +149,7 @@ const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
     return allEntities
   }
 
-  queries['fieldTypes'] = (parent, args, { req }) => {
+  queries['fieldTypes'] = (parent: {}, args: {}, { req } : { req: express$Request }) => {
     const language = getClientLanguage(req)
 
     return _(entities.fieldTypes).reduce((result, attributes, type) => {
@@ -145,7 +162,7 @@ const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
     }, [])
   }
 
-  mutations['createENTITY_TYPE'] = async (parent, { name, data, locationKey }) => {
+  mutations['createENTITY_TYPE'] = async (parent: any, { name, data, locationKey } : { name: string, data: string, locationKey: string}) => {
     let response
 
     const saveResult = entities.saveEntityType(name, JSON.parse(data), locationKey)
@@ -163,7 +180,7 @@ const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
   }
 }
 
-export const graphQLResolvers = function () {
+export const graphQLResolvers = function () : IResolvers {
   const entityTypes = entities.getData()
 
   const queries = {}

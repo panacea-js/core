@@ -2,4 +2,3 @@
 declare var Panacea: {
   container: Object
 }
-
