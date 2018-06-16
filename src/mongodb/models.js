@@ -40,16 +40,16 @@ const compileNestedObjects = function (field) {
     if (field.type === 'object') {
       // Objects require recursion to resolve each nested field which themselves
       // could be objects.
+      let nestedFieldDefinition = {}
       const nestedFields = _(field.fields).map(nestedField => {
-        let nestedFieldDefinition = {}
         nestedFieldDefinition[nestedField._meta.camel] = compileNestedObjects(nestedField)
         return nestedFieldDefinition
-      }).value()
+      }).value()[0]
 
       // Apply the resolved nested fields to the field definition wrapping in
       // an array if the field allows many values.
       fieldDefinition = {
-        type: field.many ? [nestedFields] : nestedFields,
+        type: field.many && !field.fields ? [nestedFields] : nestedFields,
         index: !!field.index
       }
     } else {
