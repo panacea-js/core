@@ -243,7 +243,7 @@ Bootstrap.prototype.stage7 = function () {
             }
           })
         )
-      })
+      }).catch(error => console.error(error))
 
       const timeToReplace = Date.now() - startTime
 
