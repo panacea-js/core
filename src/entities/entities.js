@@ -158,6 +158,7 @@ Entities.prototype.getData = function () {
   _(this.entityTypes).forEach((entityTypeData, entityTypeName) => {
     this.addEntityTypeMeta(entityTypeData, entityTypeName)
     this.validateEntityType(entityTypeData, entityTypeName)
+    this.checkObjectsHaveFields(entityTypeData.fields, entityTypeName)
     entityTypeData.fields = this.addFieldsMeta(entityTypeData.fields)
   })
 
@@ -246,6 +247,18 @@ Entities.prototype.removeFalsyFields = function (fields: EntityTypeFields) {
   })
 
   return fields
+}
+
+Entities.prototype.checkObjectsHaveFields = (fields: EntityTypeFields, entityTypeName) => {
+  _(fields).forEach((fieldData, fieldId) => {
+    if (fieldData.type === 'object' && !fieldData.fields) {
+      console.warn(`Not loading ${fieldId} field on ${entityTypeName} because it doesn't have any nested fields.`)
+      delete fields[fieldId]
+    }
+    if (fieldData.fields) {
+      Entities.prototype.checkObjectsHaveFields(fieldData.fields, entityTypeName)
+    }
+  })
 }
 
 const entities = new Entities()
