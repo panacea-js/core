@@ -249,7 +249,7 @@ Entities.prototype.removeFalsyFields = function (fields: EntityTypeFields) {
   return fields
 }
 
-Entities.prototype.checkObjectsHaveFields = (fields: EntityTypeFields, entityTypeName) => {
+Entities.prototype.checkObjectsHaveFields = (fields: EntityTypeFields, entityTypeName: string) => {
   _(fields).forEach((fieldData, fieldId) => {
     if (fieldData.type === 'object' && !fieldData.fields) {
       console.warn(`Not loading ${fieldId} field on ${entityTypeName} because it doesn't have any nested fields.`)
