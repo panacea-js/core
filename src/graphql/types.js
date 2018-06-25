@@ -403,14 +403,14 @@ export const graphQLTypeDefinitions = function () {
         },
         sortDirection: {
           comment: 'Direction of sort',
-          value: 'sortDirection: SORT_DIRECTIONS = ASC'
+          value: 'sortDirection: _sortDirections = ASC'
         }
       }
     }
 
-    enums.SORT_DIRECTIONS = {
+    enums._sortDirections = {
       comment: 'Ascending/Descending sort order values',
-      name: 'SORT_DIRECTIONS',
+      name: '_sortDirections',
       items: [
         { comment: 'Ascending', value: 'ASC' },
         { comment: 'Descending', value: 'DESC' }
