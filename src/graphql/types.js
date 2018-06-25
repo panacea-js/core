@@ -1,29 +1,37 @@
 // @flow
+const { _, entities, hooks } = Panacea.container
+
 /**
  * Converts system field definitions to GraphQL equivalents.
  *
  * @param type String
- * @returns object
+ * @returns String
  */
-const convertSystemFieldToGraphQL = function (type) {
-  const map = {
-    id: 'String',
-    string: 'String',
-    password: 'String',
-    text: 'String',
-    float: 'Float',
-    int: 'Int',
-    boolean: 'Boolean',
-    reference: 'String',
-    // objects are for nested data.
-    object: '__NestedObject'
+const convertPanaceaFieldToGraphQL = function (type : string) : string {
+  if (typeof type !== 'string' || type === '') {
+    throw TypeError('No type specified in GraphQL field types conversion mapping')
   }
 
-  if (!map[type]) {
+  const map = new Map([
+    ['id', 'String'],
+    ['string', 'String'],
+    ['password', 'String'],
+    ['text', 'String'],
+    ['float', 'Float'],
+    ['int', 'Int'],
+    ['boolean', 'Boolean'],
+    ['reference', 'String'],
+    // objects are for nested data.
+    ['object', '__NestedObject']
+  ])
+
+  hooks.invoke('core.graphql.fieldsMap', map)
+
+  if (!map.has(type)) {
     throw TypeError(type + ' not found in GraphQL type conversion mapping')
   }
 
-  return map[type]
+  return map.get(type) || ''
 }
 
 /**
@@ -39,8 +47,6 @@ const convertSystemFieldToGraphQL = function (type) {
  * @returns {{refsAsStrings: object, refsAsModels: object}}
  */
 const processGraphQLfields = function (fields: EntityTypeFields) {
-  const { _ } = Panacea.container
-
   let output = {
     refsAsStrings: {},
     refsAsModels: {}
@@ -53,7 +59,7 @@ const processGraphQLfields = function (fields: EntityTypeFields) {
       if (field.type === 'reference') {
         fieldType = (refType === 'refsAsStrings') ? 'String' : field.references
       } else {
-        fieldType = convertSystemFieldToGraphQL(field.type)
+        fieldType = convertPanaceaFieldToGraphQL(field.type)
       }
 
       field.required && (fieldType = `${fieldType}!`)
@@ -92,8 +98,6 @@ const processGraphQLfields = function (fields: EntityTypeFields) {
  * @returns String
  */
 const formatRootTypeToOutput = function (rootType: string, definitions: GraphQLRootDefinitions): string {
-  const { _ } = Panacea.container
-
   let output = []
 
   output.push(`type ${rootType} {\n`)
@@ -137,8 +141,6 @@ const formatRootTypeToOutput = function (rootType: string, definitions: GraphQLR
  * @returns String
  */
 const formatTypesToOutput = function (type, definitions: GraphQLAllDefinitionsTypes): string {
-  const { _ } = Panacea.container
-
   let output = []
 
   // Nested types (objects in fields) are deferred to be concatenated to the final output.
@@ -205,8 +207,6 @@ const formatTypesToOutput = function (type, definitions: GraphQLAllDefinitionsTy
  * @returns String
  */
 const formatEnumsToOutput = function (enums) {
-  const { _ } = Panacea.container
-
   let output = []
 
   _(enums).forEach(function (definition) {
@@ -233,8 +233,6 @@ const formatEnumsToOutput = function (enums) {
  * @returns Promise
  */
 export const graphQLTypeDefinitions = function () {
-  const { entities, _, hooks } = Panacea.container
-
   const definitions: Promise<string> = new Promise(function (resolve, reject) {
     const output = []
     const types: GraphQLTypeDefinitions = {}

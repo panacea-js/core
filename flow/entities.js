@@ -24,6 +24,10 @@ declare type EntityTypeField = {
   _meta: Meta
 }
 
+declare type EntityTypes = {
+  [string]: EntityType
+}
+
 declare type EntityType = {
   description: string,
   fields: EntityTypeFields,

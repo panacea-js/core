@@ -1,4 +1,5 @@
-const { _, mongoose, dbConnection, entities } = Panacea.container
+// @flow
+const { _, mongoose, dbConnection, entities, hooks } = Panacea.container
 
 /**
  * Converts system field definitions to MongoDB equivalents.
@@ -6,24 +7,30 @@ const { _, mongoose, dbConnection, entities } = Panacea.container
  * @param type String
  * @returns object
  */
-const convertSystemFieldToMongo = function (type) {
-  const map = {
-    string: String,
-    password: String,
-    text: String,
-    float: Number,
-    int: Number,
-    boolean: Number,
-    reference: String,
-    // objects are for nested data.
-    object: Object
+const convertPanaceaFieldToMongo = function (type: string) : string {
+  if (typeof type !== 'string' || type === '') {
+    throw TypeError('No type specified in mongo field types conversion mapping')
   }
 
-  if (!map[type]) {
+  const map = new Map([
+    ['string', 'String'],
+    ['password', 'String'],
+    ['text', 'String'],
+    ['float', 'Number'],
+    ['int', 'Number'],
+    ['boolean', 'Number'],
+    ['reference', 'String'],
+    // objects are for nested data.
+    ['object', 'Object']
+  ])
+
+  hooks.invoke('core.mongo.fieldsMap', map)
+
+  if (!map.has(type)) {
     throw new TypeError(type + ' not found in MongoDB type conversion mapping')
   }
 
-  return map[type]
+  return map.get(type) || ''
 }
 
 /**
@@ -32,12 +39,12 @@ const convertSystemFieldToMongo = function (type) {
  *
  * @param {*} field
  */
-const compileNestedObjects = function (field) {
+const compileNestedObjects = function (field: EntityTypeField) {
   let fieldDefinition = {}
 
   // Skip native _id mapping as this is internal to MongoDB.
   if (field.type !== 'id') {
-    if (field.type === 'object') {
+    if (field.type === 'object' && field.fields) {
       // Objects require recursion to resolve each nested field which themselves
       // could be objects.
       let nestedFieldDefinition = {}
@@ -56,7 +63,7 @@ const compileNestedObjects = function (field) {
       // Non nested objects only need their field type resolving and wrapping in
       // an array if the field allows many values.
       fieldDefinition = {
-        type: field.many ? [convertSystemFieldToMongo(field.type)] : convertSystemFieldToMongo(field.type),
+        type: field.many ? [convertPanaceaFieldToMongo(field.type)] : convertPanaceaFieldToMongo(field.type),
         index: !!field.index
       }
     }
@@ -69,21 +76,21 @@ const compileNestedObjects = function (field) {
  * Loads entity types from yml files to define MongoDB models.
  * @returns {object}
  */
-export const dbModels = function () {
-  const db = dbConnection
+export const dbModels = function () : {[string] : Mongoose$Schema<Mongoose$Document>} {
+  const db : Mongoose$Connection = dbConnection
 
   const models = {}
 
-  const entityTypes = entities.getData()
+  const entityTypes : EntityTypes = entities.getData()
 
-  _(entityTypes).forEach((entityTypeData, entityTypeName) => {
+  _(entityTypes).forEach((entityTypeData: EntityType, entityTypeName: string) => {
     // Only create a mongoose model if the entity type is for the database.
     if (entityTypeData.storage !== 'db') return
 
-    const definedFields = {}
+    const definedFields : EntityTypeFields = {}
 
-    if (entityTypeData.hasOwnProperty('fields')) {
-      _(entityTypeData.fields).forEach(field => {
+    if (entityTypeData.fields) {
+      _(entityTypeData.fields).forEach((field) : EntityTypeField | void => {
         // Skip native _id mapping as this is internal to MongoDB.
         if (field.type !== 'id') {
           definedFields[field._meta.camel] = compileNestedObjects(field)
