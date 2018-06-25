@@ -96,7 +96,7 @@ const formatRootTypeToOutput = function (rootType: string, definitions: GraphQLR
 
   let output = []
 
-  output.push(`type ${rootType} {`)
+  output.push(`type ${rootType} {\n`)
 
   _(definitions).forEach(function (entityTypeDefinitions: GraphQLEntityTypeDefinitions) {
     _(entityTypeDefinitions).forEach(function (definition: GraphQLEntityTypeDefinition) {
@@ -108,15 +108,14 @@ const formatRootTypeToOutput = function (rootType: string, definitions: GraphQLR
 
       const argsOutput = _(args).isEmpty() ? '' : '(' + args.join(', ') + ')'
 
-      output.push(`# ${definition.comment || ''}`)
-      output.push(`  ${definition.name}${argsOutput}: ${definition.returnType}`)
-      output.push('')
+      output.push(`  # ${definition.comment || 'No description'}\n`)
+      output.push(`  ${definition.name}${argsOutput}: ${definition.returnType}\n`)
     })
   })
 
-  output.push('}')
+  output.push('}\n')
 
-  return output.join('\n')
+  return output.join('')
 }
 
 /**
@@ -146,9 +145,9 @@ const formatTypesToOutput = function (type, definitions: GraphQLAllDefinitionsTy
   let nestedTypes = []
 
   _(definitions).forEach(function (data: GraphQLEntityTypeDefinition, entityType) {
-    output.push(`# ${data.comment || ''}`)
+    output.push(`\n# ${data.comment || 'No description'}\n`)
 
-    output.push(`${type} ${data.name} {`)
+    output.push(`${type} ${data.name} {\n`)
 
     _(data.fields).forEach((field, fieldName) => {
       if (field.hasOwnProperty('fields')) {
@@ -167,7 +166,7 @@ const formatTypesToOutput = function (type, definitions: GraphQLAllDefinitionsTy
         // Mock an object to pass back through this function.
         const nestedDefinition = {}
         nestedDefinition[nestedFieldName] = {
-          comment: field.comment,
+          comment: `Nested object on ${entityType}. ${field.comment}`,
           name: nestedFieldName,
           fields: field.fields[refsType]
         }
@@ -181,14 +180,14 @@ const formatTypesToOutput = function (type, definitions: GraphQLAllDefinitionsTy
         field.value = field.value.replace('__NestedObject', nestedFieldName)
       }
 
-      output.push(`  # ${field.comment}`)
-      output.push(`  ${field.value}`)
+      output.push(`  # ${field.comment || 'No description'}\n`)
+      output.push(`  ${field.value}\n`)
+      output.push('\n')
     })
-
-    output.push('}')
+    output.push(`}\n`)
   })
 
-  return output.join('\n') + nestedTypes.join('\n')
+  return output.join('') + nestedTypes.join('')
 }
 
 /**
@@ -211,19 +210,19 @@ const formatEnumsToOutput = function (enums) {
   let output = []
 
   _(enums).forEach(function (definition) {
-    output.push(`# ${definition.comment}`)
+    output.push(`\n# ${definition.comment || 'No description'}\n`)
 
-    output.push(`enum ${definition.name} {`)
+    output.push(`enum ${definition.name} {\n`)
 
     definition.items.map(item => {
-      output.push(`  # ${item.comment}`)
-      output.push(`  ${item.value}`)
+      output.push(`  # ${item.comment || 'No description'}\n`)
+      output.push(`  ${item.value}\n\n`)
     })
 
-    output.push('}')
+    output.push(`}`)
   })
 
-  return output.join('\n')
+  return output.join('')
 }
 
 /**
@@ -251,25 +250,24 @@ export const graphQLTypeDefinitions = function () {
       const definedFields = processGraphQLfields(entityTypeData.fields)
 
       const entityTypePascal = entityTypeData._meta.pascal
-      const descriptionLowerFirst = entityTypeData._meta.descriptionLowerFirst
       const camel = entityTypeData._meta.camel
       const pluralCamel = entityTypeData._meta.pluralCamel
 
       types[entityTypePascal] = {
-        comment: `${entityTypeData.description} entity`,
+        comment: `${entityTypePascal} entity type. ${entityTypeData.description}`,
         name: entityTypePascal,
         fields: definedFields.refsAsModels
       }
 
       inputs[`${entityTypePascal}Input`] = {
-        comment: `${entityTypeData.description} input type`,
+        comment: `Input type for ${entityTypePascal}`,
         name: `${entityTypePascal}Input`,
         fields: definedFields.refsAsStrings
       }
 
       mutations[entityTypePascal] = {
         create: {
-          comment: `Create ${descriptionLowerFirst}`,
+          comment: `Create ${entityTypePascal} entity`,
           name: `create${entityTypePascal}`,
           arguments: {
             params: `${entityTypePascal}Input`
@@ -277,7 +275,7 @@ export const graphQLTypeDefinitions = function () {
           returnType: `${entityTypePascal}!`
         },
         update: {
-          comment: `Update ${descriptionLowerFirst}`,
+          comment: `Update ${entityTypePascal} entity`,
           name: `update${entityTypePascal}`,
           arguments: {
             id: `String!`,
@@ -286,7 +284,7 @@ export const graphQLTypeDefinitions = function () {
           returnType: `${entityTypePascal}!`
         },
         delete: {
-          comment: `Delete ${descriptionLowerFirst}`,
+          comment: `Delete ${entityTypePascal} entity`,
           name: `delete${entityTypePascal}`,
           arguments: {
             id: `String!`
@@ -320,7 +318,7 @@ export const graphQLTypeDefinitions = function () {
     // Panacea entity schemas.
 
     types['_entityType'] = {
-      comment: `The panacea entity type`,
+      comment: 'A panacea entity type',
       name: '_entityType',
       fields: {
         name: {
@@ -335,7 +333,7 @@ export const graphQLTypeDefinitions = function () {
     }
 
     types['_fieldType'] = {
-      comment: `The panacea field type`,
+      comment: 'A panacea field type',
       name: '_fieldType',
       fields: {
         type: {
@@ -437,8 +435,11 @@ export const graphQLTypeDefinitions = function () {
     hooks.invoke('core.graphql.definitions.enums', enums)
     output.push(formatEnumsToOutput(enums))
 
-    // log.info(output.join('\n\n'))
-    resolve(output.join('\n\n'))
+    const tidyDefinitionEndings = function (input) {
+      return input.replace(/\n\n\}/g, '\n}')
+    }
+
+    resolve(tidyDefinitionEndings(output.join('\n')))
   })
 
   return definitions
