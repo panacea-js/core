@@ -319,9 +319,9 @@ export const graphQLTypeDefinitions = function () {
 
     // Panacea entity schemas.
 
-    types['ENTITY_TYPE'] = {
+    types['_entityType'] = {
       comment: `The panacea entity type`,
-      name: 'ENTITY_TYPE',
+      name: '_entityType',
       fields: {
         name: {
           comment: 'The entity type name',
@@ -334,9 +334,9 @@ export const graphQLTypeDefinitions = function () {
       }
     }
 
-    types['fieldType'] = {
+    types['_fieldType'] = {
       comment: `The panacea field type`,
-      name: 'fieldType',
+      name: '_fieldType',
       fields: {
         type: {
           comment: 'The field type',
@@ -353,39 +353,39 @@ export const graphQLTypeDefinitions = function () {
       }
     }
 
-    queries['ENTITY_TYPES'] = {
+    queries['_entityTypes'] = {
       all: {
-        comment: 'Get all entity schemas',
-        name: 'ENTITY_TYPES',
-        returnType: '[ENTITY_TYPE]'
+        comment: 'Get all panacea entity schemas',
+        name: '_entityTypes',
+        returnType: '[_entityType]'
       },
       single: {
-        comment: 'Get a single schema',
-        name: 'ENTITY_TYPE',
+        comment: 'Get a single panacea entity schema',
+        name: '_entityType',
         arguments: {
           name: 'String!'
         },
-        returnType: 'ENTITY_TYPE'
+        returnType: '_entityType'
       }
     }
 
-    queries['fieldTypes'] = {
+    queries['_fieldTypes'] = {
       all: {
-        comment: 'Get all entity field types',
-        name: 'fieldTypes',
-        returnType: '[fieldType]'
+        comment: 'Get all panacea field types',
+        name: '_fieldTypes',
+        returnType: '[_fieldType]'
       }
     }
 
-    mutations['ENTITY_TYPE'] = {
+    mutations['_entityType'] = {
       create: {
         comment: 'Create panacea entity',
-        name: 'createENTITY_TYPE',
+        name: '_createEntityType',
         arguments: {
           name: 'String!',
           data: 'String!'
         },
-        returnType: 'ENTITY_TYPE'
+        returnType: '_entityType'
       }
     }
 

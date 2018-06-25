@@ -114,7 +114,7 @@ const resolveNestedFields = function (
  * @param {*} mutations A mutable object of mutation resolver definitions.
  */
 const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
-  queries['ENTITY_TYPE'] = async (
+  queries['_entityType'] = async (
     parent: {},
     { name } : { name : String },
     { dbModels } : { dbModels: {} }
@@ -132,7 +132,7 @@ const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
     }
   }
 
-  queries['ENTITY_TYPES'] = () => {
+  queries['_entityTypes'] = () => {
     const allEntities = []
 
     _(entityTypes).forEach((entityType, entityTypeName) => {
@@ -148,7 +148,7 @@ const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
     return allEntities
   }
 
-  queries['fieldTypes'] = (parent: {}, args: {}, { req } : { req: express$Request }) => {
+  queries['_fieldTypes'] = (parent: {}, args: {}, { req } : { req: express$Request }) => {
     const language = getClientLanguage(req)
 
     return _(entities.fieldTypes).reduce((result, attributes, type) => {
@@ -161,7 +161,7 @@ const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
     }, [])
   }
 
-  mutations['createENTITY_TYPE'] = async (parent: any, { name, data, locationKey } : { name: string, data: string, locationKey: string}) => {
+  mutations['_createEntityType'] = async (parent: any, { name, data, locationKey } : { name: string, data: string, locationKey: string}) => {
     let response
 
     const saveResult = entities.saveEntityType(name, JSON.parse(data), locationKey)
