@@ -81,7 +81,7 @@ Hooks.prototype.getAvailableHooksOutput = function (nested = true) {
  *   A list of directories to load application level hooks which register listeners via the standard 'on' method.
  */
 Hooks.prototype.loadFromDirectories = function (paths) {
-  const { path, fs, requireDir, _, log, chalk } = Panacea.container
+  const { path, fs, log, chalk, glob } = Panacea.container
 
   let result = ''
 
@@ -94,23 +94,24 @@ Hooks.prototype.loadFromDirectories = function (paths) {
       return
     }
 
-    const moduleHookFiles = requireDir(resolvedPath)
+    const hookFiles = glob.sync(path.resolve(hooksDirectory) + '/**/*.js')
 
-    _(moduleHookFiles).forEach(function (exports, file) {
-      if (!exports.hasOwnProperty('default')) {
-        result = `Hook file ${hooksDirectory}/${file}.js should export an object. See the Panacea hooks documentation.`
+    hookFiles.forEach(filePath => {
+      const file = require(filePath)
+      if (!file.hasOwnProperty('default')) {
+        result = `Hook file ${filePath} should export an object. See the Panacea hooks documentation.`
         log.warn(result)
         return
       }
-      if (!exports.default.hasOwnProperty('register')) {
-        result = `Could not execute register() in hook file: ${file}.`
+      if (!file.default.hasOwnProperty('register')) {
+        result = `Could not execute register() in hook file: ${filePath}.`
         log.warn(result)
         return
       }
 
-      exports.default.register(hooks)
+      file.default.register(hooks)
 
-      log.info(chalk.green(`Registered hooks in ${resolvedPath}/${file}.js`))
+      log.info(chalk.green(`Registered hooks in ${filePath}`))
     })
   })
 

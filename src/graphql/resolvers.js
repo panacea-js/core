@@ -1,6 +1,6 @@
 // @flow
 import { IResolvers } from 'graphql-tools/dist/Interfaces' // eslint-disable-line no-unused-vars
-const { _, entities, hooks, log, i18n, accepts } = Panacea.container
+const { entities, hooks, i18n, accepts } = Panacea.container
 
 /**
  * Get the client's preferred language based on the request's
@@ -61,189 +61,15 @@ const modelQuery = function (
   return model.find().limit(params.limit).sort(sortOptions)
 }
 
-/**
- * Resolves nested objects as separates types using an underscore to delineate
- * the nesting levels.
- *
- * These nested types are required as GraphQL does not natively allow types
- * beyond an array of scalars or defined types.
- *
- * @param {object} types A mutable object of the base types. This is appended to
- *   as this function recurses.
- * @param {string} currentType The current type being used at the current level
- *   of recursion.
- * @param {object} fields The list of fields defined at the current level of
- *   recursion.
- */
-const resolveNestedFields = function (
-  types: {},
-  currentType: string,
-  fields: EntityTypeFields
-) : void {
-  _(fields).forEach((field: EntityTypeField, fieldName) => {
-    const fieldCamel = field._meta.camel
-
-    if (field.type === 'object' && field.fields) {
-      resolveNestedFields(types, `${currentType}_${fieldCamel}`, field.fields)
-    }
-
-    if (field.type === 'reference') {
-      types[currentType] = {}
-
-      types[currentType][fieldCamel] = function (sourceDocument, args, { dbModels }) {
-        if (field.many) {
-          let targetEntities = []
-          sourceDocument[fieldCamel].map(targetId => {
-            targetEntities.push(dbModels[field.references].findById(targetId))
-          })
-          return targetEntities
-        } else {
-          return dbModels[field.references].findById(sourceDocument[fieldCamel])
-        }
-      }
-    }
-  })
-}
-
-/**
- * Defines resolvers for introspection into the defined entity types and field
- * types.
- *
- * @param {*} entityTypes The entity type definitions.
- * @param {*} queries A mutable object of query resolver definitions.
- * @param {*} mutations A mutable object of mutation resolver definitions.
- */
-const panaceaEntityTypeResolvers = function (entityTypes, queries, mutations) {
-  queries['_entityType'] = async (
-    parent: {},
-    { name } : { name : String },
-    { dbModels } : { dbModels: {} }
-  ) => {
-    if (entityTypes[name]) {
-      const entityType = entityTypes[name]
-      // Don't expose the native file path.
-      delete entityType._filePath
-      return {
-        name,
-        data: JSON.stringify(entityType)
-      }
-    } else {
-      return null
-    }
-  }
-
-  queries['_entityTypes'] = () => {
-    const allEntities = []
-
-    _(entityTypes).forEach((entityType, entityTypeName) => {
-      const entityTypeData = entityTypes[entityTypeName]
-      // Don't expose the native file path.
-      delete entityTypeData._filePath
-      allEntities.push({
-        name: entityTypeName,
-        data: JSON.stringify(entityTypeData)
-      })
-    })
-
-    return allEntities
-  }
-
-  queries['_fieldTypes'] = (parent: {}, args: {}, { req } : { req: express$Request }) => {
-    const language = getClientLanguage(req)
-
-    return _(entities.fieldTypes).reduce((result, attributes, type) => {
-      result.push({
-        type,
-        label: i18n.t(attributes.label, language),
-        description: i18n.t(attributes.description, language)
-      })
-      return result
-    }, [])
-  }
-
-  mutations['_createEntityType'] = async (parent: any, { name, data, locationKey } : { name: string, data: string, locationKey: string}) => {
-    let response
-
-    const saveResult = entities.saveEntityType(name, JSON.parse(data), locationKey)
-
-    if (saveResult.success) {
-      response = {
-        name,
-        data
-      }
-    } else {
-      response = new Error(saveResult.errorMessage)
-    }
-
-    return response
-  }
-}
-
 export const graphQLResolvers = function () : IResolvers {
   const entityTypes = entities.getData()
 
-  const queries = {}
-  const mutations = {}
-
-  const types = {}
-
-  _(entityTypes).forEach(entityData => {
-    types[entityData._meta.pascal] = {}
-
-    // Get single entity.
-    queries[entityData._meta.camel] = async (parent, args, { dbModels }) => {
-      return dbModels[entityData._meta.pascal].findById(args.id)
-    }
-
-    // Get many entities.
-    queries[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => modelQuery(dbModels[entityData._meta.pascal], parent, args)
-
-    // Create entity.
-    mutations[`create${entityData._meta.pascal}`] = async (parent, args, { dbModels }) => {
-      const EntityModel = dbModels[entityData._meta.pascal]
-      const entity = await new EntityModel(args.params).save()
-      entity._id = entity._id.toString()
-      return entity
-    }
-
-    // Delete entity.
-    mutations[`delete${entityData._meta.pascal}`] = (parent, args, { dbModels }) => {
-      return dbModels[entityData._meta.pascal].findById(args.id).exec(function (err, entity) {
-        if (err) {
-          throw new Error(err)
-        }
-
-        if (entity === null) {
-          return null
-        }
-        return entity.remove().then(() => {
-          return true
-        }).catch(function (error) {
-          log.error(`Could not delete ${entityData._meta.pascal} with ID ${args.id}. Error message: ${error}`)
-          return false
-        })
-      })
-    }
-
-    // @todo
-    // Update entity
-
-    // Resolve top-level and nested object references.
-    resolveNestedFields(types, entityData._meta.pascal, entityData.fields)
-  })
-
-  panaceaEntityTypeResolvers(entityTypes, queries, mutations)
-
   const resolvers = {
-    Query: queries,
-    Mutation: mutations
+    Query: {},
+    Mutation: {}
   }
 
-  for (const type in types) {
-    resolvers[type] = types[type]
-  }
-
-  hooks.invoke('core.graphql.resolvers', resolvers)
+  hooks.invoke('core.graphql.resolvers', { resolvers, entityTypes, modelQuery, getClientLanguage })
 
   return resolvers
 }

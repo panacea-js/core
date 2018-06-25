@@ -1,5 +1,5 @@
 // @flow
-const { _, entities, hooks } = Panacea.container
+const { _, hooks, entities } = Panacea.container
 
 /**
  * Converts system field definitions to GraphQL equivalents.
@@ -46,7 +46,7 @@ const convertPanaceaFieldToGraphQL = function (type : string) : string {
  *
  * @returns {{refsAsStrings: object, refsAsModels: object}}
  */
-const processGraphQLfields = function (fields: EntityTypeFields) {
+const translateEntityTypeFields = function (fields: EntityTypeFields) {
   let output = {
     refsAsStrings: {},
     refsAsModels: {}
@@ -73,7 +73,7 @@ const processGraphQLfields = function (fields: EntityTypeFields) {
       if (field.type === 'object' && field.hasOwnProperty('fields')) {
         // Recurse this function to append output to the fields key.
         // This allows for unlimited nesting of defined fields.
-        output[refType][field._meta.camel].fields = processGraphQLfields(field.fields)
+        output[refType][field._meta.camel].fields = translateEntityTypeFields(field.fields)
       }
     })
   })
@@ -233,6 +233,8 @@ const formatEnumsToOutput = function (enums) {
  * @returns Promise
  */
 export const graphQLTypeDefinitions = function () {
+  const entityTypes = entities.getData()
+
   const definitions: Promise<string> = new Promise(function (resolve, reject) {
     const output = []
     const types: GraphQLTypeDefinitions = {}
@@ -241,196 +243,24 @@ export const graphQLTypeDefinitions = function () {
     const inputs: GraphQLInputDefinitions = {}
     const enums: GraphQLEnumsDefinitions = {}
 
-    const entityTypes = entities.getData()
-
-    // Get entity types, inputs, queries and mutations.
-    _(entityTypes).forEach((entityTypeData: EntityType, entityTypeName) => {
-      const definedFields = processGraphQLfields(entityTypeData.fields)
-
-      const entityTypePascal = entityTypeData._meta.pascal
-      const camel = entityTypeData._meta.camel
-      const pluralCamel = entityTypeData._meta.pluralCamel
-
-      types[entityTypePascal] = {
-        comment: `${entityTypePascal} entity type. ${entityTypeData.description}`,
-        name: entityTypePascal,
-        fields: definedFields.refsAsModels
-      }
-
-      inputs[`${entityTypePascal}Input`] = {
-        comment: `Input type for ${entityTypePascal}`,
-        name: `${entityTypePascal}Input`,
-        fields: definedFields.refsAsStrings
-      }
-
-      mutations[entityTypePascal] = {
-        create: {
-          comment: `Create ${entityTypePascal} entity`,
-          name: `create${entityTypePascal}`,
-          arguments: {
-            params: `${entityTypePascal}Input`
-          },
-          returnType: `${entityTypePascal}!`
-        },
-        update: {
-          comment: `Update ${entityTypePascal} entity`,
-          name: `update${entityTypePascal}`,
-          arguments: {
-            id: `String!`,
-            params: `${entityTypePascal}Input`
-          },
-          returnType: `${entityTypePascal}!`
-        },
-        delete: {
-          comment: `Delete ${entityTypePascal} entity`,
-          name: `delete${entityTypePascal}`,
-          arguments: {
-            id: `String!`
-          },
-          returnType: 'Boolean'
-        }
-      }
-
-      queries[entityTypePascal] = {
-        all: {
-          comment: `Get all ${entityTypeData.plural}`,
-          name: pluralCamel,
-          arguments: {
-            params: `QueryParams`
-          },
-          returnType: `[${entityTypePascal}!]`
-        },
-        single: {
-          comment: `Get a single ${entityTypePascal}`,
-          name: camel,
-          arguments: {
-            id: `String!`
-          },
-          returnType: `${entityTypePascal}`
-        }
-      }
-    })
-
-    // Non-entity related inputs
-
-    // Panacea entity schemas.
-
-    types['_entityType'] = {
-      comment: 'A panacea entity type',
-      name: '_entityType',
-      fields: {
-        name: {
-          comment: 'The entity type name',
-          value: 'name: String!'
-        },
-        data: {
-          comment: 'The JSON structure of the entity schema',
-          value: 'data: String!'
-        }
-      }
-    }
-
-    types['_fieldType'] = {
-      comment: 'A panacea field type',
-      name: '_fieldType',
-      fields: {
-        type: {
-          comment: 'The field type',
-          value: 'type: String!'
-        },
-        label: {
-          comment: 'The field label',
-          value: 'label: String!'
-        },
-        description: {
-          comment: 'The field description',
-          value: 'description: String!'
-        }
-      }
-    }
-
-    queries['_entityTypes'] = {
-      all: {
-        comment: 'Get all panacea entity schemas',
-        name: '_entityTypes',
-        returnType: '[_entityType]'
-      },
-      single: {
-        comment: 'Get a single panacea entity schema',
-        name: '_entityType',
-        arguments: {
-          name: 'String!'
-        },
-        returnType: '_entityType'
-      }
-    }
-
-    queries['_fieldTypes'] = {
-      all: {
-        comment: 'Get all panacea field types',
-        name: '_fieldTypes',
-        returnType: '[_fieldType]'
-      }
-    }
-
-    mutations['_entityType'] = {
-      create: {
-        comment: 'Create panacea entity',
-        name: '_createEntityType',
-        arguments: {
-          name: 'String!',
-          data: 'String!'
-        },
-        returnType: '_entityType'
-      }
-    }
-
-    inputs.QueryParams = {
-      comment: 'Limit the number of returned results',
-      name: `QueryParams`,
-      fields: {
-        limit: {
-          comment: 'Limit the number of returned results',
-          value: 'limit: Int = 100'
-        },
-        sortBy: {
-          comment: 'Sort by field',
-          value: 'sortBy: String'
-        },
-        sortDirection: {
-          comment: 'Direction of sort',
-          value: 'sortDirection: _sortDirections = ASC'
-        }
-      }
-    }
-
-    enums._sortDirections = {
-      comment: 'Ascending/Descending sort order values',
-      name: '_sortDirections',
-      items: [
-        { comment: 'Ascending', value: 'ASC' },
-        { comment: 'Descending', value: 'DESC' }
-      ]
-    }
-
     // Computed types.
-    hooks.invoke('core.graphql.definitions.types', types)
+    hooks.invoke('core.graphql.definitions.types', { types, translateEntityTypeFields, entityTypes })
     output.push(formatTypesToOutput('type', types))
 
     // Input types.
-    hooks.invoke('core.graphql.definitions.inputs', inputs)
+    hooks.invoke('core.graphql.definitions.inputs', { inputs, translateEntityTypeFields, entityTypes })
     output.push(formatTypesToOutput('input', inputs))
 
     // Computed queries.
-    hooks.invoke('core.graphql.definitions.queries', queries)
+    hooks.invoke('core.graphql.definitions.queries', { queries, translateEntityTypeFields, entityTypes })
     output.push(formatRootTypeToOutput('Query', queries))
 
     // Computed mutations.
-    hooks.invoke('core.graphql.definitions.mutations', mutations)
+    hooks.invoke('core.graphql.definitions.mutations', { mutations, translateEntityTypeFields, entityTypes })
     output.push(formatRootTypeToOutput('Mutation', mutations))
 
     // Enums.
-    hooks.invoke('core.graphql.definitions.enums', enums)
+    hooks.invoke('core.graphql.definitions.enums', { enums, translateEntityTypeFields, entityTypes })
     output.push(formatEnumsToOutput(enums))
 
     const tidyDefinitionEndings = function (input) {

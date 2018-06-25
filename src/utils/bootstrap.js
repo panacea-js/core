@@ -13,8 +13,9 @@ const Bootstrap = function (panaceaConfigFile = '') {
   }
 
   this.params = require(panaceaConfigFile).default()
+  this.defaultCorePriority = 0
+  this.defaultPluginPriority = 5
   this.defaultAppPriority = 10
-  this.defaultPluginPriority = 0
 }
 
 Bootstrap.prototype.all = function () {
@@ -38,6 +39,14 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, sub
   registry[registryType] = this.params[registryType] || {}
 
   const unprioritizedRegistrants = []
+
+  const coreHooksPath = resolvePluginPath('@panaceajs/core') || './'
+  // Core Registrants.
+  unprioritizedRegistrants.push({
+    locationKey: 'core',
+    path: path.resolve(coreHooksPath, 'hooks'),
+    priority: this.defaultCorePriority
+  })
 
   // Plugin Registrants.
   _(registry.plugins).forEach((plugin, pluginKey) => {

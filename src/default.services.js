@@ -16,7 +16,6 @@ export const registerServices = function (s, options) {
   s.add('path', 'path')
   s.add('glob', 'glob')
   s.add('jsYaml', 'js-yaml')
-  s.add('requireDir', 'require-dir')
   s.add('rimraf', 'rimraf')
   s.add('rsync', 'rsync')
   s.add('mkdirp', 'mkdirp')
