@@ -40,11 +40,14 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, sub
 
   const unprioritizedRegistrants = []
 
-  const coreHooksPath = resolvePluginPath('@panaceajs/core') || './'
+  // Treat core as a plugin to itself so it can register its own hook
+  // implementations when bootstrapping externally. If core is bootstrapping
+  // itself (e.g. when running tests) core becomes the application registrant.
+  const corePath = resolvePluginPath('@panaceajs/core') || './'
   // Core Registrants.
   unprioritizedRegistrants.push({
     locationKey: 'core',
-    path: path.resolve(coreHooksPath, 'hooks'),
+    path: path.resolve(corePath, subPath),
     priority: this.defaultCorePriority
   })
 
@@ -61,13 +64,16 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, sub
   })
 
   // Application Registrant.
-  const applicationSubPath = path.resolve(process.cwd(), subPath)
-  if (fs.existsSync(applicationSubPath)) {
-    unprioritizedRegistrants.push({
-      locationKey: entities.defaults.locationKey,
-      path: applicationSubPath,
-      priority: this.defaultAppPriority
-    })
+  // Only include if core is not bootstrapping itself. See above.
+  if (corePath !== './') {
+    const applicationSubPath = path.resolve(process.cwd(), subPath)
+    if (fs.existsSync(applicationSubPath)) {
+      unprioritizedRegistrants.push({
+        locationKey: entities.defaults.locationKey,
+        path: applicationSubPath,
+        priority: this.defaultAppPriority
+      })
+    }
   }
 
   const prioritizedRegistrants = unprioritizedRegistrants.sort((a, b) => Number(a.priority) - Number(b.priority))
