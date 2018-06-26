@@ -42,7 +42,8 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, sub
 
   // Treat core as a plugin to itself so it can register its own hook
   // implementations when bootstrapping externally. If core is bootstrapping
-  // itself (e.g. when running tests) core becomes the application registrant.
+  // itself (e.g. when running tests) core effectively works in place of the
+  // application registrant below.
   const corePath = resolvePluginPath('@panaceajs/core') || './'
   // Core Registrants.
   unprioritizedRegistrants.push({
