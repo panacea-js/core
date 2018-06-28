@@ -215,7 +215,7 @@ Bootstrap.prototype.stage7 = function () {
 
     var corsOptions = {
       origin: function (origin, callback) {
-        if (whitelist[0] === '*' || whitelist.indexOf(origin) !== -1) {
+        if (options.main.disableCors || whitelist[0] === '*' || whitelist.indexOf(origin) !== -1) {
           callback(null, true)
         } else {
           callback(new Error('Not allowed by CORS'))

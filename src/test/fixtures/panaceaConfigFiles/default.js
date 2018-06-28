@@ -6,7 +6,9 @@ const sandboxDir = getSandboxDir()
 export default function () {
   return {
     main: {
-      port: 5555
+      port: 5555,
+      protocol: 'http',
+      disableCors: true
     },
     services: {
       options: {
