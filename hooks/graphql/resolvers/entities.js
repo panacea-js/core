@@ -69,19 +69,22 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
 
     // Delete entity.
     resolvers.Mutation[`delete${entityData._meta.pascal}`] = (parent, args, { dbModels }) => {
-      return dbModels[entityData._meta.pascal].findById(args.id).exec(function (err, entity) {
-        if (err) {
-          throw new Error(err)
-        }
+      return new Promise((resolve, reject) => {
+        dbModels[entityData._meta.pascal].findById(args.id).exec((err, entity) => {
+          if (err) {
+            return err
+          }
+          if (entity === null) {
+            return new Error(`Cannot find ${entityData._meta.camel} with id: ${args.id}`)
+          }
 
-        if (entity === null) {
-          return null
-        }
-        return entity.remove().then(() => {
-          return true
-        }).catch(function (error) {
-          log.error(`Could not delete ${entityData._meta.pascal} with ID ${args.id}. Error message: ${error}`)
-          return false
+          entity.remove().then(() => {
+            resolve(args.id)
+          }).catch(function (error) {
+            const errorMessage = `Could not delete ${entityData._meta.camel} with ID ${args.id}. Error message: ${error}`
+            log.error(errorMessage)
+            reject(errorMessage)
+          })
         })
       })
     }

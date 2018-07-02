@@ -53,7 +53,7 @@ const getDefinitions = function (translateEntityTypeFields, entityTypes) {
         arguments: {
           id: `String!`
         },
-        returnType: 'Boolean'
+        returnType: `String`
       }
     }
 
