@@ -89,7 +89,7 @@ test('convertFileSizeShortHandToBytes works for 2 terabytes', t => {
 })
 
 test('convertFileSizeShortHandToBytes throws error on unsolvable string', t => {
-  t.throws(() => formatters.convertFileSizeShortHandToBytes('2iB'))
+  t.true(formatters.convertFileSizeShortHandToBytes('2iB') instanceof TypeError)
 })
 
 test('convertFileSizeShortHandToBytes returns the input value when not a string', t => {

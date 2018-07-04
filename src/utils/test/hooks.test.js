@@ -7,7 +7,7 @@ const { hooks } = Panacea.container
 
 test('Hook listener can be registered and stored in the _events list', t => {
   hooks.on('listenerIsRegistered', data => {
-    // Stub
+    // Nothing to do here - it's registered.
   })
 
   t.true(typeof hooks._events.listenerIsRegistered !== 'undefined')
@@ -90,11 +90,4 @@ test('Can load hooks from a directory', async t => {
 test('Fails with error message when hooks directory does not exist', async t => {
   const result = await hooks.loadFromDirectories(['./src/test/fixtures/hooks-dir-doesnt-exist'])
   t.true(result.indexOf('Could not load hooks from') !== -1)
-})
-
-// Executes before other tests
-test.skip.serial('Logging of available hooks displays "None" when there are no hook invocations found', t => {
-  const availableHooks = hooks.getAvailableHooksOutput(false)
-
-  t.true(availableHooks.indexOf('Available hooks: None') !== -1)
 })

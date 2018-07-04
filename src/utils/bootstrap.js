@@ -9,7 +9,7 @@ const Bootstrap = function (panaceaConfigFile = '') {
   panaceaConfigFile = path.resolve(panaceaConfigFile)
 
   if (!fs.existsSync(panaceaConfigFile)) {
-    throw Error(`Could not load panacea.js config file at ${panaceaConfigFile}`)
+    throw Error(`Could not load panacea.js config file at ${panaceaConfigFile}`) // Cannot translate as Panacea container isn't available for i18n.
   }
 
   this.params = require(panaceaConfigFile).default()
@@ -30,7 +30,9 @@ Bootstrap.prototype.all = function () {
 
   const completedTime = Date.now() - startTime
 
-  return Promise.resolve(`Completed full bootstrap (in ${completedTime}ms)`)
+  const { i18n } = Panacea.container
+
+  return Promise.resolve(i18n.t('core.bootstrap.completed', {completedTime})) // Completed full bootstrap (in {completedTime}ms)
 }
 
 Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, subPath) {
@@ -41,9 +43,9 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, sub
   const unprioritizedRegistrants = []
 
   // Treat core as a plugin to itself so it can register its own hook
-  // implementations when bootstrapping externally. If core is bootstrapping
-  // itself (e.g. when running tests) core effectively works in place of the
-  // application registrant below.
+  // implementations when bootstrapping externally - i.e. as a dependency of
+  // another project. If core is bootstrapping itself (e.g. when running tests)
+  // core effectively works in place of the application registrant below.
   const corePath = resolvePluginPath('@panaceajs/core') || './'
   // Core Registrants.
   unprioritizedRegistrants.push({
@@ -113,7 +115,7 @@ Bootstrap.prototype.stage3 = function () {
     return
   }
 
-  const { chalk, resolvePluginPath } = Panacea.container
+  const { chalk, resolvePluginPath, i18n } = Panacea.container
 
   registry.plugins = {}
 
@@ -130,14 +132,15 @@ Bootstrap.prototype.stage3 = function () {
 
     // Only add plugin to the registry if its path can be resolved.
     if (!resolvePluginPath(plugin.path)) {
-      console.error(chalk.bgRed(' 😕  \n' +
-      `Plugin ${chalk.underline(plugin.path)} was not found as defined in panacea.js.\n` +
-      `If this is a external (contributed) plugin: Check that you have run \`npm install ${plugin.path}\`\n` +
-      `If this plugin is part of your application: Check that it can be resolved in the <app_root>/plugins/ directory`))
+      const error = [chalk.bgRed(' 😕  ')]
+      error.push(i18n.t('core.bootstrap.pluginPathNotFound.line1', {pluginPath: chalk.underline(plugin.path)})) // Plugin {pluginPath} was not found as defined in panacea.js.
+      error.push(i18n.t('core.bootstrap.pluginPathNotFound.line2', {pluginPath: plugin.path})) // If this is a external (contributed) plugin: Check that you have run `npm install {pluginPath}`
+      error.push(i18n.t('core.bootstrap.pluginPathNotFound.line3')) // If this plugin is part of your application: Check that it can be resolved in the <app_root>/plugins/ directory
+      console.error(error.join('\n'))
       return
     }
 
-    console.log(chalk.green(`✔ ${plugin.path} plugin loaded`))
+    console.log(chalk.green('✔ ' + i18n.t('core.bootstrap.pluginLoaded', {pluginPath: plugin.path}))) // {pluginPath} plugin loaded
 
     registry.plugins[plugin.path] = plugin
   })
@@ -184,7 +187,8 @@ Bootstrap.prototype.stage7 = function () {
     dynamicMiddleware,
     hooks,
     log,
-    options
+    options,
+    i18n
   } = Panacea.container
 
   graphQLTypeDefinitions()
@@ -218,7 +222,7 @@ Bootstrap.prototype.stage7 = function () {
         if (options.main.disableCors || whitelist[0] === '*' || whitelist.indexOf(origin) !== -1) {
           callback(null, true)
         } else {
-          callback(new Error('Not allowed by CORS'))
+          callback(new Error(i18n.t('core.bootstrap.notAllowedCORS'))) // Not allowed by CORS
         }
       },
       // Pass HTTP headers to graphql endpoint.
@@ -263,7 +267,7 @@ Bootstrap.prototype.stage7 = function () {
 
       const timeToReplace = Date.now() - startTime
 
-      log.info(`Reloaded graphql middleware (in ${timeToReplace}ms) because ${reason}`)
+      log.info(i18n.t('core.bootstrap.reloadGraphql', {timeToReplace, reason})) // Reloaded graphql middleware (in {timeToReplace}ms) because {reason}
     })
 
     // GraphiQL endpoint.
@@ -290,7 +294,7 @@ Bootstrap.prototype.stage7 = function () {
     Panacea.value('app', app)
   })
   .catch(error =>
-    log.error(new Error(`Server not started. Type definitions error: ${error}`))
+    log.error(new Error(i18n.t('core.bootstrap.typeDefsError', {error}))) // Server not started. Type definitions error: {error}
   )
 }
 

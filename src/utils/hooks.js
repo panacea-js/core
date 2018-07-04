@@ -55,23 +55,18 @@ Hooks.prototype.getAvailableHooks = function () {
  * @returns void
  */
 Hooks.prototype.getAvailableHooksOutput = function (nested = true) {
-  const { formatters } = Panacea.container
+  const { formatters, i18n } = Panacea.container
 
-  let output = ''
+  let output = i18n.t('core.hooks.none') // None
 
   if (nested) {
-    const nest = {}
-    hooks.getAvailableHooks().forEach(hook => formatters.compileNestFromDotSeparated(hook, nest))
+    const nest = hooks.getAvailableHooks().map(hook => formatters.compileNestFromDotSeparated(hook))
     output = formatters.formatNestedObjectKeys(nest)
-  } else {
-    if (hooks.getAvailableHooks().length > 0) {
-      output = '\n  - ' + hooks.getAvailableHooks().join('\n  - ')
-    } else {
-      output = 'None'
-    }
+  } else if (hooks.getAvailableHooks().length > 0) {
+    output = '\n  - ' + hooks.getAvailableHooks().join('\n  - ')
   }
 
-  return `Available hooks: ${output}`
+  return i18n.t('core.hooks.available', { output }) // Available hooks: {output}
 }
 
 /**
@@ -81,7 +76,7 @@ Hooks.prototype.getAvailableHooksOutput = function (nested = true) {
  *   A list of directories to load application level hooks which register listeners via the standard 'on' method.
  */
 Hooks.prototype.loadFromDirectories = function (paths) {
-  const { path, fs, log, chalk, glob } = Panacea.container
+  const { path, fs, log, chalk, glob, i18n } = Panacea.container
 
   let result = ''
 
@@ -89,7 +84,7 @@ Hooks.prototype.loadFromDirectories = function (paths) {
     const resolvedPath = path.resolve(hooksDirectory)
 
     if (!fs.pathExistsSync(resolvedPath)) {
-      result = `Could not load hooks from ${resolvedPath}`
+      result = i18n.t('core.hooks.cannotLoadFromPath', {resolvedPath}) // Could not load hooks from {resolvedPath}
       log.warn(result)
       return
     }
@@ -99,19 +94,19 @@ Hooks.prototype.loadFromDirectories = function (paths) {
     hookFiles.forEach(filePath => {
       const file = require(filePath)
       if (!file.hasOwnProperty('default')) {
-        result = `Hook file ${filePath} should export an object. See the Panacea hooks documentation.`
+        result = i18n.t('core.hooks.shouldExportObject', {filePath}) // Hook file {filePath} should export an object. See the Panacea hooks documentation.
         log.warn(result)
         return
       }
       if (!file.default.hasOwnProperty('register')) {
-        result = `Could not execute register() in hook file: ${filePath}.`
+        result = i18n.t('core.hooks.couldNotRegister', {filePath}) // Could not execute register() in hook file: {filePath}.
         log.warn(result)
         return
       }
 
       file.default.register(hooks)
 
-      log.info(chalk.green(`Registered hooks in ${filePath}`))
+      log.info(chalk.green(i18n.t('core.hooks.registeredPath', {filePath}))) // Registered hooks in {filePath}
     })
   })
 

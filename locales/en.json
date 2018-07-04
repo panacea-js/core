@@ -1,5 +1,33 @@
 {
   "core": {
+    "hooks": {
+      "available": "Available hooks: {output}",
+      "none" : "None",
+      "cannotLoadFromPath": "Could not load hooks from {resolvedPath}",
+      "shouldExportObject": "Hook file {filePath} should export an object. See the Panacea hooks documentation.",
+      "couldNotRegister": "Could not execute register() in hook file: {filePath}.",
+      "registeredPath": "Registered hooks in {filePath}"
+    },
+    "formatters": {
+      "shortHandToBytes": {
+        "cannotConvert": ""
+      }
+    },
+    "yaml": {
+      "noDirectory": "Directory {directory} doesn't exist"
+    },
+    "bootstrap": {
+      "completed": "Completed full bootstrap (in {completedTime}ms)",
+      "pluginPathNotFound": {
+        "line1": "Plugin {pluginPath} was not found as defined in panacea.js.",
+        "line2": "If this is a external (contributed) plugin: Check that you have run `npm install {pluginPath}`",
+        "line3": "If this plugin is part of your application: Check that it can be resolved in the <app_root>/plugins/ directory"
+      },
+      "pluginLoaded": "{pluginPath} plugin loaded",
+      "notAllowedCORS": "Not allowed by CORS",
+      "reloadGraphql": "Reloaded graphql middleware (in {timeToReplace}ms) because {reason}",
+      "typeDefsError": "Server not started. Type definitions error: {error}"
+    },
     "entities": {
       "fields": {
         "id": {

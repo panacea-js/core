@@ -15,7 +15,7 @@
  *
  * @returns Object
  */
-const compileNestFromDotSeparated = function (hook, nest) {
+const compileNestFromDotSeparated = function (hook, nest = {}) {
   if (hook.indexOf('.') !== -1) {
     hook = hook.split('.')
     let shifted = hook.shift()
@@ -100,7 +100,7 @@ const convertFileSizeShortHandToBytes = function (value) {
         return parseInt(value.replace(size, '').replace(size.toUpperCase(), '')) * (Math.pow(1024, sizes[size]))
       }
     }
-    throw TypeError(`Could not find a way to convert file size shorthand string: ${value}`)
+    return new TypeError('core.formatters.shortHandToBytes.cannotConvert', {value}) // Could not find a way to convert file size shorthand string: {value}
   }
 
   return value

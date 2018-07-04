@@ -6,7 +6,7 @@ bootstrap()
 const { loadYmlFiles, writeYmlFile, glob, path } = Panacea.container
 
 test('Calling loadYmlFiles should throw Error when no directory is provided', t => {
-  t.throws(() => loadYmlFiles(), Error)
+  t.true(loadYmlFiles() instanceof Error)
 })
 
 test('Glob returns a non-empty array when files are found', t => {
