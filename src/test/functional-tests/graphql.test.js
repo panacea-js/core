@@ -36,6 +36,35 @@ test('_fieldTypes graphql query resolves with basic field types', t => {
     .catch(error => console.error(error))
 })
 
+test('Sending a language cookie sends translated results for _fieldTypes graphql query', t => {
+  const fetchOptions = {
+    headers: {
+      cookie: 'PANACEA-LANGUAGE=es; SOME-OTHER-COOKIE=nothing' // Request Spanish results via cookie
+    }
+  }
+  return graphqlQuery('{ _fieldTypes { type, label } }', 'default', fetchOptions)
+    .then(json => {
+      const fieldTypes = json.data._fieldTypes
+      t.is(fieldTypes.find(x => x.type === 'string').label, 'Cadena')
+    })
+    .catch(error => console.error(error))
+})
+
+test('Sending an invalid language cookie sends translated results for _fieldTypes graphql query fallen back to English', t => {
+  // Note: this requires that the testing environment defaults to English.
+  const fetchOptions = {
+    headers: {
+      cookie: 'PANACEA-LANGUAGE=invalid; SOME-OTHER-COOKIE=nothing' // Request Spanish results via cookie
+    }
+  }
+  return graphqlQuery('{ _fieldTypes { type, label } }', 'default', fetchOptions)
+    .then(json => {
+      const fieldTypes = json.data._fieldTypes
+      t.is(fieldTypes.find(x => x.type === 'string').label, 'String')
+    })
+    .catch(error => console.error(error))
+})
+
 test('Can create, read and delete an entity with just one field', t => {
   t.plan(3)
 

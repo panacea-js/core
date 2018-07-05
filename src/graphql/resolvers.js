@@ -4,7 +4,7 @@ const { entities, hooks, i18n, accepts } = Panacea.container
 
 /**
  * Get the client's preferred language based on the request's
- * PANACEA-CMS-LANGUAGE cookie value. Falls back to the client's Accept-Language
+ * PANACEA-LANGUAGE cookie value. Falls back to the client's Accept-Language
  * header using the accepts module.
  *
  * @param {Request} req The request object
@@ -20,7 +20,7 @@ const getClientLanguage = function (req: express$Request) {
   if (typeof req.headers.cookie !== 'undefined') {
     req.headers.cookie.split('; ').map(cookie => {
       const [ key, value ] = cookie.split('=')
-      if (key === 'PANACEA-CMS-LANGUAGE') {
+      if (key === 'PANACEA-LANGUAGE') {
         cookieLanguage = value
       }
     })

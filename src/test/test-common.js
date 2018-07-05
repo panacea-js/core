@@ -37,16 +37,17 @@ const bootstrap = function (panaceaFile = 'default', runStages = []) {
   return new Bootstrap(panaceaConfigFile).all()
 }
 
-const graphqlQuery = function (query, panaceaFile = 'default') {
+const graphqlQuery = function (query, panaceaFile = 'default', fetchOptions = {}) {
   return new Promise((resolve, reject) => {
     const graphqlQueryRequest = function (query) {
-      const { options } = Panacea.container
+      const { options, _ } = Panacea.container
       const url = `${options.main.protocol}://${options.main.host}:${options.main.port}/${options.main.endpoint}`
-      return fetch(url, {
+      _.defaultsDeep(fetchOptions, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query })
       })
+      return fetch(url, fetchOptions)
       .then(response => resolve(response.json()))
       .catch(error => console.error(error) && reject(error))
     }
