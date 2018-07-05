@@ -23,43 +23,59 @@ const getDefinitions = function (translateEntityTypeFields, entityTypes) {
       fields: definedFields.refsAsModels
     }
 
-    definitions.inputs[`${entityTypePascal}Input`] = {
-      comment: `Input type for ${entityTypePascal}`,
-      name: `${entityTypePascal}Input`,
-      fields: definedFields.refsAsStrings
-    }
+    const inputFields = definedFields.refsAsStrings
+    delete inputFields.id
 
-    definitions.mutations[entityTypePascal] = {
-      create: {
-        comment: `Create ${entityTypePascal} entity`,
-        name: `create${entityTypePascal}`,
-        arguments: {
-          params: `${entityTypePascal}Input`
+    const countFields = Object.keys(inputFields).length
+
+    if (countFields > 0) {
+      definitions.inputs[`${entityTypePascal}Input`] = {
+        comment: `Input type for ${entityTypePascal}`,
+        name: `${entityTypePascal}Input`,
+        fields: inputFields
+      }
+
+      definitions.mutations[entityTypePascal] = {
+        create: {
+          comment: `Create a ${entityTypePascal} entity`,
+          name: `create${entityTypePascal}`,
+          arguments: {
+            fields: `${entityTypePascal}Input`
+          },
+          returnType: `${entityTypePascal}!`
         },
-        returnType: `${entityTypePascal}!`
-      },
-      update: {
-        comment: `Update ${entityTypePascal} entity`,
-        name: `update${entityTypePascal}`,
-        arguments: {
-          id: `String!`,
-          params: `${entityTypePascal}Input`
+        update: {
+          comment: `Partially update selected fields on a ${entityTypePascal}`,
+          name: `update${entityTypePascal}`,
+          arguments: {
+            id: `String!`,
+            fields: `${entityTypePascal}Input`
+          },
+          returnType: `${entityTypePascal}!`
         },
-        returnType: `${entityTypePascal}!`
-      },
-      delete: {
-        comment: `Delete ${entityTypePascal} entity`,
-        name: `delete${entityTypePascal}`,
-        arguments: {
-          id: `String!`
+        replace: {
+          comment: `Replace a ${entityTypePascal} entity with the defined fields - existing data will be overwritten or deleted`,
+          name: `replace${entityTypePascal}`,
+          arguments: {
+            id: `String!`,
+            fields: `${entityTypePascal}Input`
+          },
+          returnType: `${entityTypePascal}!`
         },
-        returnType: `String`
+        delete: {
+          comment: `Delete a ${entityTypePascal} entity`,
+          name: `delete${entityTypePascal}`,
+          arguments: {
+            id: `String!`
+          },
+          returnType: `String`
+        }
       }
     }
 
     definitions.queries[entityTypePascal] = {
       all: {
-        comment: `Get all ${entityTypeData.plural}`,
+        comment: `Get all ${entityTypeData.plural}.`,
         name: pluralCamel,
         arguments: {
           params: `QueryParams`

@@ -51,6 +51,9 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
   _(entityTypes).forEach(entityData => {
     types[entityData._meta.pascal] = {}
 
+    // Exclude the ID fields as user defined field, therefore > 1
+    const hasFields = Object.keys(entityData.fields).length > 1
+
     // Get single entity.
     resolvers.Query[entityData._meta.camel] = async (parent, args, { dbModels }) => {
       return dbModels[entityData._meta.pascal].findById(args.id)
@@ -59,38 +62,43 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
     // Get many entities.
     resolvers.Query[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => modelQuery(dbModels[entityData._meta.pascal], parent, args)
 
-    // Create entity.
-    resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent, args, { dbModels }) => {
-      const EntityModel = dbModels[entityData._meta.pascal]
-      const entity = await new EntityModel(args.params).save()
-      entity._id = entity._id.toString()
-      return entity
-    }
+    if (hasFields) {
+      // Create entity.
+      resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent, args, { dbModels }) => {
+        const EntityModel = dbModels[entityData._meta.pascal]
+        const entity = await new EntityModel(args.fields).save()
+        entity._id = entity._id.toString()
+        return entity
+      }
 
-    // Delete entity.
-    resolvers.Mutation[`delete${entityData._meta.pascal}`] = (parent, args, { dbModels }) => {
-      return new Promise((resolve, reject) => {
-        dbModels[entityData._meta.pascal].findById(args.id).exec((err, entity) => {
-          if (err) {
-            return err
-          }
-          if (entity === null) {
-            return new Error(`Cannot find ${entityData._meta.camel} with id: ${args.id}`)
-          }
+      // Delete entity.
+      resolvers.Mutation[`delete${entityData._meta.pascal}`] = (parent, args, { dbModels }) => {
+        return new Promise((resolve, reject) => {
+          dbModels[entityData._meta.pascal].findById(args.id).exec((err, entity) => {
+            if (err) {
+              return err
+            }
+            if (entity === null) {
+              return new Error(`Cannot find ${entityData._meta.camel} with id: ${args.id}`)
+            }
 
-          entity.remove().then(() => {
-            resolve(args.id)
-          }).catch(function (error) {
-            const errorMessage = `Could not delete ${entityData._meta.camel} with ID ${args.id}. Error message: ${error}`
-            log.error(errorMessage)
-            reject(errorMessage)
+            entity.remove().then(() => {
+              resolve(args.id)
+            }).catch(function (error) {
+              const errorMessage = `Could not delete ${entityData._meta.camel} with ID ${args.id}. Error message: ${error}`
+              log.error(errorMessage)
+              reject(errorMessage)
+            })
           })
         })
-      })
-    }
+      }
 
-    // @todo
-    // Update entity
+      // @todo
+      // Update entity
+
+      // @todo
+      // Replace entity
+    }
 
     // Resolve top-level and nested object references.
     resolveNestedFields(types, entityData._meta.pascal, entityData.fields)

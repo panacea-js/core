@@ -69,7 +69,7 @@ test('Can create, read and delete an entity with just one field', t => {
   t.plan(3)
 
   // Create 'Puss'.
-  return graphqlQuery(`mutation { createCat(params: { name: "Puss" }) { id, name } }`)
+  return graphqlQuery(`mutation { createCat(fields: { name: "Puss" }) { id, name } }`)
     .then(json => {
       const entity = json.data.createCat
       t.is(entity.name, 'Puss')
@@ -96,7 +96,7 @@ test('Can create, read and delete an entity with referenced entities', t => {
   t.plan(11)
 
   // Create 'Rover' the dog.
-  return graphqlQuery('mutation { createDog(params: { name: "Rover" }) { id, name } }')
+  return graphqlQuery('mutation { createDog(fields: { name: "Rover" }) { id, name } }')
     .then(json => {
       const rover = json.data.createDog
       t.is(rover.name, 'Rover')
@@ -104,7 +104,7 @@ test('Can create, read and delete an entity with referenced entities', t => {
     })
     .then(roverId => {
       // Create 'Fido' the dog.
-      return graphqlQuery(`mutation { createDog(params: { name: "Fido" }) { id, name } }`).then(json => {
+      return graphqlQuery(`mutation { createDog(fields: { name: "Fido" }) { id, name } }`).then(json => {
         const fido = json.data.createDog
         const fidoId = fido.id
         t.is(fido.name, 'Fido')
@@ -115,7 +115,7 @@ test('Can create, read and delete an entity with referenced entities', t => {
       const livesWithDogsInput = dogIds.map(d => `"${d}"`).join(', ')
 
       // Create 'Puss' and reference the dogs.
-      return graphqlQuery(`mutation { createCat(params: { name: "Puss", livesWithDogs: [${livesWithDogsInput}] }) { id, name, livesWithDogs { id, name } } }`).then(json => {
+      return graphqlQuery(`mutation { createCat(fields: { name: "Puss", livesWithDogs: [${livesWithDogsInput}] }) { id, name, livesWithDogs { id, name } } }`).then(json => {
         const puss = json.data.createCat
         t.is(puss.name, 'Puss')
         t.is(puss.livesWithDogs[0].name, 'Rover')

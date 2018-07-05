@@ -63,7 +63,7 @@ const definitions = {
   mutations: {
     _entityType: {
       create: {
-        comment: 'Create panacea entity',
+        comment: 'Create or replace panacea entity type',
         name: '_createEntityType',
         arguments: {
           name: 'String!',
