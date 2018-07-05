@@ -139,7 +139,8 @@ Bootstrap.prototype.stage3 = function () {
     // Mutate plugin into plugin object structure.
     if (typeof plugin === 'string') {
       plugin = {
-        path: plugin
+        path: plugin,
+        priority: this.defaultPluginPriority
       }
     }
 
