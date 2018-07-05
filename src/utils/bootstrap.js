@@ -1,7 +1,8 @@
+// @flow
 import path from 'path'
 import fs from 'fs-extra'
 
-const Bootstrap = function (panaceaConfigFile = '') {
+const Bootstrap = function (panaceaConfigFile: string = '') {
   if (!panaceaConfigFile) {
     panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js')
   }
@@ -33,6 +34,20 @@ Bootstrap.prototype.all = function () {
   const { i18n } = Panacea.container
 
   return Promise.resolve(i18n.t('core.bootstrap.completed', {completedTime})) // Completed full bootstrap (in {completedTime}ms)
+}
+
+Bootstrap.prototype.runStages = function (stages: Array<Number>) {
+  if (!Array.isArray(stages)) {
+    throw new Error(`Stages parameter is invalid - should be an array of integers`) // Cannot translate as Panacea container isn't available for i18n.
+  }
+  stages.forEach(stage => {
+    stage = stage.toString()
+    const stageFunction = `stage${stage}`
+    if (!typeof stage === 'number' || typeof this[stageFunction] !== 'function') {
+      throw new Error(`Stage ${stage} specified is invalid`) // Cannot translate as Panacea container isn't available for i18n.
+    }
+    this[stageFunction]()
+  })
 }
 
 Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, subPath) {
@@ -92,7 +107,7 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, sub
 * Register services.
 */
 Bootstrap.prototype.stage1 = function () {
-  require('./DIContainer').registerServices(this.params)
+  this.container = require('./DIContainer').registerServices(this.params)
 }
 
 /**
@@ -108,7 +123,7 @@ Bootstrap.prototype.stage2 = function () {
 * Add plugins to the registry.
 */
 Bootstrap.prototype.stage3 = function () {
-  const { registry } = Panacea.container
+  const { registry, log } = Panacea.container
 
   if (!this.params.hasOwnProperty('plugins')) {
     registry.plugins = {}
@@ -136,11 +151,11 @@ Bootstrap.prototype.stage3 = function () {
       error.push(i18n.t('core.bootstrap.pluginPathNotFound.line1', {pluginPath: chalk.underline(plugin.path)})) // Plugin {pluginPath} was not found as defined in panacea.js.
       error.push(i18n.t('core.bootstrap.pluginPathNotFound.line2', {pluginPath: plugin.path})) // If this is a external (contributed) plugin: Check that you have run `npm install {pluginPath}`
       error.push(i18n.t('core.bootstrap.pluginPathNotFound.line3')) // If this plugin is part of your application: Check that it can be resolved in the <app_root>/plugins/ directory
-      console.error(error.join('\n'))
+      log.error(error.join('\n'))
       return
     }
 
-    console.log(chalk.green('✔ ' + i18n.t('core.bootstrap.pluginLoaded', {pluginPath: plugin.path}))) // {pluginPath} plugin loaded
+    log.info(chalk.green('✔ ' + i18n.t('core.bootstrap.pluginLoaded', {pluginPath: plugin.path}))) // {pluginPath} plugin loaded
 
     registry.plugins[plugin.path] = plugin
   })

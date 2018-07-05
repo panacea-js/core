@@ -1,4 +1,5 @@
 // @flow
 declare var Panacea: {
-  container: Object
+  container: Object,
+  value(name: string, val: any)
 }

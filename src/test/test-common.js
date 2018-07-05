@@ -29,8 +29,11 @@ const entityHasErrorMessage = function (entity, message) {
   return entity._errors.filter(error => error.message === message).length > 0
 }
 
-const bootstrap = function (panaceaFile = 'default') {
+const bootstrap = function (panaceaFile = 'default', runStages = []) {
   const panaceaConfigFile = `${__dirname}/fixtures/panaceaConfigFiles/${panaceaFile}.js`
+  if (runStages.length > 0) {
+    return new Bootstrap(panaceaConfigFile).runStages(runStages)
+  }
   return new Bootstrap(panaceaConfigFile).all()
 }
 
