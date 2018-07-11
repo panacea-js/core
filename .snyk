@@ -1,5 +1,5 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
-version: v1.10.1
+version: v1.12.0
 # ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
   'npm:debug:20170905':
@@ -149,9 +149,6 @@ ignore:
     - graphql-voyager > lodash:
         reason: None given
         expires: '2018-04-01T02:40:36.753Z'
-      dynamic-middleware > lodash:
-        reason: No available patch
-        expires: '2018-07-08T23:21:09.530Z'
     - dynamic-middleware > lodash:
         reason: None given
         expires: '2018-04-01T02:40:36.753Z'
@@ -164,6 +161,9 @@ ignore:
     - dynamic-middleware > lodash:
         reason: None given
         expires: '2018-06-06T22:30:07.975Z'
+    - dynamic-middleware > lodash:
+        reason: No available patch
+        expires: '2018-07-08T23:21:09.530Z'
   'npm:vue:20180222':
     - vue:
         reason: None given
@@ -183,3 +183,6 @@ patch:
   'npm:debug:20170905':
     - dynamic-middleware > debug:
         patched: '2017-11-17T00:34:13.902Z'
+  'npm:lodash:20180130':
+    - dynamic-middleware > lodash:
+        patched: '2018-07-11T06:05:14.838Z'
