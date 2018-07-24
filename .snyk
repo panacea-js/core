@@ -176,9 +176,15 @@ ignore:
     - get-uri > extend:
         reason: No available patch
         expires: '2018-08-23T18:59:00.783Z'
+      snyk > snyk-docker-plugin > request > extend:
+        reason: No apparent fix yet
+        expires: '2018-08-23T19:59:35.481Z'
     - pac-proxy-agent > get-uri > extend:
         reason: No available patch
         expires: '2018-08-23T18:59:00.783Z'
+      snyk > proxy-agent > pac-proxy-agent > get-uri > extend:
+        reason: No apparent fix yet
+        expires: '2018-08-23T19:59:35.481Z'
     - proxy-agent > pac-proxy-agent > get-uri > extend:
         reason: No available patch
         expires: '2018-08-23T18:59:00.783Z'
