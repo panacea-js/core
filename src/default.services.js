@@ -26,7 +26,6 @@ export const registerServices = function (s, options) {
   s.add('bodyParser', 'body-parser')
   s.add('graphqlExpress', 'apollo-server-express', 'graphqlExpress')
   s.add('graphiqlExpress', 'apollo-server-express', 'graphiqlExpress')
-  s.add('dynamicMiddleware', 'dynamic-middleware')
   s.add('makeExecutableSchema', 'graphql-tools', 'makeExecutableSchema')
   s.add('mongoose', 'mongoose')
   s.add('winston', 'winston')
@@ -52,6 +51,7 @@ export const registerServices = function (s, options) {
   s.add('dbModels', '%core/mongodb/models', 'dbModels')
   s.add('graphQLTypeDefinitions', '%core/graphql/types', 'graphQLTypeDefinitions')
   s.add('graphQLResolvers', '%core/graphql/resolvers', 'graphQLResolvers')
+  s.add('dynamicMiddleware', '%core/utils/dynamic-middleware')
 }
 
 /**

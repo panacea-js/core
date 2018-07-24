@@ -1,0 +1,44 @@
+storage: db
+description: People and access credentials for API access
+plural: Users
+fields:
+  id:
+    label: User ID
+    type: id
+  email:
+    type: string
+    label: Email
+    description: The user's email address
+    required: true
+  password:
+    type: string
+    label: Password
+    description: A hash of the user's password
+  salt:
+    type: string
+    label: Salt
+    description: >-
+      A pseudo-random string for strengthening encrypted/hashed data relating to
+      the user
+  reset:
+    type: object
+    label: Reset
+    description: Password reset state information
+    fields:
+      expires:
+        type: string
+        label: Expires
+        description: The expiry timestamp of the password reset
+        required: true
+      accessKey:
+        type: string
+        label: Access key
+        description: >-
+          A randomly generated access key allowing the user to reset their
+          password via an email sent the their inbox
+        required: true
+      ip:
+        type: string
+        label: IP address
+        description: The IP address from where the password reset request originated
+        required: true
