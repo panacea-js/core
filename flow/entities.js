@@ -33,6 +33,7 @@ declare type EntityType = {
   fields: EntityTypeFields,
   plural: string,
   storage: string,
+  group?: string,
   _errors?: Array<Error>,
   _meta: Meta
 }
