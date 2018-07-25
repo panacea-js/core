@@ -20,9 +20,10 @@ fields:
     description: >-
       A pseudo-random string for strengthening encrypted/hashed data relating to
       the user
-  reset:
+  resets:
     type: object
-    label: Reset
+    label: Password resets
+    many: true
     description: Password reset state information
     fields:
       expires:
