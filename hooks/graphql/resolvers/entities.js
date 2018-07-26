@@ -62,11 +62,40 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
     // Get many entities.
     resolvers.Query[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => modelQuery(dbModels[entityData._meta.pascal], parent, args)
 
-    if (hasFields) {
+    // Only allow mutations of entities that have fields.
+    // Exclude direct mutation of revision types.
+    if (hasFields && !_(entityData._meta.pascal).endsWith('Revision')) {
       // Create entity.
       resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent, args, { dbModels }) => {
+        let entity = null
+
+        const saveEntity = async function (Model, args, revisionId = null) {
+          if (revisionId) {
+            args.fields.revisions = args.fields.revisions || []
+            args.fields.revisions.push(revisionId)
+          }
+          const entity = await new Model(args.fields).save()
+          return entity
+        }
+
+        const saveEntityRevision = async function (Model, args) {
+          const entityRevision = await new Model(args.fields).save()
+          return entityRevision
+        }
+
         const EntityModel = dbModels[entityData._meta.pascal]
-        const entity = await new EntityModel(args.fields).save()
+
+        if (entityData.revisions) {
+          const EntityRevisionModel = dbModels[`${entityData._meta.pascal}Revision`]
+
+          entity = await saveEntityRevision(EntityRevisionModel, args).then(revision => {
+            return saveEntity(EntityModel, args, revision._id.toString())
+          })
+          .catch(err => log.error(err))
+        } else {
+          entity = await saveEntity(EntityModel, args)
+        }
+
         entity._id = entity._id.toString()
         return entity
       }

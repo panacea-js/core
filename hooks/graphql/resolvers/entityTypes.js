@@ -17,7 +17,7 @@ const entityTypeResolvers = function (resolvers, entityTypes, modelQuery, getCli
     { name } : { name : String },
     { dbModels } : { dbModels: {} }
   ) => {
-    if (entityTypes[name]) {
+    if (entityTypes[name] && !_(entityTypes[name]).endsWith('Revision')) {
       const entityType = entityTypes[name]
       // Don't expose the native file path.
       delete entityType._filePath
@@ -34,6 +34,10 @@ const entityTypeResolvers = function (resolvers, entityTypes, modelQuery, getCli
     const allEntities = []
 
     _(entityTypes).forEach((entityType, entityTypeName) => {
+      // Exclude Revision entity types from being accessed directly.
+      if (_(entityTypeName).endsWith('Revision')) {
+        return
+      }
       const entityTypeData = entityTypes[entityTypeName]
       // Don't expose the native file path.
       delete entityTypeData._filePath

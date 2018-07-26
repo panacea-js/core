@@ -29,46 +29,49 @@ const getDefinitions = function (translateEntityTypeFields, entityTypes) {
     const countFields = Object.keys(inputFields).length
 
     if (countFields > 0) {
-      definitions.inputs[`${entityTypePascal}Input`] = {
-        comment: `Input type for ${entityTypePascal}`,
-        name: `${entityTypePascal}Input`,
-        fields: inputFields
-      }
+      // Exclude direct mutation of revision types.
+      if (!_(entityTypeName).endsWith('Revision')) {
+        definitions.inputs[`${entityTypePascal}Input`] = {
+          comment: `Input type for ${entityTypePascal}`,
+          name: `${entityTypePascal}Input`,
+          fields: inputFields
+        }
 
-      definitions.mutations[entityTypePascal] = {
-        create: {
-          comment: `Create a ${entityTypePascal} entity`,
-          name: `create${entityTypePascal}`,
-          arguments: {
-            fields: `${entityTypePascal}Input`
+        definitions.mutations[entityTypePascal] = {
+          create: {
+            comment: `Create a ${entityTypePascal} entity`,
+            name: `create${entityTypePascal}`,
+            arguments: {
+              fields: `${entityTypePascal}Input`
+            },
+            returnType: `${entityTypePascal}!`
           },
-          returnType: `${entityTypePascal}!`
-        },
-        update: {
-          comment: `Partially update selected fields on a ${entityTypePascal}`,
-          name: `update${entityTypePascal}`,
-          arguments: {
-            id: `String!`,
-            fields: `${entityTypePascal}Input`
+          update: {
+            comment: `Partially update selected fields on a ${entityTypePascal}`,
+            name: `update${entityTypePascal}`,
+            arguments: {
+              id: `String!`,
+              fields: `${entityTypePascal}Input`
+            },
+            returnType: `${entityTypePascal}!`
           },
-          returnType: `${entityTypePascal}!`
-        },
-        replace: {
-          comment: `Replace a ${entityTypePascal} entity with the defined fields - existing data will be overwritten or deleted`,
-          name: `replace${entityTypePascal}`,
-          arguments: {
-            id: `String!`,
-            fields: `${entityTypePascal}Input`
+          replace: {
+            comment: `Replace a ${entityTypePascal} entity with the defined fields - existing data will be overwritten or deleted`,
+            name: `replace${entityTypePascal}`,
+            arguments: {
+              id: `String!`,
+              fields: `${entityTypePascal}Input`
+            },
+            returnType: `${entityTypePascal}!`
           },
-          returnType: `${entityTypePascal}!`
-        },
-        delete: {
-          comment: `Delete a ${entityTypePascal} entity`,
-          name: `delete${entityTypePascal}`,
-          arguments: {
-            id: `String!`
-          },
-          returnType: `String`
+          delete: {
+            comment: `Delete a ${entityTypePascal} entity`,
+            name: `delete${entityTypePascal}`,
+            arguments: {
+              id: `String!`
+            },
+            returnType: `String`
+          }
         }
       }
     }

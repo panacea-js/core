@@ -155,6 +155,8 @@ Entities.prototype.getData = function () {
 
   hooks.invoke('core.entities.definitions', this.entityTypes)
 
+  this._applyRevisions(this.entityTypes)
+
   _(this.entityTypes).forEach((entityTypeData, entityTypeName) => {
     this.addEntityTypeMeta(entityTypeData, entityTypeName)
     this.validateEntityType(entityTypeData, entityTypeName)
@@ -163,6 +165,30 @@ Entities.prototype.getData = function () {
   })
 
   return this.entityTypes
+}
+
+Entities.prototype._applyRevisions = function (entityTypes) {
+  if (!this._revisionsApplied) {
+    _(entityTypes).forEach((entityType, entityTypeName) => {
+      if (!entityType.revisions) {
+        return
+      }
+      const revisionEntityType = `${entityTypeName}Revision`
+
+      entityTypes[revisionEntityType] = _.cloneDeep(entityType)
+      entityTypes[revisionEntityType].plural = `${entityTypeName} Revisions`
+
+      entityType.fields._revisions = {
+        type: 'reference',
+        references: revisionEntityType,
+        label: 'Revisions',
+        description: `Revisions for ${entityTypeName}`,
+        many: true
+      }
+    })
+  }
+
+  this._revisionsApplied = true
 }
 
 Entities.prototype.saveEntityType = function (name: string, data: EntityType, locationKey: string) {

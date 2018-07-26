@@ -1,6 +1,7 @@
 storage: db
 description: People and access credentials for API access
 plural: Users
+revisions: true
 fields:
   id:
     label: User ID

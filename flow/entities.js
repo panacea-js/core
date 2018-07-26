@@ -35,6 +35,7 @@ declare type EntityType = {
   plural: string,
   storage: string,
   group?: string,
+  revisions?: boolean,
   _errors?: Array<Error>,
   _meta: Meta
 }
