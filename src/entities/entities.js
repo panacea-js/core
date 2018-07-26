@@ -167,7 +167,7 @@ Entities.prototype.getData = function () {
   return this.entityTypes
 }
 
-Entities.prototype._applyRevisions = function (entityTypes) {
+Entities.prototype._applyRevisions = function (entityTypes: EntityTypes) {
   if (!this._revisionsApplied) {
     _(entityTypes).forEach((entityType, entityTypeName) => {
       if (!entityType.revisions) {
