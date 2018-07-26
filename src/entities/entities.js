@@ -8,6 +8,7 @@ const Entities = function () {
     locationKey: 'app'
   }
   this.fieldTypes = this.registerFieldTypes()
+  this._revisionsApplied = false
 }
 
 Entities.prototype.registerFieldTypes = function () {
@@ -137,6 +138,7 @@ Entities.prototype.addFieldsMeta = function (fields: EntityTypeFields) {
 
 Entities.prototype.clearCache = function () {
   this.entityTypes = {}
+  this._revisionsApplied = false
 }
 
 Entities.prototype.getData = function () {
@@ -178,7 +180,7 @@ Entities.prototype._applyRevisions = function (entityTypes: EntityTypes) {
       entityTypes[revisionEntityType] = _.cloneDeep(entityType)
       entityTypes[revisionEntityType].plural = `${entityTypeName} Revisions`
 
-      entityType.fields._revisions = {
+      entityType.fields.revisions = {
         type: 'reference',
         references: revisionEntityType,
         label: 'Revisions',
@@ -227,6 +229,7 @@ Entities.prototype.saveEntityType = function (name: string, data: EntityType, lo
 
       try {
         dataJSON.fields = entities.removeFalsyFields(dataJSON.fields)
+        dataJSON.fields = entities.removeNonExportedFields(dataJSON.fields)
         dataJSON = entities.stripMeta(dataJSON)
         writeYmlFile(filePath, dataJSON)
         hooks.invoke('core.reload', `entity ${name} was created`)
@@ -268,10 +271,15 @@ Entities.prototype.removeFalsyFields = function (fields: EntityTypeFields) {
       if (_(value).isEmpty() && value !== true) {
         delete fields[fieldName][key]
       }
-      field.type === 'object' && field.hasOwnProperty('fields') && this.removeFalsyFields(field.fields)
     })
+    field.type === 'object' && field.hasOwnProperty('fields') && this.removeFalsyFields(field.fields)
   })
 
+  return fields
+}
+
+Entities.prototype.removeNonExportedFields = function (fields: EntityTypeFields) {
+  fields.revisions && delete fields.revisions
   return fields
 }
 
