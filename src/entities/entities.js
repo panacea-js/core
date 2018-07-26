@@ -116,11 +116,11 @@ Entities.prototype.addEntityTypeMeta = function (entityTypeData: EntityType, ent
 
 Entities.prototype.addFieldsMeta = function (fields: EntityTypeFields) {
   _(fields).forEach((field, fieldName) => {
+    field._meta = field._meta || {}
     // Provide field names as camel case so as not to interfere with
     // the underscores used to identify the entity/field object nesting hierarchy.
-    field._meta = {
-      camel: _(fieldName).camelCase()
-    }
+
+    field._meta['camel'] = _(fieldName).camelCase()
 
     field.description = field.description || ''
 

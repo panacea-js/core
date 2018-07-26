@@ -5,7 +5,8 @@ declare type Meta = {
   pascal: string,
   descriptionLowerFirst: string,
   pluralCamel: string,
-  camel: string
+  camel: string,
+  hookFile?: string
 }
 
 declare type EntityTypeFields = {
