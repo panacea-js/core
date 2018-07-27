@@ -163,7 +163,7 @@ declare class express$Router extends express$Route {
   ): void;
 
   // Can't use regular callable signature syntax due to https://github.com/facebook/flow/issues/3084
-  $call: (req: http$IncomingMessage, res: http$ServerResponse, next?: ?express$NextFunction) => void;
+  [[call]]: (req: http$IncomingMessage, res: http$ServerResponse, next?: ?express$NextFunction) => void;
 }
 
 declare class express$Application extends express$Router mixins events$EventEmitter {
