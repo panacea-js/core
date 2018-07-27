@@ -1,19 +1,20 @@
 /**
  * Entities Types.
  */
-declare type Meta = {
+declare type Meta = {|
   pascal: string,
   descriptionLowerFirst: string,
   pluralCamel: string,
   camel: string,
-  hookFile?: string
-}
+  hookFile?: string,
+  revisionEntityType?: string
+|}
 
 declare type EntityTypeFields = {
   [string]: EntityTypeField
 }
 
-declare type EntityTypeField = {
+declare type EntityTypeField = {|
   type: string,
   label: string,
   description?: string,
@@ -23,13 +24,13 @@ declare type EntityTypeField = {
   index?: boolean,
   fields?: EntityTypeFields,
   _meta: Meta
-}
+|}
 
 declare type EntityTypes = {
   [string]: EntityType
 }
 
-declare type EntityType = {
+declare type EntityType = {|
   description: string,
   fields: EntityTypeFields,
   plural: string,
@@ -38,7 +39,7 @@ declare type EntityType = {
   revisions?: boolean,
   _errors?: Array<Error>,
   _meta: Meta
-}
+|}
 
 // Public interface for saving entity types.
 declare type EntityTypePublic = EntityType | {
@@ -51,8 +52,8 @@ declare type EntityTypePublic = EntityType | {
  * Fields.
  */
 declare type FieldTypes = {
-  [string] : {
+  [string] : {|
     label: string,
     description: string
-  }
+  |}
 }
