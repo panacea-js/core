@@ -2,7 +2,7 @@ description: Scaley cold-blooded animal
 storage: db
 plural: Lizards
 fields:
-    _id:
+    id:
         label: Unique identifier
         type: id
     name:
