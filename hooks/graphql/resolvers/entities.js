@@ -71,8 +71,8 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
 
         const saveEntity = async function (Model, args, revisionId = null) {
           if (revisionId) {
-            args.fields.revisions = args.fields.revisions || []
-            args.fields.revisions.push(revisionId)
+            args.fields._revisions = args.fields._revisions || []
+            args.fields._revisions.push(revisionId)
           }
           const entity = await new Model(args.fields).save()
           return entity
@@ -86,13 +86,15 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
         const EntityModel = dbModels[entityData._meta.pascal]
 
         if (entityData.revisions) {
-          const EntityRevisionModel = dbModels[`${entityData._meta.pascal}Revision`]
+          // Save revision then master entity.
+          const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType]
 
           entity = await saveEntityRevision(EntityRevisionModel, args).then(revision => {
             return saveEntity(EntityModel, args, revision._id.toString())
           })
           .catch(err => log.error(err))
         } else {
+          // Save entity only - no revision.
           entity = await saveEntity(EntityModel, args)
         }
 

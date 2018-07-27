@@ -66,6 +66,10 @@
           "label": "Object",
           "description": "A nested data object"
         }
+      },
+      "revisions": {
+        "label": "Revisions",
+        "description": "Revisions for {entityTypeName}"
       }
     }
   }

@@ -8,7 +8,6 @@ const Entities = function () {
     locationKey: 'app'
   }
   this.fieldTypes = this.registerFieldTypes()
-  this._revisionsApplied = false
 }
 
 Entities.prototype.registerFieldTypes = function () {
@@ -58,35 +57,43 @@ Entities.prototype.registerFieldTypes = function () {
 
 Entities.prototype.addEntityTypeError = function (entityTypeData: EntityType, error: Error) {
   // Ensure the _errors array exists.
-  if (!entityTypeData._errors) entityTypeData._errors = []
+  entityTypeData._errors = entityTypeData._errors || []
   entityTypeData._errors.push(error)
 }
 
-Entities.prototype.validateEntityType = function (entityTypeData: EntityType, entityTypeName: string) {
+Entities.prototype.validateEntityType = function (entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save') {
+  // Entity type validators.
   const entityTypeValidators = [
     this._validateEntityTypeRequiredProperties.bind(this)
   ]
 
+  if (action === 'save') {
+    entityTypeValidators.push(this._validateEntityTypeReservedNames.bind(this))
+  }
+
   hooks.invoke('core.entities.entityTypeValidators', entityTypeValidators)
+  entityTypeValidators.map(validator => validator(entityTypeData, entityTypeName, action))
 
-  entityTypeValidators.map(validator => validator(entityTypeData, entityTypeName))
-
+  // Field validators.
   const entityTypeFieldsValidators = [
     this._validateEntityTypeRequiredFields.bind(this)
   ]
 
   hooks.invoke('core.entities.entityTypeFieldsValidators', entityTypeFieldsValidators)
-
-  entityTypeFieldsValidators.map(validator => validator(entityTypeData, entityTypeName, entityTypeData.fields))
+  entityTypeFieldsValidators.map(validator => validator(entityTypeData, entityTypeName, action, entityTypeData.fields))
 }
 
-Entities.prototype._validateEntityTypeRequiredProperties = function (entityTypeData: EntityType, entityTypeName: string) {
+Entities.prototype._validateEntityTypeRequiredProperties = function (entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save') {
   if (_(entityTypeData.fields).isEmpty()) this.addEntityTypeError(entityTypeData, TypeError(`Fields do not exist on entity type: ${entityTypeName}`))
   if (_(entityTypeData.plural).isEmpty()) this.addEntityTypeError(entityTypeData, TypeError(`A 'plural' key must be set on entity type: ${entityTypeName}`))
   if (_(entityTypeData.storage).isEmpty()) this.addEntityTypeError(entityTypeData, TypeError(`A 'storage' key must be set on entity type: ${entityTypeName}`))
 }
 
-Entities.prototype._validateEntityTypeRequiredFields = function (entityTypeData: EntityType, entityTypeName: string, fields: EntityTypeFields) {
+Entities.prototype._validateEntityTypeReservedNames = function (entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save') {
+  if (entityTypeName.indexOf('Revision') !== -1) this.addEntityTypeError(entityTypeData, Error(`${entityTypeName} cannot contain the word 'Revision' as this is used internally by Panacea`))
+}
+
+Entities.prototype._validateEntityTypeRequiredFields = function (entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save', fields: EntityTypeFields) {
   _(fields).forEach((field, fieldName) => {
     // Validate field contains all the required attributes.
     if (_(field).isEmpty()) this.addEntityTypeError(entityTypeData, TypeError(`Field ${fieldName} configuration is empty`))
@@ -105,23 +112,25 @@ Entities.prototype._validateEntityTypeRequiredFields = function (entityTypeData:
 Entities.prototype.addEntityTypeMeta = function (entityTypeData: EntityType, entityTypeName: string) {
   entityTypeData.description = entityTypeData.description || ''
 
-  this.entityTypes[entityTypeName]._meta = {
+  const meta: Meta = {
     camel: _.camelCase(entityTypeName),
     pascal: _.upperFirst(_.camelCase(entityTypeName)),
     descriptionLowerFirst: entityTypeData.description.charAt(0).toLowerCase() + entityTypeData.description.slice(1),
     pluralCamel: _.camelCase(entityTypeData.plural)
   }
 
-  hooks.invoke('core.entities.meta', this.entityTypes[entityTypeName], entityTypeName)
+  hooks.invoke('core.entities.meta', {entityTypeName, entityTypeData, meta})
+
+  this.entityTypes[entityTypeName]._meta = meta
 }
 
 Entities.prototype.addFieldsMeta = function (fields: EntityTypeFields) {
   _(fields).forEach((field, fieldName) => {
     field._meta = field._meta || {}
-    // Provide field names as camel case so as not to interfere with
-    // the underscores used to identify the entity/field object nesting hierarchy.
-
-    field._meta['camel'] = _(fieldName).camelCase()
+    // Enforce field names as camel case so as not to interfere with the
+    // underscores used to identify the entity/field object nesting hierarchy.
+    // Any system fields (such as _revisions) should remain unaltered.
+    field._meta['camel'] = _(fieldName.startsWith('_')) ? fieldName : _(fieldName).camelCase()
 
     field.description = field.description || ''
 
@@ -136,12 +145,11 @@ Entities.prototype.addFieldsMeta = function (fields: EntityTypeFields) {
   return fields
 }
 
-Entities.prototype.clearCache = function () {
+Entities.prototype.clearCache = function (): void {
   this.entityTypes = {}
-  this._revisionsApplied = false
 }
 
-Entities.prototype.getData = function () {
+Entities.prototype.getData = function (): EntityTypes {
   // Ensure that the filesystem is only hit once.
   if (_(this.entityTypes).isEmpty()) {
     _.forIn(registry.entities, registrantData => {
@@ -157,40 +165,14 @@ Entities.prototype.getData = function () {
 
   hooks.invoke('core.entities.definitions', this.entityTypes)
 
-  this._applyRevisions(this.entityTypes)
-
   _(this.entityTypes).forEach((entityTypeData, entityTypeName) => {
     this.addEntityTypeMeta(entityTypeData, entityTypeName)
-    this.validateEntityType(entityTypeData, entityTypeName)
+    this.validateEntityType(entityTypeData, entityTypeName, 'load')
     this.checkObjectsHaveFields(entityTypeData.fields, entityTypeName)
     entityTypeData.fields = this.addFieldsMeta(entityTypeData.fields)
   })
 
   return this.entityTypes
-}
-
-Entities.prototype._applyRevisions = function (entityTypes: EntityTypes) {
-  if (!this._revisionsApplied) {
-    _(entityTypes).forEach((entityType, entityTypeName) => {
-      if (!entityType.revisions) {
-        return
-      }
-      const revisionEntityType = `${entityTypeName}Revision`
-
-      entityTypes[revisionEntityType] = _.cloneDeep(entityType)
-      entityTypes[revisionEntityType].plural = `${entityTypeName} Revisions`
-
-      entityType.fields.revisions = {
-        type: 'reference',
-        references: revisionEntityType,
-        label: 'Revisions',
-        description: `Revisions for ${entityTypeName}`,
-        many: true
-      }
-    })
-  }
-
-  this._revisionsApplied = true
 }
 
 Entities.prototype.saveEntityType = function (name: string, data: EntityType, locationKey: string) {
@@ -202,9 +184,9 @@ Entities.prototype.saveEntityType = function (name: string, data: EntityType, lo
   // Clone the incoming data.
   let dataJSON = JSON.parse(JSON.stringify(data))
 
-  hooks.invoke('core.entities.preSaveEntityType', name, dataJSON, locationKey)
+  hooks.invoke('core.entities.preSaveEntityType', {name, dataJSON, locationKey})
 
-  this.validateEntityType(dataJSON, name)
+  this.validateEntityType(dataJSON, name, 'save')
 
   if (dataJSON._errors && dataJSON._errors.length > 0) {
     result.success = false
@@ -229,7 +211,6 @@ Entities.prototype.saveEntityType = function (name: string, data: EntityType, lo
 
       try {
         dataJSON.fields = entities.removeFalsyFields(dataJSON.fields)
-        dataJSON.fields = entities.removeNonExportedFields(dataJSON.fields)
         dataJSON = entities.stripMeta(dataJSON)
         writeYmlFile(filePath, dataJSON)
         hooks.invoke('core.reload', `entity ${name} was created`)
@@ -275,11 +256,6 @@ Entities.prototype.removeFalsyFields = function (fields: EntityTypeFields) {
     field.type === 'object' && field.hasOwnProperty('fields') && this.removeFalsyFields(field.fields)
   })
 
-  return fields
-}
-
-Entities.prototype.removeNonExportedFields = function (fields: EntityTypeFields) {
-  fields.revisions && delete fields.revisions
   return fields
 }
 
