@@ -37,11 +37,21 @@ const bootstrap = function (panaceaFile = 'default', runStages = []) {
   return new Bootstrap(panaceaConfigFile).all()
 }
 
+/**
+ * Get a unique port for testing between 30000 and 49999 based on the process
+ * id. This creates isolation between test files which ava runs as separate
+ * processes.
+ */
+const uniquePort = function () {
+  return 30000 + (process.pid % 20000)
+}
+
 const graphqlQuery = function (query, panaceaFile = 'default', fetchOptions = {}) {
+  const port = uniquePort()
   return new Promise((resolve, reject) => {
     const graphqlQueryRequest = function (query) {
       const { options, _ } = Panacea.container
-      const url = `${options.main.protocol}://${options.main.host}:${options.main.port}/${options.main.endpoint}`
+      const url = `${options.main.protocol}://${options.main.host}:${port}/${options.main.endpoint}`
       _.defaultsDeep(fetchOptions, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,8 +64,8 @@ const graphqlQuery = function (query, panaceaFile = 'default', fetchOptions = {}
 
     if (typeof Panacea === 'undefined') {
       bootstrap(panaceaFile).then(() => {
-        const { options, app } = Panacea.container
-        app.listen(options.main.port, graphqlQueryRequest(query))
+        const { app } = Panacea.container
+        app.listen(port, graphqlQueryRequest(query))
       })
     } else {
       graphqlQueryRequest(query)

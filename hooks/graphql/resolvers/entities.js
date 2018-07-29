@@ -20,25 +20,23 @@ const resolveNestedFields = function (
   currentType: string,
   fields: EntityTypeFields
 ) : void {
-  _(fields).forEach((field: EntityTypeField, fieldName) => {
-    const fieldCamel = field._meta.camel
-
+  _(fields).forEach((field: EntityTypeField, fieldName: string) => {
     if (field.type === 'object' && field.fields) {
-      resolveNestedFields(types, `${currentType}_${fieldCamel}`, field.fields)
+      resolveNestedFields(types, `${currentType}_${fieldName}`, field.fields)
     }
 
     if (field.type === 'reference') {
-      types[currentType] = {}
+      types[currentType] = types[currentType] || {}
 
-      types[currentType][fieldCamel] = function (sourceDocument, args, { dbModels }) {
+      types[currentType][fieldName] = function (sourceDocument, args, { dbModels }) {
         if (field.many) {
           let targetEntities = []
-          sourceDocument[fieldCamel].map(targetId => {
+          sourceDocument[fieldName].map(targetId => {
             targetEntities.push(dbModels[field.references].findById(targetId))
           })
           return targetEntities
         } else {
-          return dbModels[field.references].findById(sourceDocument[fieldCamel])
+          return dbModels[field.references].findById(sourceDocument[fieldName])
         }
       }
     }
@@ -89,7 +87,8 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
           // Save revision then master entity.
           const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType]
 
-          entity = await saveEntityRevision(EntityRevisionModel, args).then(revision => {
+          entity = await saveEntityRevision(EntityRevisionModel, args)
+          .then(revision => {
             return saveEntity(EntityModel, args, revision._id.toString())
           })
           .catch(err => log.error(err))

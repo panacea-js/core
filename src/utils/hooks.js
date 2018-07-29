@@ -89,7 +89,7 @@ Hooks.prototype.loadFromDirectories = function (paths) {
       return
     }
 
-    const hookFiles = glob.sync(path.resolve(hooksDirectory) + '/**/*.js')
+    const hookFiles = glob.sync(path.resolve(hooksDirectory) + '/**/*.js', {ignore: '**/*test.js'})
 
     hookFiles.forEach(filePath => {
       const file = require(filePath)

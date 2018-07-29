@@ -1,6 +1,7 @@
 description: Lovely furry thing
 storage: db
 plural: Cats
+revisions: true
 fields:
     id:
         label: Unique identifier
