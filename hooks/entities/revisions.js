@@ -15,6 +15,7 @@ export default {
         entityTypes[revisionEntityType] = _.cloneDeep(entityType)
         entityTypes[revisionEntityType].plural = `${entityTypeName} ${revisionsText}`
         entityTypes[revisionEntityType].revisions = false
+        entityTypes[revisionEntityType]._excludeGraphQL = true
 
         // _revision field stores an array of references to the revision entity.
         entityType.fields._revisions = {

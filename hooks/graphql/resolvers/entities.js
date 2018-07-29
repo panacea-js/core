@@ -47,6 +47,14 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
   const types = {}
 
   _(entityTypes).forEach(entityData => {
+    // If exclude flag is set on entity, don't set any direct query or mutation
+    // resolvers, but still resolve for any references made by other entity types.
+    if (entityData._excludeGraphQL) {
+      // Resolve top-level and nested objects and references.
+      resolveNestedFields(types, entityData._meta.pascal, entityData.fields)
+      return
+    }
+
     types[entityData._meta.pascal] = {}
 
     // Exclude the ID fields as user defined field, therefore > 1
@@ -61,8 +69,7 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
     resolvers.Query[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => modelQuery(dbModels[entityData._meta.pascal], parent, args)
 
     // Only allow mutations of entities that have fields.
-    // Exclude direct mutation of revision types.
-    if (hasFields && !_(entityData._meta.pascal).endsWith('Revision')) {
+    if (hasFields) {
       // Create entity.
       resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent, args, { dbModels }) => {
         let entity = null
@@ -130,7 +137,7 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
       // Replace entity
     }
 
-    // Resolve top-level and nested object references.
+    // Resolve top-level and nested objects and references.
     resolveNestedFields(types, entityData._meta.pascal, entityData.fields)
   })
 
