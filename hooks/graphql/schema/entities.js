@@ -9,7 +9,7 @@ const getDefinitions = function (translateEntityTypeFields, entityTypes) {
     mutations: {}
   }
 
-   // Get entity types, inputs, queries and mutations.
+  // Get entity types, inputs, queries and mutations.
   _(entityTypes).forEach((entityTypeData: EntityType, entityTypeName) => {
     const definedFields = translateEntityTypeFields(entityTypeData.fields)
 

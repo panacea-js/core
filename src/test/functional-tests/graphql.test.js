@@ -107,14 +107,14 @@ test('Can create, read and delete an entity with referenced entities', t => {
       }
     }
   `)
-  .then(json => {
-    const rover = json.data.createDog
-    t.is(rover.name, 'Rover')
-    return rover.id
-  })
-  .then(roverId => {
+    .then(json => {
+      const rover = json.data.createDog
+      t.is(rover.name, 'Rover')
+      return rover.id
+    })
+    .then(roverId => {
     // Create 'Fido' the dog.
-    return graphqlQuery(`
+      return graphqlQuery(`
       mutation {
         createDog(fields: {
           name: "Fido"
@@ -124,21 +124,21 @@ test('Can create, read and delete an entity with referenced entities', t => {
         }
       }
     `)
-    .then(json => {
-      const fido = json.data.createDog
-      const fidoId = fido.id
-      t.is(fido.name, 'Fido')
-      return [roverId, fidoId]
+        .then(json => {
+          const fido = json.data.createDog
+          const fidoId = fido.id
+          t.is(fido.name, 'Fido')
+          return [roverId, fidoId]
+        })
     })
-  })
-  .then(dogIds => {
-    const livesWithDogsInput = dogIds.map(d => `"${d}"`).join(', ')
+    .then(dogIds => {
+      const livesWithDogsInput = dogIds.map(d => `"${d}"`).join(', ')
 
-    // Create 'Puss' and reference the dogs. Also given the Cat entity has
-    // revisions set, it should be possible to retrieve the CatRevision
-    // resolved reference under the _revisions field. More comprehensive
-    // revision tests are in hooks/entities/test/revisions.test.js
-    return graphqlQuery(`
+      // Create 'Puss' and reference the dogs. Also given the Cat entity has
+      // revisions set, it should be possible to retrieve the CatRevision
+      // resolved reference under the _revisions field. More comprehensive
+      // revision tests are in hooks/entities/test/revisions.test.js
+      return graphqlQuery(`
       mutation {
         createCat(fields: {
           name: "Puss",
@@ -161,36 +161,36 @@ test('Can create, read and delete an entity with referenced entities', t => {
         }
       }
     `)
-    .then(json => {
-      const puss = json.data.createCat
-      t.is(puss.name, 'Puss')
-      t.is(puss.livesWithDogs[0].name, 'Rover')
-      t.is(puss.livesWithDogs[1].name, 'Fido')
-      t.is(puss._revisions[0].livesWithDogs[0].name, 'Rover')
-      t.is(puss._revisions[0].livesWithDogs[1].name, 'Fido')
-      return {
-        catId: puss.id,
-        dogIds
-      }
+        .then(json => {
+          const puss = json.data.createCat
+          t.is(puss.name, 'Puss')
+          t.is(puss.livesWithDogs[0].name, 'Rover')
+          t.is(puss.livesWithDogs[1].name, 'Fido')
+          t.is(puss._revisions[0].livesWithDogs[0].name, 'Rover')
+          t.is(puss._revisions[0].livesWithDogs[1].name, 'Fido')
+          return {
+            catId: puss.id,
+            dogIds
+          }
+        })
     })
-  })
-  .then(ids => {
+    .then(ids => {
     // Read 'Puss' from its generated ID and assert they're friends (or at least live together!)
-    return graphqlQuery(`{ cat(id: "${ids.catId}") { name, livesWithDogs { id, name } } }`).then(json => {
-      const puss = json.data.cat
-      t.is(puss.name, 'Puss')
-      t.is(puss.livesWithDogs[0].id, ids.dogIds[0])
-      t.is(puss.livesWithDogs[0].name, 'Rover')
-      t.is(puss.livesWithDogs[1].id, ids.dogIds[1])
-      t.is(puss.livesWithDogs[1].name, 'Fido')
-      return ids
+      return graphqlQuery(`{ cat(id: "${ids.catId}") { name, livesWithDogs { id, name } } }`).then(json => {
+        const puss = json.data.cat
+        t.is(puss.name, 'Puss')
+        t.is(puss.livesWithDogs[0].id, ids.dogIds[0])
+        t.is(puss.livesWithDogs[0].name, 'Rover')
+        t.is(puss.livesWithDogs[1].id, ids.dogIds[1])
+        t.is(puss.livesWithDogs[1].name, 'Fido')
+        return ids
+      })
     })
-  })
-  .then(ids => {
+    .then(ids => {
     // Delete 'Puss' with the deleted ID returned.
-    return graphqlQuery(`mutation { deleteCat(id: "${ids.catId}") }`).then(json => {
-      t.is(ids.catId, json.data.deleteCat)
+      return graphqlQuery(`mutation { deleteCat(id: "${ids.catId}") }`).then(json => {
+        t.is(ids.catId, json.data.deleteCat)
+      })
     })
-  })
-  .catch(error => console.error(error))
+    .catch(error => console.error(error))
 })

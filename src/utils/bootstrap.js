@@ -208,110 +208,110 @@ Bootstrap.prototype.stage7 = function () {
   } = Panacea.container
 
   graphQLTypeDefinitions()
-  .then(typeDefs => {
-    const resolvers = graphQLResolvers()
+    .then(typeDefs => {
+      const resolvers = graphQLResolvers()
 
-    const schema = makeExecutableSchema({
-      typeDefs,
-      resolvers
-    })
-
-    const app = express()
-
-    const graphqlExpressDynamicMiddleware = dynamicMiddleware.create(
-      graphqlExpress(req => {
-        return {
-          schema,
-          context: {
-            req,
-            dbModels: dbModels()
-          }
-        }
+      const schema = makeExecutableSchema({
+        typeDefs,
+        resolvers
       })
-    )
 
-    let whitelist = []
-    hooks.invoke('core.cors.whitelist', { whitelist, options })
+      const app = express()
 
-    var corsOptions = {
-      origin: function (origin, callback) {
-        if (options.main.disableCors || whitelist[0] === '*' || whitelist.indexOf(origin) !== -1) {
-          callback(null, true)
-        } else {
-          callback(new Error(i18n.t('core.bootstrap.notAllowedCORS'))) // Not allowed by CORS
-        }
-      },
-      // Pass HTTP headers to graphql endpoint.
-      credentials: true
-    }
-
-    // Main GraphQL endpoint.
-    app.use(
-      `/${options.main.endpoint}`,
-      cors(corsOptions),
-      bodyParser.json(),
-      graphqlExpressDynamicMiddleware.handler()
-    )
-
-    // Allow middleware to be dynamically replaced via core.reload hook without needing to restart the server.
-    hooks.on('core.reload', reason => {
-      const startTime = Date.now()
-
-      const { entities } = Panacea.container
-      entities.clearCache()
-
-      graphQLTypeDefinitions().then(typeDefs => {
-        const resolvers = graphQLResolvers()
-
-        const schema = makeExecutableSchema({
-          typeDefs,
-          resolvers
-        })
-
-        graphqlExpressDynamicMiddleware.replace(
-          graphqlExpress(req => {
-            return {
-              schema,
-              context: {
-                req,
-                dbModels: dbModels()
-              }
+      const graphqlExpressDynamicMiddleware = dynamicMiddleware.create(
+        graphqlExpress(req => {
+          return {
+            schema,
+            context: {
+              req,
+              dbModels: dbModels()
             }
+          }
+        })
+      )
+
+      let whitelist = []
+      hooks.invoke('core.cors.whitelist', { whitelist, options })
+
+      var corsOptions = {
+        origin: function (origin, callback) {
+          if (options.main.disableCors || whitelist[0] === '*' || whitelist.indexOf(origin) !== -1) {
+            callback(null, true)
+          } else {
+            callback(new Error(i18n.t('core.bootstrap.notAllowedCORS'))) // Not allowed by CORS
+          }
+        },
+        // Pass HTTP headers to graphql endpoint.
+        credentials: true
+      }
+
+      // Main GraphQL endpoint.
+      app.use(
+        `/${options.main.endpoint}`,
+        cors(corsOptions),
+        bodyParser.json(),
+        graphqlExpressDynamicMiddleware.handler()
+      )
+
+      // Allow middleware to be dynamically replaced via core.reload hook without needing to restart the server.
+      hooks.on('core.reload', reason => {
+        const startTime = Date.now()
+
+        const { entities } = Panacea.container
+        entities.clearCache()
+
+        graphQLTypeDefinitions().then(typeDefs => {
+          const resolvers = graphQLResolvers()
+
+          const schema = makeExecutableSchema({
+            typeDefs,
+            resolvers
+          })
+
+          graphqlExpressDynamicMiddleware.replace(
+            graphqlExpress(req => {
+              return {
+                schema,
+                context: {
+                  req,
+                  dbModels: dbModels()
+                }
+              }
+            })
+          )
+        }).catch(error => console.error(error))
+
+        const timeToReplace = Date.now() - startTime
+
+        log.info(i18n.t('core.bootstrap.reloadGraphql', {timeToReplace, reason})) // Reloaded graphql middleware (in {timeToReplace}ms) because {reason}
+      })
+
+      // GraphiQL endpoint.
+      if (options.graphiql.enable) {
+        app.use(
+          `/${options.graphiql.endpoint}`,
+          graphiqlExpress({
+            endpointURL: `/${options.main.endpoint}`
           })
         )
-      }).catch(error => console.error(error))
+      }
 
-      const timeToReplace = Date.now() - startTime
+      // Voyager endpoint.
+      if (options.voyager.enable) {
+        app.use(
+          `/${options.voyager.endpoint}`,
+          voyagerMiddleware({
+            endpointUrl: `/${options.main.endpoint}`
+          })
+        )
+      }
 
-      log.info(i18n.t('core.bootstrap.reloadGraphql', {timeToReplace, reason})) // Reloaded graphql middleware (in {timeToReplace}ms) because {reason}
+      // Assign the express app onto the Panacea container so the bootstrap caller can serve it.
+      Panacea.value('app', app)
     })
-
-    // GraphiQL endpoint.
-    if (options.graphiql.enable) {
-      app.use(
-        `/${options.graphiql.endpoint}`,
-        graphiqlExpress({
-          endpointURL: `/${options.main.endpoint}`
-        })
-      )
-    }
-
-    // Voyager endpoint.
-    if (options.voyager.enable) {
-      app.use(
-        `/${options.voyager.endpoint}`,
-        voyagerMiddleware({
-          endpointUrl: `/${options.main.endpoint}`
-        })
-      )
-    }
-
-    // Assign the express app onto the Panacea container so the bootstrap caller can serve it.
-    Panacea.value('app', app)
-  })
-  .catch(error =>
-    log.error(new Error(i18n.t('core.bootstrap.typeDefsError', {error}))) // Server not started. Type definitions error: {error}
-  )
+    .catch(error =>
+      log.error(new Error(i18n.t('core.bootstrap.typeDefsError', {error}))) // Server not started. Type definitions error: {error}
+    )
 }
 
 export default Bootstrap

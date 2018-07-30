@@ -95,10 +95,10 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
           const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType]
 
           entity = await saveEntityRevision(EntityRevisionModel, args)
-          .then(revision => {
-            return saveEntity(EntityModel, args, revision._id.toString())
-          })
-          .catch(err => log.error(err))
+            .then(revision => {
+              return saveEntity(EntityModel, args, revision._id.toString())
+            })
+            .catch(err => log.error(err))
         } else {
           // Save entity only - no revision.
           entity = await saveEntity(EntityModel, args)

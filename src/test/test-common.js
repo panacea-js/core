@@ -58,8 +58,8 @@ const graphqlQuery = function (query, panaceaFile = 'default', fetchOptions = {}
         body: JSON.stringify({ query })
       })
       return fetch(url, fetchOptions)
-      .then(response => resolve(response.json()))
-      .catch(error => console.error(error) && reject(error))
+        .then(response => resolve(response.json()))
+        .catch(error => console.error(error) && reject(error))
     }
 
     if (typeof Panacea === 'undefined') {
