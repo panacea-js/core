@@ -61,6 +61,13 @@ class Transaction {
     }
 
     if (this.error) {
+      // Rollback handlers should not assume any existing state change has
+      // succeeded (such as the main operation) because it's possible that a
+      // fail() can be issued from any stage. Instead, rollback handlers should
+      // independently check the current state to determine what tasks the
+      // rollback needs to perform. It can help rollback handlers understand
+      // where something failed if the callback issuing the fail() adds useful
+      // information to the context.
       await this._invokeHandlers('rollback', true)
       this.status = 'failed'
       // Complete callbacks are run even on failure, so can be considered always
