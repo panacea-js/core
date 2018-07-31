@@ -27,43 +27,37 @@ class Transaction {
   async fail (error: Error) {
     this.status = 'rollback'
     this._error = error
-    await this._handlers.forEach(async (handler: transactionHandler) => {
-      if (typeof handler.rollback === 'function') {
-        await handler.rollback(this)
-      }
-    })
+    await this._invokeHandlers('rollback', true)
     this.status = 'failed'
-    await this._handlers.forEach(async (handler: transactionHandler) => {
-      if (typeof handler.complete === 'function') {
-        await handler.complete(this)
+    // Complete callbacks are run even on failure, so can be considered always
+    // run at the end of a transaction execution.
+    await this._invokeHandlers('complete', true)
+  }
+  async _asyncForEach (array: Array<transactionHandler>, callback: Function) {
+    for (let index = 0; index < array.length; index++) {
+      await callback(array[index], index, array)
+    }
+  }
+  async _invokeHandlers (stage: string, proceedOnFail: boolean = false) {
+    await this._asyncForEach(this._handlers, async (handler: transactionHandler) => {
+      if ((!this._error || proceedOnFail) && typeof handler[stage] === 'function') {
+        try {
+          await handler[stage](this)
+        } catch (error) {
+          this.fail(error)
+        }
       }
     })
   }
   async execute () {
     this.status = 'prepare'
-    await this._handlers.forEach(async (handler: transactionHandler) => {
-      if (!this._error && typeof handler.prepare === 'function') {
-        await handler.prepare(this)
-      }
-    })
-
-    if (this._error) return this
+    await this._invokeHandlers('prepare')
 
     this.status = 'operation'
-    await this._handlers.forEach(async (handler: transactionHandler) => {
-      if (!this._error && typeof handler.operation === 'function') {
-        await handler.operation(this)
-      }
-    })
-
-    if (this._error) return this
+    await this._invokeHandlers('operation')
 
     this.status = 'complete'
-    await this._handlers.forEach(async (handler: transactionHandler) => {
-      if (!this._error && typeof handler.complete === 'function') {
-        await handler.complete(this)
-      }
-    })
+    await this._invokeHandlers('complete')
 
     return this
   }
