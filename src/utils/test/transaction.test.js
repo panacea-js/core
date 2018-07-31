@@ -104,7 +104,7 @@ test('A transaction can fail and rollbacks are called', async t => {
     {
       operation: async (txn) => {
         txn.context.stack.push('Attempting to perform an operation that fails')
-        txn.fail(Error(`Test failure`))
+        txn.fail(new Error(`Test failure`))
       },
       rollback: async (txn) => {
         txn.context.stack.push('Main operation is rolling back')
@@ -113,7 +113,7 @@ test('A transaction can fail and rollbacks are called', async t => {
   ]
 
   await new Transaction(handlers, context).execute().then(txn => {
-    t.is(txn._error.message, 'Test failure')
+    t.is(txn.error.message, 'Test failure')
     t.is(txn.status, 'failed')
 
     const expectedStack = [
@@ -167,7 +167,7 @@ test('A transaction can catch unexpected errors when thrown and run fail functio
   ]
 
   await new Transaction(handlers, context).execute().then(txn => {
-    t.is(txn._error.message, 'Error was thrown')
+    t.is(txn.error.message, 'Error was thrown')
     t.is(txn.status, 'failed')
 
     const expectedStack = [
@@ -177,6 +177,46 @@ test('A transaction can catch unexpected errors when thrown and run fail functio
       'First prepare handler is rolling back',
       'Second prepare handler is rolling back',
       'Main operation is rolling back'
+    ]
+
+    t.true(_.isEqual(expectedStack, txn.context.stack))
+  })
+})
+
+test('A transaction does not execute the operation if a prepare handler issues a fail().', async t => {
+  t.plan(3)
+
+  const context = {
+    // Stack stores the order in which handlers are executed.
+    stack: []
+  }
+  const handlers = [
+    // Pre-handler
+    {
+      prepare: async (txn) => {
+        txn.context.stack.push(`Prepare handler called which issues a fail()`)
+        txn.fail(new Error(`Prepare handler failed for some reason`))
+      }
+    },
+    // Main operation
+    {
+      operation: async (txn) => {
+        txn.context.stack.push(`Performing main operation that shouldn't run`)
+        t.fail()
+      },
+      rollback: async (txn) => {
+        txn.context.stack.push(`Main operation is rolling back`)
+      }
+    }
+  ]
+
+  await new Transaction(handlers, context).execute().then(txn => {
+    t.is(txn.error.message, 'Prepare handler failed for some reason')
+    t.is(txn.status, 'failed')
+
+    const expectedStack = [
+      `Prepare handler called which issues a fail()`,
+      `Main operation is rolling back`
     ]
     t.true(_.isEqual(expectedStack, txn.context.stack))
   })
