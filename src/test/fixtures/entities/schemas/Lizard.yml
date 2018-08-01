@@ -9,6 +9,10 @@ fields:
         label: Name
         type: string
         required: true
+    bestBuddy:
+        label: Best buddy
+        type: reference
+        references: Lizard
     social:
         label: Social links
         description: Add you social media links

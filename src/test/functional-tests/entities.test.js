@@ -2,75 +2,11 @@ import test from 'ava'
 import { graphqlQuery, initTasks } from '../test-common'
 initTasks(test)
 
-test('_entityTypes graphql query resolves with Cat and Dog entity types', t => {
-  t.plan(2)
-
-  return graphqlQuery('{ _entityTypes { name, data } }')
-    .then(json => {
-      // console.log(JSON.parse(json.data._entityTypes[0].data))
-      const entityNames = json.data._entityTypes.map(et => et.name)
-      t.true(entityNames.includes('Cat'))
-      t.true(entityNames.includes('Dog'))
-    })
-    .catch(error => console.error(error))
-})
-
-test('_entityType graphql query resolves with Cat entity type', t => {
-  graphqlQuery('{ _entityType(name: "Cat") { name } }')
-    .then(json => {
-      t.true(json.data._entityType.name === 'Cat')
-    })
-    .catch(error => console.error(error))
-})
-
-test('_fieldTypes graphql query resolves with basic field types', t => {
-  t.plan(4)
-
-  return graphqlQuery('{ _fieldTypes { type } }')
-    .then(json => {
-      const fieldTypes = json.data._fieldTypes.map(ft => ft.type)
-      t.true(fieldTypes.includes('id'))
-      t.true(fieldTypes.includes('string'))
-      t.true(fieldTypes.includes('int'))
-      t.true(fieldTypes.includes('object'))
-    })
-    .catch(error => console.error(error))
-})
-
-test('Sending a language cookie sends translated results for _fieldTypes graphql query', t => {
-  const fetchOptions = {
-    headers: {
-      cookie: 'PANACEA-LANGUAGE=es; SOME-OTHER-COOKIE=nothing' // Request Spanish results via cookie
-    }
-  }
-  return graphqlQuery('{ _fieldTypes { type, label } }', 'default', fetchOptions)
-    .then(json => {
-      const fieldTypes = json.data._fieldTypes
-      t.is(fieldTypes.find(x => x.type === 'string').label, 'Cadena')
-    })
-    .catch(error => console.error(error))
-})
-
-test('Sending an invalid language cookie sends translated results for _fieldTypes graphql query fallen back to English', t => {
-  // Note: this requires that the testing environment defaults to English.
-  const fetchOptions = {
-    headers: {
-      cookie: 'PANACEA-LANGUAGE=invalid; SOME-OTHER-COOKIE=nothing' // Request Spanish results via cookie
-    }
-  }
-  return graphqlQuery('{ _fieldTypes { type, label } }', 'default', fetchOptions)
-    .then(json => {
-      const fieldTypes = json.data._fieldTypes
-      t.is(fieldTypes.find(x => x.type === 'string').label, 'String')
-    })
-    .catch(error => console.error(error))
-})
-
-test('Can create, read and delete an entity with just one field', t => {
+test('Can create, read and delete an entity with just one field', async t => {
   t.plan(3)
 
   // Create 'Puss'.
-  return graphqlQuery(`mutation { createCat(fields: { name: "Puss" }) { id, name } }`)
+  await graphqlQuery(`mutation { createCat(fields: { name: "Puss" }) { id, name } }`)
     .then(json => {
       const entity = json.data.createCat
       t.is(entity.name, 'Puss')
@@ -93,11 +29,11 @@ test('Can create, read and delete an entity with just one field', t => {
     .catch(error => console.error(error))
 })
 
-test('Can create, read and delete an entity with referenced entities', t => {
+test('Can create, read and delete an entity with referenced entities', async t => {
   t.plan(13)
 
   // Create 'Rover' the dog.
-  return graphqlQuery(`
+  await graphqlQuery(`
     mutation {
       createDog(fields: {
         name: "Rover"
@@ -193,4 +129,74 @@ test('Can create, read and delete an entity with referenced entities', t => {
       })
     })
     .catch(error => console.error(error))
+})
+
+test('Can create and read two entities that reference each other', t => {
+  const createLizard = (name) => graphqlQuery(`
+    mutation {
+      createLizard(fields: {
+        name: "${name}"
+      }) {
+        id,
+        name
+      }
+    }
+  `)
+
+  const createLizardWithBestBuddy = (name, buddyId) => graphqlQuery(`
+    mutation {
+      createLizard(fields: {
+        name: "${name}",
+        bestBuddy: "${buddyId}"
+      }) {
+        id,
+        name,
+        bestBuddy {
+          id,
+          name
+        }
+      }
+    }
+  `)
+
+  return createLizard('Lizzy').then(json => {
+    const lizzyId = json.data.createLizard.id
+    return createLizardWithBestBuddy('Bruno', lizzyId).then(json => {
+      const bestBuddyBruno = json.data.createLizard.bestBuddy.id
+      t.is(bestBuddyBruno, lizzyId)
+    })
+  })
+})
+
+test('Can create and read three entities in a single query', t => {
+  t.plan(3)
+  const createLizard = (name) => graphqlQuery(`
+    mutation {
+      createLizard(fields: {
+        name: "${name}"
+      }) {
+        id
+      }
+    }
+  `)
+
+  const allLizards = () => graphqlQuery(`
+    {
+      lizards {
+        id,
+        name
+      }
+    }
+  `)
+
+  return createLizard('Scaley')
+    .then(() => createLizard('Lennie'))
+    .then(() => createLizard('Izzy'))
+    .then(() => allLizards())
+    .then(json => {
+      const lizardNames = json.data.lizards.map(l => l.name)
+      t.true(lizardNames.includes('Scaley'))
+      t.true(lizardNames.includes('Lennie'))
+      t.true(lizardNames.includes('Izzy'))
+    })
 })

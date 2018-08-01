@@ -46,16 +46,19 @@ const uniquePort = function () {
   return 30000 + (process.pid % 20000)
 }
 
-const graphqlQuery = function (query, panaceaFile = 'default', fetchOptions = {}) {
+const graphqlQuery = function (query, variables, panaceaFile = 'default', fetchOptions = {}) {
   const port = uniquePort()
   return new Promise((resolve, reject) => {
-    const graphqlQueryRequest = function (query) {
+    const graphqlQueryRequest = function (query, variables) {
       const { options, _ } = Panacea.container
       const url = `${options.main.protocol}://${options.main.host}:${port}/${options.main.endpoint}`
       _.defaultsDeep(fetchOptions, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
+        body: JSON.stringify({
+          query,
+          variables
+        })
       })
       return fetch(url, fetchOptions)
         .then(response => resolve(response.json()))
@@ -65,10 +68,10 @@ const graphqlQuery = function (query, panaceaFile = 'default', fetchOptions = {}
     if (typeof Panacea === 'undefined') {
       bootstrap(panaceaFile).then(() => {
         const { app } = Panacea.container
-        app.listen(port, graphqlQueryRequest(query))
+        app.listen(port, graphqlQueryRequest(query, variables))
       })
     } else {
-      graphqlQueryRequest(query)
+      graphqlQueryRequest(query, variables)
     }
   })
 }
