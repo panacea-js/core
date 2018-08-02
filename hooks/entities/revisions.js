@@ -27,6 +27,7 @@ export default {
         }
       })
     })
+
     hooks.on('core.entities.meta', args => {
       const meta: Meta = args.meta
       const entityTypeData: EntityType = args.entityTypeData
@@ -35,6 +36,30 @@ export default {
       if (entityTypeData.revisions) {
         meta.revisionEntityType = _.upperFirst(_.camelCase(entityTypeName)) + 'Revision'
       }
+    })
+
+    hooks.on('core.entities.entityCreateHandlers', handlers => {
+      const revisionCreateHandler = {
+        prepare: async function (txn) {
+          const { entityData, dbModels, args } = txn.context
+          if (entityData.revisions) {
+            const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType]
+            const entityRevision = await new EntityRevisionModel(args.fields).save()
+            args.fields._revisions = args.fields._revisions || []
+            args.fields._revisions.push(entityRevision._id.toString())
+            txn.context.createdRevisionId = entityRevision._id.toString()
+          }
+        },
+        rollback: async function (txn) {
+          if (txn.context.createdRevisionId) {
+            const { entityData, dbModels } = txn.context
+            const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType]
+            EntityRevisionModel.findByIdAndDelete(txn.context.createdRevisionId)
+          }
+        }
+      }
+
+      handlers.push(revisionCreateHandler)
     })
   }
 }

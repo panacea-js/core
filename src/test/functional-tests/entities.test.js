@@ -108,7 +108,7 @@ test('Can create, read and delete an entity with referenced entities', async t =
             catId: puss.id,
             dogIds
           }
-        })
+        }).catch(error => console.error(error))
     })
     .then(ids => {
     // Read 'Puss' from its generated ID and assert they're friends (or at least live together!)

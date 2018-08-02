@@ -49,6 +49,7 @@ export const registerServices = function (s, options) {
   s.add('entities', '%core/entities/entities', 'entities')
   s.add('dbConnection', '%core/mongodb/connection', 'dbConnection', [servicesOptions.db])
   s.add('dbModels', '%core/mongodb/models', 'dbModels')
+  s.add('Transaction', '%core/utils/transaction', 'Transaction')
   s.add('graphQLTypeDefinitions', '%core/graphql/types', 'graphQLTypeDefinitions')
   s.add('graphQLResolvers', '%core/graphql/resolvers', 'graphQLResolvers')
   s.add('dynamicMiddleware', '%core/utils/dynamic-middleware')

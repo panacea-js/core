@@ -1,5 +1,5 @@
 // @flow
-const { _, log } = Panacea.container
+const { _, log, hooks, Transaction } = Panacea.container
 
 /**
  * Resolves nested objects as separates types using an underscore to delineate
@@ -72,40 +72,27 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
     if (hasFields) {
       // Create entity.
       resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent, args, { dbModels }) => {
-        let entity = null
-
-        const saveEntity = async function (Model, args, revisionId = null) {
-          if (revisionId) {
-            args.fields._revisions = args.fields._revisions || []
-            args.fields._revisions.push(revisionId)
-          }
-          const entity = await new Model(args.fields).save()
-          return entity
+        const transactionContext = {
+          parent,
+          args,
+          dbModels,
+          entityType: entityData._meta.pascal,
+          entityData
         }
 
-        const saveEntityRevision = async function (Model, args) {
-          const entityRevision = await new Model(args.fields).save()
-          return entityRevision
-        }
+        const transactionHandlers = []
+        hooks.invoke('core.entities.entityCreateHandlers', transactionHandlers)
 
-        const EntityModel = dbModels[entityData._meta.pascal]
-
-        if (entityData.revisions) {
-          // Save revision then master entity.
-          const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType]
-
-          entity = await saveEntityRevision(EntityRevisionModel, args)
-            .then(revision => {
-              return saveEntity(EntityModel, args, revision._id.toString())
-            })
-            .catch(err => log.error(err))
-        } else {
-          // Save entity only - no revision.
-          entity = await saveEntity(EntityModel, args)
-        }
-
-        entity._id = entity._id.toString()
-        return entity
+        return new Transaction(transactionHandlers, transactionContext).execute()
+          .then(txn => {
+            if (txn.status === 'complete') {
+              const createdEntity = txn.context.createdEntity
+              createdEntity._id = createdEntity._id.toString()
+              return createdEntity
+            }
+            return txn._error
+          })
+          .catch(error => log.error(error))
       }
 
       // Delete entity.
