@@ -3,19 +3,21 @@ const { _, i18n } = Panacea.container
 
 export default {
   register (hooks: events$EventEmitter) {
-    hooks.once('core.entities.definitions', entityTypes => {
+    hooks.once('core.entities.definitions', (entityTypes: EntityTypes) => {
       const revisionsText = i18n.t('core.entities.revisions.label') // Revisions
 
-      _(entityTypes).forEach((entityType, entityTypeName) => {
+      for (const entityTypeName of Object.keys(entityTypes)) {
+        const entityType: EntityType = entityTypes[entityTypeName]
         if (!entityType.revisions) {
           return
         }
         const revisionEntityType = _.upperFirst(_.camelCase(entityTypeName)) + 'Revision'
 
-        entityTypes[revisionEntityType] = _.cloneDeep(entityType)
-        entityTypes[revisionEntityType].plural = `${entityTypeName} ${revisionsText}`
-        entityTypes[revisionEntityType].revisions = false
-        entityTypes[revisionEntityType]._excludeGraphQL = true
+        const clonedRevision: EntityType = _.cloneDeep(entityType)
+        clonedRevision.plural = `${entityTypeName} ${revisionsText}`
+        clonedRevision.revisions = false
+        clonedRevision._excludeGraphQL = true
+        entityTypes[revisionEntityType] = clonedRevision
 
         // _revision field stores an array of references to the revision entity.
         entityType.fields._revisions = {
@@ -25,7 +27,7 @@ export default {
           description: i18n.t('core.entities.revisions.description', {entityTypeName}), // Revisions for ${entityTypeName},
           many: true
         }
-      })
+      }
     })
 
     hooks.on('core.entities.meta', args => {
@@ -38,7 +40,7 @@ export default {
       }
     })
 
-    hooks.on('core.entities.entityCreateHandlers', handlers => {
+    hooks.on('core.entities.entityCreateHandlers', (handlers: Array<transactionHandler>) => {
       const revisionCreateHandler = {
         prepare: async function (txn) {
           const { entityData, dbModels, args } = txn.context
@@ -52,7 +54,8 @@ export default {
         },
         rollback: async function (txn) {
           if (txn.context.createdRevisionId) {
-            const { entityData, dbModels } = txn.context
+            const entityData: EntityType = txn.context.entityData
+            const dbModels: dbModels = txn.context.dbModels
             const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType]
             EntityRevisionModel.findByIdAndDelete(txn.context.createdRevisionId)
           }

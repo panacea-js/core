@@ -1,17 +1,5 @@
 // @flow
 
-/**
-* Transaction handler definition.
-*/
-type transactionHandler = {| // eslint-disable-line no-undef
-  prepare?: (txn: Transaction) => mixed, // eslint-disable-line no-use-before-define
-  operation?: (txn: Transaction) => mixed, // eslint-disable-line no-use-before-define
-  rollback?: (txn: Transaction) => mixed, // eslint-disable-line no-use-before-define
-  complete?: (txn: Transaction) => mixed // eslint-disable-line no-use-before-define
-|}
-
-type transactionStatus = 'init' | 'prepare' | 'operation' | 'rollback' | 'complete' | 'failed' // eslint-disable-line no-undef
-
 class Transaction {
   context: {} // eslint-disable-line no-undef
   _handlers: Array<transactionHandler> // eslint-disable-line no-undef

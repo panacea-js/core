@@ -1,7 +1,7 @@
 // @flow
 export default {
   register (hooks: events$EventEmitter) {
-    hooks.on('core.entities.entityCreateHandlers', handlers => {
+    hooks.on('core.entities.entityCreateHandlers', (handlers: Array<transactionHandler>) => {
       const entityCreateHandler = {
         operation: async function (txn) {
           const { entityData, dbModels, args } = txn.context

@@ -23,7 +23,7 @@ declare type EntityTypeField = {|
   required?: boolean,
   index?: boolean,
   fields?: EntityTypeFields,
-  _meta: Meta
+  _meta?: Meta
 |}
 
 declare type EntityTypes = {
@@ -41,6 +41,10 @@ declare type EntityType = {|
   _errors?: Array<Error>,
   _meta: Meta
 |}
+
+declare type EntityTypesPublic = {
+  [string]: EntityTypePublic
+}
 
 // Public interface for saving entity types.
 declare type EntityTypePublic = EntityType | {
