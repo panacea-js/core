@@ -37,39 +37,38 @@ const bootstrap = function (panaceaFile = 'default', runStages = []) {
   return new Bootstrap(panaceaConfigFile).all()
 }
 
-/**
- * Get a unique port for testing between 30000 and 49999 based on the process
- * id. This creates isolation between test files which ava runs as separate
- * processes.
- */
-const uniquePort = function () {
-  return 30000 + (process.pid % 20000)
-}
-
 const graphqlQuery = function (query, variables, panaceaFile = 'default', fetchOptions = {}) {
-  const port = uniquePort()
   return new Promise((resolve, reject) => {
     const graphqlQueryRequest = function (query, variables) {
       const { options, _ } = Panacea.container
-      const url = `${options.main.protocol}://${options.main.host}:${port}/${options.main.endpoint}`
-      _.defaultsDeep(fetchOptions, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query,
-          variables
+
+      options.main.port.then(port => {
+        const url = `${options.main.protocol}://${options.main.host}:${port}/${options.main.endpoint}`
+        _.defaultsDeep(fetchOptions, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query,
+            variables
+          })
         })
-      })
-      return fetch(url, fetchOptions)
-        .then(response => resolve(response.json()))
-        .catch(error => console.error(error) && reject(error))
+
+        return fetch(url, fetchOptions)
+          .then(response => resolve(response.json()))
+          .catch(error => console.error(error) && reject(error))
+      }).catch(error => console.error(error) && reject(error))
     }
 
     if (typeof Panacea === 'undefined') {
       bootstrap(panaceaFile).then(() => {
-        const { app } = Panacea.container
-        app.listen(port, graphqlQueryRequest(query, variables))
-      })
+        const { app, options } = Panacea.container
+        // Test panaceaFile is expected to return port as a Promise to allow
+        // portfinder to resolve an available port.
+        Promise.resolve(options.main.port).then(port => {
+          console.log(port)
+          app.listen(port, graphqlQueryRequest(query, variables))
+        })
+      }).catch(error => console.error(error) && reject(error))
     } else {
       graphqlQueryRequest(query, variables)
     }

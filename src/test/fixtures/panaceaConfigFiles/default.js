@@ -1,12 +1,15 @@
 import { getSandboxDir } from '../../test-common'
 import path from 'path'
+import portfinder from 'portfinder'
 
 const sandboxDir = getSandboxDir()
+
+const availablePort = (startPort) => portfinder.getPortPromise({host: '127.0.0.1', port: startPort})
 
 export default function () {
   return {
     main: {
-      port: 5555,
+      port: availablePort(6000),
       protocol: 'http',
       disableCors: true
     },
