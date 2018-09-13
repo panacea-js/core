@@ -65,7 +65,6 @@ const graphqlQuery = function (query, variables, panaceaFile = 'default', fetchO
         // Test panaceaFile is expected to return port as a Promise to allow
         // portfinder to resolve an available port.
         Promise.resolve(options.main.port).then(port => {
-          console.log(port)
           app.listen(port, graphqlQueryRequest(query, variables))
         })
       }).catch(error => console.error(error) && reject(error))
