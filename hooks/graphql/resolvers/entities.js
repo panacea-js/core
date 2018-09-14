@@ -90,7 +90,7 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
               createdEntity._id = createdEntity._id.toString()
               return createdEntity
             }
-            return txn._error
+            return txn.error
           })
           .catch(error => log.error(error))
       }
