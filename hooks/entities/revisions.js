@@ -9,7 +9,7 @@ export default {
       for (const entityTypeName of Object.keys(entityTypes)) {
         const entityType: EntityType = entityTypes[entityTypeName]
         if (!entityType.revisions) {
-          return
+          continue
         }
         const revisionEntityType = _.upperFirst(_.camelCase(entityTypeName)) + 'Revision'
 
