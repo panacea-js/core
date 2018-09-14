@@ -63,10 +63,10 @@ const entityTypeResolvers = function (resolvers, entityTypes, modelQuery, getCli
     }, [])
   }
 
-  resolvers.Mutation['_createEntityType'] = async (parent: any, { name, data } : { name: string, data: string}) => {
+  resolvers.Mutation['_createEntityType'] = async (parent: any, { name, data, locationKey } : { name: string, data: string, locationKey: string}) => {
     let response
 
-    const saveResult = entities.saveEntityType(name, JSON.parse(data))
+    const saveResult = entities.saveEntityType(name, JSON.parse(data), locationKey)
 
     if (saveResult.success) {
       response = {
