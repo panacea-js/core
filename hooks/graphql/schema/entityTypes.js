@@ -67,10 +67,9 @@ const definitions = {
         name: '_createEntityType',
         arguments: {
           name: 'String!',
-          data: 'String!',
-          locationKey: 'String!'
+          data: 'String!'
         },
-        returnType: '_entityType'
+        returnType: '_entityType!'
       }
     }
   }
