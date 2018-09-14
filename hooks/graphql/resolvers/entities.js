@@ -62,11 +62,29 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
 
     // Get single entity.
     resolvers.Query[entityData._meta.camel] = async (parent, args, { dbModels }) => {
-      return dbModels[entityData._meta.pascal].findById(args.id)
+      const queryResult = dbModels[entityData._meta.pascal].findById(args.id)
+      hooks.invoke('core.entities.resolverQueryResult', {
+        query: entityData._meta.camel,
+        parent,
+        args,
+        dbModels,
+        queryResult
+      })
+      return queryResult
     }
 
     // Get many entities.
-    resolvers.Query[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => modelQuery(dbModels[entityData._meta.pascal], parent, args)
+    resolvers.Query[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => {
+      const queryResult = modelQuery(dbModels[entityData._meta.pascal], parent, args)
+      hooks.invoke('core.entities.resolverQueryResult', {
+        query: entityData._meta.pluralCamel,
+        parent,
+        args,
+        dbModels,
+        queryResult
+      })
+      return queryResult
+    }
 
     // Only allow mutations of entities that have fields.
     if (hasFields) {

@@ -19,6 +19,7 @@ const convertPanaceaFieldToGraphQL = function (type : string) : string {
     ['text', 'String'],
     ['float', 'Float'],
     ['int', 'Int'],
+    ['date', 'Date'],
     ['boolean', 'Boolean'],
     ['reference', 'String'],
     // objects are for nested data.
@@ -39,8 +40,6 @@ const convertPanaceaFieldToGraphQL = function (type : string) : string {
  *
  * One key is for where the references should be strings - in the case of Input Types and Mutations.
  * Another key is for where the references should to the models (GraphQL types)- used in types and Query definitions.
- *
- * @private
  *
  * @param fields
  *
@@ -242,6 +241,7 @@ export const graphQLTypeDefinitions = function () {
     const mutations: GraphQLMutationDefinitions = {}
     const inputs: GraphQLInputDefinitions = {}
     const enums: GraphQLEnumsDefinitions = {}
+    const scalars: Array<string> = []
 
     // Computed types.
     hooks.invoke('core.graphql.definitions.types', { types, translateEntityTypeFields, entityTypes })
@@ -262,6 +262,10 @@ export const graphQLTypeDefinitions = function () {
     // Enums.
     hooks.invoke('core.graphql.definitions.enums', { enums, translateEntityTypeFields, entityTypes })
     output.push(formatEnumsToOutput(enums))
+
+    // Scalars.
+    hooks.invoke('core.graphql.definitions.scalars', { scalars })
+    output.push('\n' + scalars.map(s => `scalar ${s}`).join('\n'))
 
     const tidyDefinitionEndings = function (input) {
       return input.replace(/\n\n\}/g, '\n}')

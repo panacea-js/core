@@ -70,6 +70,20 @@
       "revisions": {
         "label": "Revisions",
         "description": "Revisions for {entityTypeName}"
+      },
+      "dates": {
+        "created": {
+          "label": "Created",
+          "description": "The datetime that the entity was created"
+        },
+        "updated": {
+          "label": "Updated",
+          "description": "The datetime that the entity was updated"
+        },
+        "deleted": {
+          "label": "Deleted",
+          "description": "The datetime that the entity was deleted"
+        }
       }
     }
   }

@@ -26,6 +26,7 @@ export const registerServices = function (s, options) {
   s.add('bodyParser', 'body-parser')
   s.add('graphqlExpress', 'apollo-server-express', 'graphqlExpress')
   s.add('graphiqlExpress', 'apollo-server-express', 'graphiqlExpress')
+  s.add('GraphQLScalarType', 'graphql', 'GraphQLScalarType')
   s.add('makeExecutableSchema', 'graphql-tools', 'makeExecutableSchema')
   s.add('mongoose', 'mongoose')
   s.add('winston', 'winston')

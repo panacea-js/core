@@ -18,6 +18,7 @@ const convertPanaceaFieldToMongo = function (type: string) : string {
     ['text', 'String'],
     ['float', 'Number'],
     ['int', 'Number'],
+    ['date', 'Date'],
     ['boolean', 'Number'],
     ['reference', 'String'],
     // objects are for nested data.
