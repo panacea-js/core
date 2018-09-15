@@ -33,7 +33,7 @@ test.serial('core.reload hook reloads the graphql middleware with a CopyCat enti
     })
 
     fs.copyFileSync(path.resolve(testDir, 'fixtures/entities/schemas/Cat.yml'), path.resolve(testDir, 'fixtures/entities/schemas/CopyCat.yml'))
-    hooks.invoke('core.reload', 'testing reload hook')
+    hooks.invoke('core.reload', { reason: 'testing reload hook' })
   }).catch(err => console.error(err))
 
   fs.unlinkSync(path.resolve(testDir, 'fixtures/entities/schemas/CopyCat.yml'))

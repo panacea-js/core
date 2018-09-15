@@ -254,7 +254,7 @@ Bootstrap.prototype.stage7 = function () {
       )
 
       // Allow middleware to be dynamically replaced via core.reload hook without needing to restart the server.
-      hooks.on('core.reload', reason => {
+      hooks.on('core.reload', ({ reason }) => {
         const startTime = Date.now()
 
         const { entities } = Panacea.container

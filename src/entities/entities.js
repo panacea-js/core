@@ -213,7 +213,7 @@ Entities.prototype.saveEntityType = function (name: string, data: EntityType, lo
         dataJSON.fields = entities.removeFalsyFields(dataJSON.fields)
         dataJSON = entities.stripMeta(dataJSON)
         writeYmlFile(filePath, dataJSON)
-        hooks.invoke('core.reload', `entity ${name} was created`)
+        hooks.invoke('core.reload', { reason: `entity ${name} was created` })
       } catch (error) {
         const errorMessage = `Could not write entity file ${name}.yml to ${basePath}: ${error.message}`
         log.error(errorMessage)
@@ -223,7 +223,7 @@ Entities.prototype.saveEntityType = function (name: string, data: EntityType, lo
     }
 
     if (result.success) {
-      hooks.invoke('core.entities.postSaveEntityType', name, dataJSON, locationKey)
+      hooks.invoke('core.entities.postSaveEntityType', { name, dataJSON, locationKey })
     }
   }
 

@@ -25,7 +25,7 @@ const convertPanaceaFieldToMongo = function (type: string) : string {
     ['object', 'Object']
   ])
 
-  hooks.invoke('core.mongo.fieldsMap', map)
+  hooks.invoke('core.mongo.fieldsMap', { map })
 
   if (!map.has(type)) {
     throw new TypeError(type + ' not found in MongoDB type conversion mapping')

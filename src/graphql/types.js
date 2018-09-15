@@ -26,7 +26,7 @@ const convertPanaceaFieldToGraphQL = function (type : string) : string {
     ['object', '__NestedObject']
   ])
 
-  hooks.invoke('core.graphql.fieldsMap', map)
+  hooks.invoke('core.graphql.fieldsMap', { map })
 
   if (!map.has(type)) {
     throw TypeError(type + ' not found in GraphQL type conversion mapping')
