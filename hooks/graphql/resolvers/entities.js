@@ -98,8 +98,8 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
           entityData
         }
 
-        const transactionHandlers = []
-        hooks.invoke('core.entities.entityCreateHandlers', transactionHandlers)
+        const transactionHandlers: Array<transactionHandler> = []
+        hooks.invoke('core.entities.entityCreateHandlers', { transactionHandlers })
 
         return new Transaction(transactionHandlers, transactionContext).execute()
           .then(txn => {

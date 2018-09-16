@@ -7,6 +7,14 @@ export default {
       scalars.push('Date')
     })
 
+    hooks.on('core.mongo.fieldsMap', ({ map }) => {
+      map.set('date', 'Date')
+    })
+
+    hooks.on('core.graphql.fieldsMap', ({ map }) => {
+      map.set('date', 'Date')
+    })
+
     hooks.once('core.graphql.resolvers', ({ resolvers }) => {
       resolvers.Date = new GraphQLScalarType({
         name: 'Date',
@@ -34,7 +42,7 @@ export default {
       })
     })
 
-    hooks.on('core.entities.entityCreateHandlers', (handlers: Array<transactionHandler>) => {
+    hooks.once('core.entities.entityCreateHandlers', ({ transactionHandlers } : { transactionHandlers: Array<transactionHandler> }) => {
       const datesCreateHandler = {
         prepare: async function (txn) {
           const { args } = txn.context
@@ -42,11 +50,11 @@ export default {
         }
       }
 
-      handlers.push(datesCreateHandler)
+      transactionHandlers.push(datesCreateHandler)
     })
 
     hooks.on('core.entities.resolverQueryResult', ({ queryResult }) => {
-      //console.log(queryResult)
+      // console.log(queryResult)
     })
   }
 }

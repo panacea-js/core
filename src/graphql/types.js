@@ -1,6 +1,27 @@
 // @flow
 const { _, hooks, entities } = Panacea.container
 
+const GenerateFieldMap = function () {
+  const map = new Map([
+    ['id', 'String'],
+    ['string', 'String'],
+    ['password', 'String'],
+    ['text', 'String'],
+    ['float', 'Float'],
+    ['int', 'Int'],
+    ['boolean', 'Boolean'],
+    ['reference', 'String'],
+    // objects are for nested data.
+    ['object', '__NestedObject']
+  ])
+
+  hooks.invoke('core.graphql.fieldsMap', { map })
+
+  return map
+}
+
+const fieldMap = new GenerateFieldMap()
+
 /**
  * Converts system field definitions to GraphQL equivalents.
  *
@@ -12,27 +33,11 @@ const convertPanaceaFieldToGraphQL = function (type : string) : string {
     throw TypeError('No type specified in GraphQL field types conversion mapping')
   }
 
-  const map = new Map([
-    ['id', 'String'],
-    ['string', 'String'],
-    ['password', 'String'],
-    ['text', 'String'],
-    ['float', 'Float'],
-    ['int', 'Int'],
-    ['date', 'Date'],
-    ['boolean', 'Boolean'],
-    ['reference', 'String'],
-    // objects are for nested data.
-    ['object', '__NestedObject']
-  ])
-
-  hooks.invoke('core.graphql.fieldsMap', { map })
-
-  if (!map.has(type)) {
+  if (!fieldMap.has(type)) {
     throw TypeError(type + ' not found in GraphQL type conversion mapping')
   }
 
-  return map.get(type) || ''
+  return fieldMap.get(type) || ''
 }
 
 /**

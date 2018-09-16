@@ -1,6 +1,26 @@
 // @flow
 const { _, mongoose, dbConnection, entities, hooks } = Panacea.container
 
+const GenerateFieldMap = function () {
+  const map = new Map([
+    ['string', 'String'],
+    ['password', 'String'],
+    ['text', 'String'],
+    ['float', 'Number'],
+    ['int', 'Number'],
+    ['boolean', 'Number'],
+    ['reference', 'String'],
+    // objects are for nested data.
+    ['object', 'Object']
+  ])
+
+  hooks.invoke('core.mongo.fieldsMap', { map })
+
+  return map
+}
+
+const fieldMap = new GenerateFieldMap()
+
 /**
  * Converts system field definitions to MongoDB equivalents.
  *
@@ -12,26 +32,11 @@ const convertPanaceaFieldToMongo = function (type: string) : string {
     throw TypeError('No type specified in mongo field types conversion mapping')
   }
 
-  const map = new Map([
-    ['string', 'String'],
-    ['password', 'String'],
-    ['text', 'String'],
-    ['float', 'Number'],
-    ['int', 'Number'],
-    ['date', 'Date'],
-    ['boolean', 'Number'],
-    ['reference', 'String'],
-    // objects are for nested data.
-    ['object', 'Object']
-  ])
-
-  hooks.invoke('core.mongo.fieldsMap', { map })
-
-  if (!map.has(type)) {
+  if (!fieldMap.has(type)) {
     throw new TypeError(type + ' not found in MongoDB type conversion mapping')
   }
 
-  return map.get(type) || ''
+  return fieldMap.get(type) || ''
 }
 
 /**

@@ -40,7 +40,7 @@ export default {
       }
     })
 
-    hooks.on('core.entities.entityCreateHandlers', (handlers: Array<transactionHandler>) => {
+    hooks.on('core.entities.entityCreateHandlers', ({ transactionHandlers } : { transactionHandlers: Array<transactionHandler> }) => {
       const revisionCreateHandler = {
         prepare: async function (txn) {
           const { entityData, dbModels, args } = txn.context
@@ -62,7 +62,7 @@ export default {
         }
       }
 
-      handlers.push(revisionCreateHandler)
+      transactionHandlers.push(revisionCreateHandler)
     })
   }
 }
