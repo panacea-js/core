@@ -309,9 +309,9 @@ Bootstrap.prototype.stage7 = function () {
       // Assign the express app onto the Panacea container so the bootstrap caller can serve it.
       Panacea.value('app', app)
     })
-    .catch(error =>
-      log.error(new Error(i18n.t('core.bootstrap.typeDefsError', {error}))) // Server not started. Type definitions error: {error}
-    )
+    .catch(error => {
+      log.error(i18n.t('core.bootstrap.typeDefsError', {error: error.message})) // Server not started. Type definitions error: {error}
+    })
 }
 
 export default Bootstrap

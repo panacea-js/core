@@ -235,43 +235,48 @@ export const graphQLTypeDefinitions = function () {
   const entityTypes = entities.getData()
 
   const definitions: Promise<string> = new Promise(function (resolve, reject) {
-    const output = []
-    const types: GraphQLTypeDefinitions = {}
-    const queries: GraphQLQueryDefinitions = {}
-    const mutations: GraphQLMutationDefinitions = {}
-    const inputs: GraphQLInputDefinitions = {}
-    const enums: GraphQLEnumsDefinitions = {}
-    const scalars: Array<string> = []
+    try {
+      const output = []
+      const types: GraphQLTypeDefinitions = {}
+      const queries: GraphQLQueryDefinitions = {}
+      const mutations: GraphQLMutationDefinitions = {}
+      const inputs: GraphQLInputDefinitions = {}
+      const enums: GraphQLEnumsDefinitions = {}
+      const scalars: Array<string> = []
 
-    // Computed types.
-    hooks.invoke('core.graphql.definitions.types', { types, translateEntityTypeFields, entityTypes })
-    output.push(formatTypesToOutput('type', types))
+      // Computed types.
+      hooks.invoke('core.graphql.definitions.types', { types, translateEntityTypeFields, entityTypes })
+      output.push(formatTypesToOutput('type', types))
 
-    // Input types.
-    hooks.invoke('core.graphql.definitions.inputs', { inputs, translateEntityTypeFields, entityTypes })
-    output.push(formatTypesToOutput('input', inputs))
+      // Input types.
+      hooks.invoke('core.graphql.definitions.inputs', { inputs, translateEntityTypeFields, entityTypes })
+      output.push(formatTypesToOutput('input', inputs))
 
-    // Computed queries.
-    hooks.invoke('core.graphql.definitions.queries', { queries, translateEntityTypeFields, entityTypes })
-    output.push(formatRootTypeToOutput('Query', queries))
+      // Computed queries.
+      hooks.invoke('core.graphql.definitions.queries', { queries, translateEntityTypeFields, entityTypes })
+      output.push(formatRootTypeToOutput('Query', queries))
 
-    // Computed mutations.
-    hooks.invoke('core.graphql.definitions.mutations', { mutations, translateEntityTypeFields, entityTypes })
-    output.push(formatRootTypeToOutput('Mutation', mutations))
+      // Computed mutations.
+      hooks.invoke('core.graphql.definitions.mutations', { mutations, translateEntityTypeFields, entityTypes })
+      output.push(formatRootTypeToOutput('Mutation', mutations))
 
-    // Enums.
-    hooks.invoke('core.graphql.definitions.enums', { enums, translateEntityTypeFields, entityTypes })
-    output.push(formatEnumsToOutput(enums))
+      // Enums.
+      hooks.invoke('core.graphql.definitions.enums', { enums, translateEntityTypeFields, entityTypes })
+      output.push(formatEnumsToOutput(enums))
 
-    // Scalars.
-    hooks.invoke('core.graphql.definitions.scalars', { scalars })
-    output.push('\n' + scalars.map(s => `scalar ${s}`).join('\n'))
+      // Scalars.
+      hooks.invoke('core.graphql.definitions.scalars', { scalars })
+      output.push('\n' + scalars.map(s => `scalar ${s}`).join('\n'))
 
-    const tidyDefinitionEndings = function (input) {
-      return input.replace(/\n\n\}/g, '\n}')
+      const tidyDefinitionEndings = function (input) {
+        return input.replace(/\n\n\}/g, '\n}')
+      }
+
+      resolve(tidyDefinitionEndings(output.join('\n')))
     }
-
-    resolve(tidyDefinitionEndings(output.join('\n')))
+    catch (error) {
+      reject(error)
+    }
   })
 
   return definitions
