@@ -60,7 +60,7 @@ ServicesBuilder.prototype.alias = function (alias, location) {
  *
  * @returns Bottle
  */
-export const registerServices = function (params) {
+export const registerServices = function (params: typeof Panacea.options) {
   const defaultsDeep = require('lodash/defaultsDeep')
   const path = require('path')
 
@@ -70,7 +70,7 @@ export const registerServices = function (params) {
   const defaultOptions = require(coreServices).servicesConfig()
 
   // Prioritize passed in params then default.services.js.
-  const options = defaultsDeep(params || {}, defaultOptions)
+  const options: typeof Panacea.options = defaultsDeep(params || {}, defaultOptions)
 
   require(options.services.file).registerServices(services, options)
 

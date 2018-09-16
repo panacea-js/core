@@ -1,10 +1,11 @@
+// @flow
 /**
  * Creates a MongoDB connection object.
  *
- * @returns {Connection|Promise}
+ * @returns Promise<Mongoose$Connection>
  */
 
-const dbConnection = function (options) {
+const dbConnection = function (options: typeof Panacea.options.services.options.db) {
   const { host, dbName, port } = options
 
   const { mongoose } = Panacea.container
