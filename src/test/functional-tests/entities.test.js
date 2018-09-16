@@ -2,7 +2,7 @@ import test from 'ava'
 import { graphqlQuery, initTasks } from '../test-common'
 initTasks(test)
 
-test('Can create, read and delete an entity with just one field', async t => {
+test.serial('Can create, read and delete an entity with just one field', async t => {
   t.plan(3)
 
   // Create 'Puss'.
@@ -29,7 +29,7 @@ test('Can create, read and delete an entity with just one field', async t => {
     .catch(error => console.error(error))
 })
 
-test('Can create, read and delete an entity with referenced entities', async t => {
+test.serial('Can create, read and delete an entity with referenced entities', async t => {
   t.plan(13)
 
   // Create 'Rover' the dog.
@@ -131,7 +131,7 @@ test('Can create, read and delete an entity with referenced entities', async t =
     .catch(error => console.error(error))
 })
 
-test('Can create and read two entities that reference each other', t => {
+test.serial('Can create and read two entities that reference each other', t => {
   const createLizard = (name) => graphqlQuery(`
     mutation {
       createLizard(fields: {
@@ -168,7 +168,7 @@ test('Can create and read two entities that reference each other', t => {
   })
 })
 
-test('Can create and read three entities in a single query', t => {
+test.serial('Can create and read three entities in a single query', t => {
   t.plan(3)
   const createLizard = (name) => graphqlQuery(`
     mutation {

@@ -3,7 +3,7 @@ import path from 'path'
 import { graphqlQuery, initTasks } from '../test-common'
 initTasks(test)
 
-test('_entityTypes graphql query resolves with Cat and Dog entity types', t => {
+test.serial('_entityTypes graphql query resolves with Cat and Dog entity types', t => {
   t.plan(2)
 
   return graphqlQuery('{ _entityTypes { name, data } }')
@@ -16,7 +16,7 @@ test('_entityTypes graphql query resolves with Cat and Dog entity types', t => {
     .catch(error => console.error(error))
 })
 
-test('_entityType graphql query resolves with Cat entity type', t => {
+test.serial('_entityType graphql query resolves with Cat entity type', t => {
   graphqlQuery('{ _entityType(name: "Cat") { name } }')
     .then(json => {
       t.true(json.data._entityType.name === 'Cat')
@@ -24,7 +24,7 @@ test('_entityType graphql query resolves with Cat entity type', t => {
     .catch(error => console.error(error))
 })
 
-test('_fieldTypes graphql query resolves with basic field types', t => {
+test.serial('_fieldTypes graphql query resolves with basic field types', t => {
   t.plan(4)
 
   return graphqlQuery('{ _fieldTypes { type } }')
@@ -38,7 +38,7 @@ test('_fieldTypes graphql query resolves with basic field types', t => {
     .catch(error => console.error(error))
 })
 
-test('Sending a language cookie sends translated results for _fieldTypes graphql query', async t => {
+test.serial('Sending a language cookie sends translated results for _fieldTypes graphql query', async t => {
   const fetchOptions = {
     headers: {
       cookie: 'PANACEA-LANGUAGE=es; SOME-OTHER-COOKIE=nothing' // Request Spanish results via cookie
@@ -52,7 +52,7 @@ test('Sending a language cookie sends translated results for _fieldTypes graphql
     .catch(error => console.error(error))
 })
 
-test('Sending an invalid language cookie sends translated results for _fieldTypes graphql query fallen back to English', async t => {
+test.serial('Sending an invalid language cookie sends translated results for _fieldTypes graphql query fallen back to English', async t => {
   // Note: this requires that the testing environment defaults to English.
   const fetchOptions = {
     headers: {
@@ -67,7 +67,7 @@ test('Sending an invalid language cookie sends translated results for _fieldType
     .catch(error => console.error(error))
 })
 
-test('_entityType graphql query resolves null with unavailable entity type is queried', t => {
+test.serial('_entityType graphql query resolves null with unavailable entity type is queried', t => {
   return graphqlQuery('{ _entityType(name: "Gnome") { name } }')
     .then(json => {
       t.is(json.data._entityType, null)
@@ -75,7 +75,7 @@ test('_entityType graphql query resolves null with unavailable entity type is qu
     .catch(error => console.error(error))
 })
 
-test('_createEntityType creates a yml file given the provided entityData (in the correct format)', async t => {
+test.serial('_createEntityType creates a yml file given the provided entityData (in the correct format)', async t => {
   t.plan(2)
 
   const { loadYmlFiles, fs } = Panacea.container
