@@ -9,11 +9,10 @@
   "scripts": {
     "flow": "flow",
     "start:test-db": "mongod --directoryperdb --dbpath=src/test/data/db --port=27018 --logappend --logRotate=rename --logpath=src/test/data/db_log/mongod.log &",
-    "stop:test-db": "mongod --directoryperdb --dbpath=src/test/data/db --shutdown",
+    "stop:test-db": "mongod --directoryperdb --dbpath=src/test/data/db --shutdown && rm -Rf src/test/data/db/*",
     "test": "npm run start:test-db && snyk test && ava && npm run stop:test-db",
     "test:no-snyk": "npm run start:test-db && ava && npm run stop:test-db",
-    "watch:test": "npm run start:test-db && npm t --",
-    "watch:test:no-snyk": "npm run start:test-db && npm run test:no-snyk --",
+    "watch:test": "npm run start:test-db && ava -w",
     "cover": "nyc npm run test",
     "cover:no-snyk": "nyc npm run test:no-snyk",
     "watch:cover": "nodemon --exec npm run cover -s",
