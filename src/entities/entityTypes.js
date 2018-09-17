@@ -11,44 +11,7 @@ const EntityTypes = function () {
 }
 
 EntityTypes.prototype.registerFieldTypes = function () {
-  const fieldTypes: FieldTypes = {
-    id: {
-      label: 'core.entityTypes.fields.id.label',
-      description: 'core.entityTypes.fields.id.description'
-    },
-    string: {
-      label: 'core.entityTypes.fields.string.label',
-      description: 'core.entityTypes.fields.string.description'
-    },
-    password: {
-      label: 'core.entityTypes.fields.password.label',
-      description: 'core.entityTypes.fields.password.description'
-    },
-    text: {
-      label: 'core.entityTypes.fields.text.label',
-      description: 'core.entityTypes.fields.text.description'
-    },
-    float: {
-      label: 'core.entityTypes.fields.float.label',
-      description: 'core.entityTypes.fields.float.description'
-    },
-    int: {
-      label: 'core.entityTypes.fields.int.label',
-      description: 'core.entityTypes.fields.int.description'
-    },
-    boolean: {
-      label: 'core.entityTypes.fields.boolean.label',
-      description: 'core.entityTypes.fields.boolean.description'
-    },
-    reference: {
-      label: 'core.entityTypes.fields.reference.label',
-      description: 'core.entityTypes.fields.reference.description'
-    },
-    object: {
-      label: 'core.entityTypes.fields.object.label',
-      description: 'core.entityTypes.fields.object.description'
-    }
-  }
+  const fieldTypes: FieldTypes = {}
 
   hooks.invoke('core.entityTypes.fields.definitions', { fieldTypes })
 

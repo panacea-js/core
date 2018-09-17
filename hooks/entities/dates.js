@@ -3,22 +3,22 @@ const { _, i18n, GraphQLScalarType } = Panacea.container
 
 export default {
   register (hooks: events$EventEmitter) {
-    hooks.once('core.graphql.definitions.scalars', ({ scalars }) => {
+    hooks.once('core.graphql.definitions.scalars', ({ scalars } : { scalars: Array<string> }) => {
       scalars.push('Date')
     })
 
-    hooks.on('core.entityTypes.fields.definitions', ({ fieldTypes }) => {
+    hooks.on('core.entityTypes.fields.definitions', ({ fieldTypes } : { fieldTypes: FieldTypes }) => {
       fieldTypes.date = {
         label: 'core.entityTypes.fields.date.label',
         description: 'core.entityTypes.fields.date.description'
       }
     })
 
-    hooks.on('core.mongo.fieldsMap', ({ map }) => {
+    hooks.on('core.mongo.fieldsMap', ({ map } : { map: FieldMap }) => {
       map.set('date', 'Date')
     })
 
-    hooks.on('core.graphql.fieldsMap', ({ map }) => {
+    hooks.on('core.graphql.fieldsMap', ({ map } : { map: FieldMap }) => {
       map.set('date', 'Date')
     })
 

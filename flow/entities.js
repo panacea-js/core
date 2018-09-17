@@ -62,3 +62,5 @@ declare type FieldTypes = {
     description: string
   |}
 }
+
+declare type FieldMap = Map<string, string>

@@ -2,20 +2,8 @@
 const { _, mongoose, dbConnection, entityTypes, hooks } = Panacea.container
 
 const GenerateFieldMap = function () {
-  const map = new Map([
-    ['string', 'String'],
-    ['password', 'String'],
-    ['text', 'String'],
-    ['float', 'Number'],
-    ['int', 'Number'],
-    ['boolean', 'Number'],
-    ['reference', 'String'],
-    // objects are for nested data.
-    ['object', 'Object']
-  ])
-
+  const map : FieldMap = new Map()
   hooks.invoke('core.mongo.fieldsMap', { map })
-
   return map
 }
 

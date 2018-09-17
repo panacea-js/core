@@ -2,21 +2,8 @@
 const { _, hooks, entityTypes } = Panacea.container
 
 const GenerateFieldMap = function () {
-  const map = new Map([
-    ['id', 'String'],
-    ['string', 'String'],
-    ['password', 'String'],
-    ['text', 'String'],
-    ['float', 'Float'],
-    ['int', 'Int'],
-    ['boolean', 'Boolean'],
-    ['reference', 'String'],
-    // objects are for nested data.
-    ['object', '__NestedObject']
-  ])
-
+  const map : FieldMap = new Map()
   hooks.invoke('core.graphql.fieldsMap', { map })
-
   return map
 }
 
