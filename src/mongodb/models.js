@@ -1,5 +1,5 @@
 // @flow
-const { _, mongoose, dbConnection, entities, hooks } = Panacea.container
+const { _, mongoose, dbConnection, entityTypes, hooks } = Panacea.container
 
 const GenerateFieldMap = function () {
   const map = new Map([
@@ -87,9 +87,9 @@ export const dbModels = function () : {[string] : Mongoose$Schema<Mongoose$Docum
 
   const models = {}
 
-  const entityTypes : EntityTypes = entities.getData()
+  const _entityTypes : EntityTypes = entityTypes.getData()
 
-  _(entityTypes).forEach((entityTypeData: EntityType, entityTypeName: string) => {
+  _(_entityTypes).forEach((entityTypeData: EntityType, entityTypeName: string) => {
     // Only create a mongoose model if the entity type is for the database.
     if (entityTypeData.storage !== 'db') return
 

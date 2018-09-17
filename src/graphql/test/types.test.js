@@ -3,7 +3,7 @@ import { bootstrap, initTasks } from '../../test/test-common'
 initTasks(test)
 bootstrap()
 
-const { graphQLTypeDefinitions, hooks, entities } = Panacea.container
+const { graphQLTypeDefinitions, hooks, entityTypes } = Panacea.container
 
 test.serial('Cat entity should resolve to GraphQL type, input and query', t => {
   t.plan(4)
@@ -23,8 +23,8 @@ test.serial('Cat entity should resolve to GraphQL type, input and query', t => {
 
 test.serial('When an entity field defines an invalid type an error is thrown', async t => {
   // Append via a hook.
-  hooks.once('core.entities.definitions', entityTypes => {
-    entityTypes.Cat.fields.breakingField = {
+  hooks.once('core.entityTypes.definitions', ({ definitions }) => {
+    definitions.Cat.fields.breakingField = {
       type: 'FakeTypeNoExist',
       label: 'A valid label'
     }
@@ -34,10 +34,10 @@ test.serial('When an entity field defines an invalid type an error is thrown', a
   t.is(error.message, `FakeTypeNoExist not found in GraphQL type conversion mapping`)
 })
 
-test.serial('When an convertSystemFieldToGraphQL() does not have a field mapping related to an entity field type an error is thrown from entities.js', async t => {
-  entities.getData()
-  entities.entityTypes.Cat.fields.name.type = 'notValid'
-  entities.fieldTypes.notValid = {
+test.serial('When an convertSystemFieldToGraphQL() does not have a field mapping related to an entity field type an error is thrown from entityTypes.js', async t => {
+  entityTypes.getData()
+  entityTypes.definitions.Cat.fields.name.type = 'notValid'
+  entityTypes.fieldTypes.notValid = {
     description: 'Setting an known invalid type to test whether convertSystemFieldToGraphQL() throws an error'
   }
 
@@ -45,4 +45,4 @@ test.serial('When an convertSystemFieldToGraphQL() does not have a field mapping
   t.is(error.message, `notValid not found in GraphQL type conversion mapping`)
 })
 
-test.beforeEach(t => entities.clearCache())
+test.beforeEach(t => entityTypes.clearCache())

@@ -47,7 +47,7 @@ export const registerServices = function (s, options) {
   s.add('writeYmlFile', '%core/utils/yaml', 'writeYmlFile')
   s.add('hooks', '%core/utils/hooks', 'hooks')
   s.add('formatters', '%core/utils/formatters')
-  s.add('entities', '%core/entities/entities', 'entities')
+  s.add('entityTypes', '%core/entities/entityTypes', 'entityTypes')
   s.add('dbConnection', '%core/mongodb/connection', 'dbConnection', [servicesOptions.db])
   s.add('dbModels', '%core/mongodb/models', 'dbModels')
   s.add('Transaction', '%core/utils/transaction', 'Transaction')

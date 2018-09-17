@@ -3,11 +3,11 @@ const { _, i18n } = Panacea.container
 
 export default {
   register (hooks: events$EventEmitter) {
-    hooks.once('core.entities.definitions', (entityTypes: EntityTypes) => {
-      const revisionsText = i18n.t('core.entities.revisions.label') // Revisions
+    hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions: EntityTypes }) => {
+      const revisionsText = i18n.t('core.entityTypes.revisions.label') // Revisions
 
-      for (const entityTypeName of Object.keys(entityTypes)) {
-        const entityType: EntityType = entityTypes[entityTypeName]
+      for (const entityTypeName of Object.keys(definitions)) {
+        const entityType: EntityType = definitions[entityTypeName]
         if (!entityType.revisions) {
           continue
         }
@@ -17,20 +17,20 @@ export default {
         clonedRevision.plural = `${entityTypeName} ${revisionsText}`
         clonedRevision.revisions = false
         clonedRevision._excludeGraphQL = true
-        entityTypes[revisionEntityType] = clonedRevision
+        definitions[revisionEntityType] = clonedRevision
 
         // _revision field stores an array of references to the revision entity.
         entityType.fields._revisions = {
           type: 'reference',
           references: revisionEntityType,
           label: revisionsText,
-          description: i18n.t('core.entities.revisions.description', {entityTypeName}), // Revisions for ${entityTypeName},
+          description: i18n.t('core.entityTypes.revisions.description', { entityTypeName }), // Revisions for ${entityTypeName},
           many: true
         }
       }
     })
 
-    hooks.on('core.entities.meta', args => {
+    hooks.on('core.entityTypes.meta', args => {
       const meta: Meta = args.meta
       const entityTypeData: EntityType = args.entityTypeData
       const entityTypeName: string = args.entityTypeName
@@ -40,7 +40,7 @@ export default {
       }
     })
 
-    hooks.on('core.entities.entityCreateHandlers', ({ transactionHandlers } : { transactionHandlers: Array<transactionHandler> }) => {
+    hooks.on('core.entity.createHandlers', ({ transactionHandlers } : { transactionHandlers: Array<transactionHandler> }) => {
       const revisionCreateHandler = {
         prepare: async function (txn) {
           const { entityData, dbModels, args } = txn.context

@@ -1,6 +1,6 @@
 {
   "watch": [
     "*.*",
-    "config/entities/schemas/*.yml"
+    "config/entityTypes/schemas/*.yml"
   ]
 }

@@ -1,24 +1,26 @@
 // @flow
 
-const { _, entities, i18n } = Panacea.container
+const { _, entityTypes, i18n } = Panacea.container
 
 /**
  * Defines resolvers for introspection into the defined entity types and field
  * types.
  *
  * @param {*} resolvers The mutable object of resolver definitions.
- * @param {*} entityTypes The entity type definitions.
+ * @param {*} entityTypes The entityTypes object.
  * @param {*} modelQuery Helper function to query entities on mongo model.
  * @param {*} getClientLanguage Helper function to determine to requested client language.
  */
 const entityTypeResolvers = function (resolvers, entityTypes, modelQuery, getClientLanguage) {
+  const definitions = entityTypes.getData()
+
   resolvers.Query['_entityType'] = async (
     parent: {},
     { name } : { name : String },
     { dbModels } : { dbModels: {} }
   ) => {
-    if (entityTypes[name] && !_(entityTypes[name]).endsWith('Revision')) {
-      const entityType = entityTypes[name]
+    if (definitions[name] && !_(definitions[name]).endsWith('Revision')) {
+      const entityType = definitions[name]
       // Don't expose the native file path.
       delete entityType._filePath
       return {
@@ -33,12 +35,12 @@ const entityTypeResolvers = function (resolvers, entityTypes, modelQuery, getCli
   resolvers.Query['_entityTypes'] = () => {
     const allEntities = []
 
-    _(entityTypes).forEach((entityType, entityTypeName) => {
+    _(definitions).forEach((entityType, entityTypeName) => {
       // Exclude Revision entity types from being accessed directly.
       if (_(entityTypeName).endsWith('Revision')) {
         return
       }
-      const entityTypeData = entityTypes[entityTypeName]
+      const entityTypeData = definitions[entityTypeName]
       // Don't expose the native file path.
       delete entityTypeData._filePath
       allEntities.push({
@@ -53,7 +55,7 @@ const entityTypeResolvers = function (resolvers, entityTypes, modelQuery, getCli
   resolvers.Query['_fieldTypes'] = (parent: {}, args: {}, { req } : { req: express$Request }) => {
     const language = getClientLanguage(req)
 
-    return _(entities.fieldTypes).reduce((result, attributes, type) => {
+    return _(entityTypes.fieldTypes).reduce((result, attributes, type) => {
       result.push({
         type,
         label: i18n.t(attributes.label, language),
@@ -66,7 +68,7 @@ const entityTypeResolvers = function (resolvers, entityTypes, modelQuery, getCli
   resolvers.Mutation['_createEntityType'] = async (parent: any, { name, data, locationKey } : { name: string, data: string, locationKey: string}) => {
     let response
 
-    const saveResult = entities.saveEntityType(name, JSON.parse(data), locationKey)
+    const saveResult = entityTypes.saveEntityType(name, JSON.parse(data), locationKey)
 
     if (saveResult.success) {
       response = {

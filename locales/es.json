@@ -1,6 +1,6 @@
 {
   "core": {
-    "entities": {
+    "entityTypes": {
       "fields": {
         "id": {
           "label": "ID",
@@ -37,6 +37,10 @@
         "object": {
           "label": "Objeto",
           "description": "Un objeto de datos anidados"
+        },
+        "date": {
+          "label": "Fecha",
+          "description": "Una fecha en formato ISO8601"
         }
       }
     }

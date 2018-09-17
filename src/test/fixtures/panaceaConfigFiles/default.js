@@ -29,9 +29,9 @@ export default function () {
         }
       }
     },
-    entities: {
+    entityTypes: {
       test: {
-        path: path.resolve(__dirname, '..', 'entities/schemas'),
+        path: path.resolve(__dirname, '..', 'entityTypes/schemas'),
         locationKey: 'test'
       },
       sandbox: {

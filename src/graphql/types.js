@@ -1,5 +1,5 @@
 // @flow
-const { _, hooks, entities } = Panacea.container
+const { _, hooks, entityTypes } = Panacea.container
 
 const GenerateFieldMap = function () {
   const map = new Map([
@@ -237,8 +237,6 @@ const formatEnumsToOutput = function (enums) {
  * @returns Promise
  */
 export const graphQLTypeDefinitions = function () {
-  const entityTypes = entities.getData()
-
   const definitions: Promise<string> = new Promise(function (resolve, reject) {
     try {
       const output = []
@@ -250,23 +248,23 @@ export const graphQLTypeDefinitions = function () {
       const scalars: Array<string> = []
 
       // Computed types.
-      hooks.invoke('core.graphql.definitions.types', { types, translateEntityTypeFields, entityTypes })
+      hooks.invoke('core.graphql.definitions.types', { types, translateEntityTypeFields, entityTypes: entityTypes.getData() })
       output.push(formatTypesToOutput('type', types))
 
       // Input types.
-      hooks.invoke('core.graphql.definitions.inputs', { inputs, translateEntityTypeFields, entityTypes })
+      hooks.invoke('core.graphql.definitions.inputs', { inputs, translateEntityTypeFields, entityTypes: entityTypes.getData() })
       output.push(formatTypesToOutput('input', inputs))
 
       // Computed queries.
-      hooks.invoke('core.graphql.definitions.queries', { queries, translateEntityTypeFields, entityTypes })
+      hooks.invoke('core.graphql.definitions.queries', { queries, translateEntityTypeFields, entityTypes: entityTypes.getData() })
       output.push(formatRootTypeToOutput('Query', queries))
 
       // Computed mutations.
-      hooks.invoke('core.graphql.definitions.mutations', { mutations, translateEntityTypeFields, entityTypes })
+      hooks.invoke('core.graphql.definitions.mutations', { mutations, translateEntityTypeFields, entityTypes: entityTypes.getData() })
       output.push(formatRootTypeToOutput('Mutation', mutations))
 
       // Enums.
-      hooks.invoke('core.graphql.definitions.enums', { enums, translateEntityTypeFields, entityTypes })
+      hooks.invoke('core.graphql.definitions.enums', { enums, translateEntityTypeFields, entityTypes: entityTypes.getData() })
       output.push(formatEnumsToOutput(enums))
 
       // Scalars.

@@ -28,7 +28,7 @@
       "reloadGraphql": "Reloaded graphql middleware (in {timeToReplace}ms) because {reason}",
       "typeDefsError": "Server not started. Type definitions error: {error}"
     },
-    "entities": {
+    "entityTypes": {
       "fields": {
         "id": {
           "label": "ID",
@@ -65,6 +65,10 @@
         "object": {
           "label": "Object",
           "description": "A nested data object"
+        },
+        "date": {
+          "label": "Date",
+          "description": "An ISO8601 Date value"
         }
       },
       "revisions": {

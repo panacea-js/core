@@ -1,7 +1,7 @@
 // @flow
 const { _ } = Panacea.container
 
-const getDefinitions = function (translateEntityTypeFields, entityTypes) {
+const getDefinitions = function (translateEntityTypeFields, entityTypes: EntityTypes) {
   const definitions = {
     types: {},
     inputs: {},

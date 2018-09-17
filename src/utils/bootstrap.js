@@ -51,7 +51,7 @@ Bootstrap.prototype.runStages = function (stages: Array<Number>) {
 }
 
 Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, subPath) {
-  const { _, path, fs, registry, entities, resolvePluginPath } = Panacea.container
+  const { _, path, fs, registry, entityTypes, resolvePluginPath } = Panacea.container
 
   registry[registryType] = this.params[registryType] || {}
 
@@ -87,7 +87,7 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, sub
     const applicationSubPath = path.resolve(process.cwd(), subPath)
     if (fs.existsSync(applicationSubPath)) {
       unprioritizedRegistrants.push({
-        locationKey: entities.defaults.locationKey,
+        locationKey: entityTypes.defaults.locationKey,
         path: applicationSubPath,
         priority: this.defaultAppPriority
       })
@@ -172,10 +172,10 @@ Bootstrap.prototype.stage4 = function () {
 }
 
 /**
-* Discover and register application and plugins entities.
+* Discover and register application and plugins entity types.
 */
 Bootstrap.prototype.stage5 = function () {
-  this.registryPathDiscoveryProcessor('entities', 'config/entities/schemas')
+  this.registryPathDiscoveryProcessor('entityTypes', 'config/entityTypes/schemas')
 }
 
 /**
@@ -257,8 +257,8 @@ Bootstrap.prototype.stage7 = function () {
       hooks.on('core.reload', ({ reason }) => {
         const startTime = Date.now()
 
-        const { entities } = Panacea.container
-        entities.clearCache()
+        const { entityTypes } = Panacea.container
+        entityTypes.clearCache()
 
         graphQLTypeDefinitions().then(typeDefs => {
           const resolvers = graphQLResolvers()

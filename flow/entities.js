@@ -1,5 +1,5 @@
 /**
- * Entities Types.
+ * Entity types.
  */
 declare type Meta = {|
   pascal: string,

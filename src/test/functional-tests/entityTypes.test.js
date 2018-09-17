@@ -9,6 +9,7 @@ test.serial('_entityTypes graphql query resolves with Cat and Dog entity types',
   return graphqlQuery('{ _entityTypes { name, data } }')
     .then(json => {
       // console.log(JSON.parse(json.data._entityTypes[0].data))
+
       const entityNames = json.data._entityTypes.map(et => et.name)
       t.true(entityNames.includes('Cat'))
       t.true(entityNames.includes('Dog'))
@@ -107,10 +108,10 @@ test.serial('_createEntityType creates a yml file given the provided entityData 
     locationKey: 'test'
   })
     .then(json => {
-      const entityFixtures = loadYmlFiles(path.resolve(__dirname, '../fixtures/entities/schemas'))
+      const entityFixtures = loadYmlFiles(path.resolve(__dirname, '../fixtures/entityTypes/schemas'))
       t.is(bearData.plural, entityFixtures.Bear.plural) // 'Bears'
       t.is(bearData.fields.name.label, entityFixtures.Bear.fields.name.label) // 'Bear name'
-      fs.removeSync(path.resolve(__dirname, '../fixtures/entities/schemas/Bear.yml'))
+      fs.removeSync(path.resolve(__dirname, '../fixtures/entityTypes/schemas/Bear.yml'))
     })
     .catch(error => console.error(error))
 })

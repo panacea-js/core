@@ -24,7 +24,7 @@ Panacea is opinionated where it makes sense, but gets out of way for you to inte
 
 By using a combination of [GraphQL](https://en.wikipedia.org/wiki/GraphQL), [MongoDB](https://en.wikipedia.org/wiki/MongoDB) and [express](https://en.wikipedia.org/wiki/Express.js) you can model, prototype and MVP your application's persisted data easily from day one while giving a free/libre solution to scale-up with when success kicks in.
 
-Data types (entities) and configration are declarative in nature so you can easily spot changes in your VCS allowing you to work efficiently and avoid merge conflict hell!
+Entity types and configuration are declarative in nature so you can easily spot changes in your VCS allowing you to work efficiently and avoid merge conflict hell!
 
 Panacea's powerful hooks system allows you to interact with data and events in real-time meaning there's no stopping your custom workflows and integrations.
 
@@ -85,7 +85,7 @@ For more information about GraphQL, check out the [Introduction to GraphQL](http
 <pre>
 /PROJECT_NAME
 ├ config           ─  All config for you app lives here
-│ ├ entities
+│ ├ entityTypes
 │ │ └ schemas      ─  Entity schemas directly used in your app
 │ │   ├ Cat.yml    ─  An example schema for a Cat
 │ │   └ Dog.yml    ─  An example schema for a Dog
@@ -128,7 +128,7 @@ Panacea has been designed to provide you with comprehensive CMS features using a
 * **Templates** - allow you to create application starter kits and distribute them to your team and the wider world. Templates can be easily installed using the Panacea CLI.
 * **Application** - is a term used in Panacea as any system that consumes the GraphQL endpoint. All applications require setting up in the admin UI.
 * **Hooks** - are a publish/subscribe mechanism to add your own behaviors and alter workflow data.
-* **Entities** - are the yml files which describe data types in your application. They can reference other types of objects and can have a nested 'object' structure. Entities automatically get converted to GraphQL types and MongoDB collections without you needing to do any of the plumbing. Of course, all of this can be overriden using the hooks system.
+* **Entity Types** - are the yml files which describe data types in your application. They can reference other types of objects and can have a nested 'object' structure. Entity types automatically get converted to GraphQL types and MongoDB collections without you needing to do any of the plumbing. Of course, all of this can be overriden using the hooks system.
 * **Config entities** - are a singleton entities which define site-wide configuration. This configuration can be altered directly in the yml files, however we strongly recommend you use Panacea CMS to make any changes.
 
 Points to note:
@@ -212,7 +212,7 @@ In most instances you can simply call `panacea()` without the `options` argument
         }
       }
     },
-    entities: [],             // Advanced: The directory locations where your entity schemas live. You should never need to alter this unless you're heavily customizing panacea.
+    entityTypes: [],          // Advanced: The directory locations where your entity schemas live. You should never need to alter this unless you're heavily customizing panacea.
     settings: [],             // Advanced: The directory locations where your saved settings and related schemas live. You should never need to alter this unless you're heavily customizing panacea.
     hooks: [],                // Advanced: The directory locations where your hooks live. You should never need to alter this unless you're heavily customizing panacea.
     graphiql: {

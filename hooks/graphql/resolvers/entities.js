@@ -46,7 +46,9 @@ const resolveNestedFields = function (
 const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientLanguage) {
   const types = {}
 
-  _(entityTypes).forEach(entityData => {
+  const definitions = entityTypes.getData()
+
+  _(definitions).forEach(entityData => {
     // If exclude flag is set on entity, don't set any direct query or mutation
     // resolvers, but still resolve for any references made by other entity types.
     if (entityData._excludeGraphQL) {
@@ -63,7 +65,7 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
     // Get single entity.
     resolvers.Query[entityData._meta.camel] = async (parent, args, { dbModels }) => {
       const queryResult = dbModels[entityData._meta.pascal].findById(args.id)
-      hooks.invoke('core.entities.resolverQueryResult', {
+      hooks.invoke('core.entity.resolverQueryResult', {
         query: entityData._meta.camel,
         parent,
         args,
@@ -76,7 +78,7 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
     // Get many entities.
     resolvers.Query[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => {
       const queryResult = modelQuery(dbModels[entityData._meta.pascal], parent, args)
-      hooks.invoke('core.entities.resolverQueryResult', {
+      hooks.invoke('core.entity.resolverQueryResult', {
         query: entityData._meta.pluralCamel,
         parent,
         args,
@@ -99,7 +101,7 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
         }
 
         const transactionHandlers: Array<transactionHandler> = []
-        hooks.invoke('core.entities.entityCreateHandlers', { transactionHandlers })
+        hooks.invoke('core.entity.createHandlers', { transactionHandlers })
 
         return new Transaction(transactionHandlers, transactionContext).execute()
           .then(txn => {

@@ -7,6 +7,13 @@ export default {
       scalars.push('Date')
     })
 
+    hooks.on('core.entityTypes.fields.definitions', ({ fieldTypes }) => {
+      fieldTypes.date = {
+        label: 'core.entityTypes.fields.date.label',
+        description: 'core.entityTypes.fields.date.description'
+      }
+    })
+
     hooks.on('core.mongo.fieldsMap', ({ map }) => {
       map.set('date', 'Date')
     })
@@ -27,22 +34,22 @@ export default {
       })
     })
 
-    hooks.once('core.entities.definitions', (entityTypes: EntityTypes) => {
+    hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions: EntityTypes }) => {
       const dateFields = ['created', 'updated', 'deleted']
 
-      _(entityTypes).forEach((entityType: EntityType, entityTypeName: string) => {
+      _(definitions).forEach((entityType: EntityType, entityTypeName: string) => {
         dateFields.forEach(dateFieldName => {
           entityType.fields[`_${dateFieldName}`] = {
             type: 'date',
-            label: i18n.t(`core.entities.dates.${dateFieldName}.label`), // Created, Updated, Deleted
-            description: i18n.t(`core.entities.dates.${dateFieldName}.description`), // The datetime that the entity was created, updated, deleted
+            label: i18n.t(`core.entityTypes.dates.${dateFieldName}.label`), // Created, Updated, Deleted
+            description: i18n.t(`core.entityTypes.dates.${dateFieldName}.description`), // The datetime that the entity was created, updated, deleted
             index: true
           }
         })
       })
     })
 
-    hooks.once('core.entities.entityCreateHandlers', ({ transactionHandlers } : { transactionHandlers: Array<transactionHandler> }) => {
+    hooks.once('core.entity.createHandlers', ({ transactionHandlers } : { transactionHandlers: Array<transactionHandler> }) => {
       const datesCreateHandler = {
         prepare: async function (txn) {
           const { args } = txn.context
@@ -53,7 +60,7 @@ export default {
       transactionHandlers.push(datesCreateHandler)
     })
 
-    hooks.on('core.entities.resolverQueryResult', ({ queryResult }) => {
+    hooks.on('core.entity.resolverQueryResult', ({ queryResult }) => {
       // console.log(queryResult)
     })
   }

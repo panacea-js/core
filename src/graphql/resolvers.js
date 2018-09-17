@@ -1,6 +1,6 @@
 // @flow
 import { IResolvers } from 'graphql-tools/dist/Interfaces' // eslint-disable-line no-unused-vars
-const { entities, hooks, i18n, accepts } = Panacea.container
+const { entityTypes, hooks, i18n, accepts } = Panacea.container
 
 /**
  * Get the client's preferred language based on the request's
@@ -62,14 +62,17 @@ const modelQuery = function (
 }
 
 export const graphQLResolvers = function () : IResolvers {
-  const entityTypes = entities.getData()
-
   const resolvers = {
     Query: {},
     Mutation: {}
   }
 
-  hooks.invoke('core.graphql.resolvers', { resolvers, entityTypes, modelQuery, getClientLanguage })
+  hooks.invoke('core.graphql.resolvers', {
+    resolvers,
+    entityTypes,
+    modelQuery,
+    getClientLanguage }
+  )
 
   return resolvers
 }

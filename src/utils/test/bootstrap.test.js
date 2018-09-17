@@ -14,17 +14,17 @@ test.serial('Fully loaded and bootstrapped panacea core works without errors', a
   }).catch(err => console.error(err))
 })
 
-test.serial('core.reload hook reloads the graphql middleware with a CopyCat entity newly available in graphQLTypeDefinitions and entities registry', async t => {
+test.serial('core.reload hook reloads the graphql middleware with a CopyCat entity newly available in graphQLTypeDefinitions and entity types registry', async t => {
   t.plan(3)
 
-  const { _, hooks, log, fs, entities, graphQLTypeDefinitions } = Panacea.container
+  const { _, hooks, log, fs, entityTypes, graphQLTypeDefinitions } = Panacea.container
 
   await panacea(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.js')).then(message => {
     t.true(message.indexOf('Completed full bootstrap') !== -1)
 
     log.on('data', data => {
       if (data.message.indexOf('Reloaded graphql middleware') !== -1) {
-        t.true(_(entities.getData()).has('CopyCat'))
+        t.true(_(entityTypes.getData()).has('CopyCat'))
 
         graphQLTypeDefinitions().then(data => {
           t.true(data.indexOf('type CopyCat') !== -1)
@@ -32,11 +32,11 @@ test.serial('core.reload hook reloads the graphql middleware with a CopyCat enti
       }
     })
 
-    fs.copyFileSync(path.resolve(testDir, 'fixtures/entities/schemas/Cat.yml'), path.resolve(testDir, 'fixtures/entities/schemas/CopyCat.yml'))
+    fs.copyFileSync(path.resolve(testDir, 'fixtures/entityTypes/schemas/Cat.yml'), path.resolve(testDir, 'fixtures/entityTypes/schemas/CopyCat.yml'))
     hooks.invoke('core.reload', { reason: 'testing reload hook' })
   }).catch(err => console.error(err))
 
-  fs.unlinkSync(path.resolve(testDir, 'fixtures/entities/schemas/CopyCat.yml'))
+  fs.unlinkSync(path.resolve(testDir, 'fixtures/entityTypes/schemas/CopyCat.yml'))
 })
 
 test.serial('Attempting to load panacea core searches for panacea.js in cwd() when no path is supplied as the argument', t => {
