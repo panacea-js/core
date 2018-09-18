@@ -4,7 +4,10 @@ import portfinder from 'portfinder'
 
 const sandboxDir = getSandboxDir()
 
-const availablePort = (startPort) => portfinder.getPortPromise({host: '127.0.0.1', port: startPort})
+// Add extra port entropy to portfinder start port to prevent port clashes.
+// This is a workaround for portfinder as it is doesn't return an available port every time.
+const microTime = Math.ceil(Date.now() % 1000)
+const availablePort = (startPort) => portfinder.getPortPromise({host: '127.0.0.1', port: startPort + microTime })
 
 export default function () {
   return {
