@@ -97,9 +97,9 @@ test('When field definitions key is empty an error is thrown', t => {
   t.true(entityHasErrorMessage(entityTypes.getData().Cat, 'Fields do not exist on entity type: Cat'))
 })
 
-test('When validating and EntityType without _errors property, it is added by the call to entityTypes.validateEntityType', t => {
+test('When validating and EntityType without _errors property, it is added by the call to entityTypes.validate', t => {
   const entityTypeData = {}
-  entityTypes.validateEntityType(entityTypeData, 'testEmptyArray')
+  entityTypes.validate(entityTypeData, 'testEmptyArray')
   t.true(entityTypeData.hasOwnProperty('_errors'))
 })
 
@@ -118,7 +118,7 @@ test('Saving an EntityType in the correct required format writes a yml file to d
     description: 'A successful created entity type'
   }
 
-  const saveResult = entityTypes.saveEntityType('Mouse', entityTypeData, 'sandbox')
+  const saveResult = entityTypes.save('Mouse', entityTypeData, 'sandbox')
 
   t.true(saveResult.success)
   t.true(fs.existsSync(`${sandboxDir}/Mouse.yml`))
