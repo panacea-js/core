@@ -43,6 +43,34 @@ const resolveNestedFields = function (
   })
 }
 
+/**
+ * Ensure that mongoose documents have expected values as per the GraphQL constraints.
+ */
+const ensureDocumentHasDefaultValues = function (fields: EntityTypeFields, documentPartial: {}) {
+  _(fields).forEach((field: EntityTypeField, fieldId: string) => {
+    if (field.fields && documentPartial[fieldId]) {
+      ensureDocumentHasDefaultValues(field.fields, documentPartial[fieldId])
+    }
+    // Required field must return a value:
+    if (field.required && _.isEmpty(documentPartial[fieldId])) {
+      if (field.default) {
+        // Use default value as set on the field definition.
+        documentPartial[fieldId] = field.default
+        return
+      }
+
+      if (['int', 'float', 'boolean'].includes(field.type)) {
+        // Implicit default value based on the field type.
+        documentPartial[fieldId] = 0
+        return
+      }
+
+      // Fallback default value.
+      documentPartial[fieldId] = ''
+    }
+  })
+}
+
 const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientLanguage) {
   const types = {}
 
@@ -64,28 +92,62 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
 
     // Get single entity.
     resolvers.Query[entityData._meta.camel] = async (parent, args, { dbModels }) => {
-      const queryResult = dbModels[entityData._meta.pascal].findById(args.id)
-      hooks.invoke('core.entity.resolverQueryResult', {
+      let document = {}
+      let error
+
+      await dbModels[entityData._meta.pascal].findById(args.id).exec()
+        .then(doc => {
+          document = doc
+        })
+        .catch(err => {
+          error = err
+        })
+
+      if (error) {
+        return error
+      }
+
+      ensureDocumentHasDefaultValues(entityData.fields, document)
+
+      hooks.invoke('core.entity.resolvedQuery', {
         query: entityData._meta.camel,
         parent,
         args,
         dbModels,
-        queryResult
+        document
       })
-      return queryResult
+
+      return document
     }
 
     // Get many entities.
     resolvers.Query[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => {
-      const queryResult = modelQuery(dbModels[entityData._meta.pascal], parent, args)
-      hooks.invoke('core.entity.resolverQueryResult', {
+      let documents = {}
+      let error
+
+      await modelQuery(dbModels[entityData._meta.pascal], parent, args).exec()
+        .then(docs => {
+          documents = docs
+        })
+        .catch(err => {
+          error = err
+        })
+
+      if (error) {
+        return error
+      }
+
+      documents.forEach(document => ensureDocumentHasDefaultValues(entityData.fields, document))
+
+      hooks.invoke('core.entity.resolvedQuery', {
         query: entityData._meta.pluralCamel,
         parent,
         args,
         dbModels,
-        queryResult
+        documents
       })
-      return queryResult
+
+      return documents
     }
 
     // Only allow mutations of entities that have fields.

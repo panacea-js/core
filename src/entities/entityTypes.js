@@ -42,7 +42,7 @@ EntityTypes.prototype.validate = function (entityTypeData: EntityType, entityTyp
   hooks.invoke('core.entityTypes.fieldValidators', { entityTypeFieldValidators })
   entityTypeFieldValidators.map(validator => validator.call(this, entityTypeData, entityTypeName, action, entityTypeData.fields))
 
-  return this._errors && this._errors.length > 0 ? true : false
+  return this._errors && this._errors.length > 0 ? false : true
 }
 
 EntityTypes.prototype.validateRequiredProperties = function (entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save') : void {

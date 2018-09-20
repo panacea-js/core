@@ -19,6 +19,7 @@ declare type EntityTypeField = {|
   label: string,
   description?: string,
   many?: boolean,
+  default?: string,
   references?: string,
   required?: boolean,
   index?: boolean,
