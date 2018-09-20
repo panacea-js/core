@@ -38,6 +38,7 @@ declare type EntityType = {|
   storage: string,
   group?: string,
   revisions?: boolean,
+  _filePath? : string,
   _excludeGraphQL?: boolean,
   _errors?: Array<Error>,
   _meta: Meta

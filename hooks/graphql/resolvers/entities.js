@@ -35,9 +35,8 @@ const resolveNestedFields = function (
             targetEntities.push(dbModels[field.references].findById(targetId))
           })
           return targetEntities
-        } else {
-          return dbModels[field.references].findById(sourceDocument[fieldName])
         }
+        return dbModels[field.references].findById(sourceDocument[fieldName])
       }
     }
   })

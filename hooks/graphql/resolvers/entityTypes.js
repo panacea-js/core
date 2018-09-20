@@ -19,16 +19,23 @@ const entityTypeResolvers = function (resolvers, entityTypes, modelQuery, getCli
     { name } : { name : String },
     { dbModels } : { dbModels: {} }
   ) => {
-    if (definitions[name] && !_(definitions[name]).endsWith('Revision')) {
-      const entityType = definitions[name]
-      // Don't expose the native file path.
-      delete entityType._filePath
-      return {
-        name,
-        data: JSON.stringify(entityType)
-      }
-    } else {
+
+    // It's possible that a user creates an entity type called 'Revision'.
+    // Ignore that case, but otherwise prevent entity types that end with
+    // 'Revision' from being queried directly as these are intended only to be
+    // nested under their respective entities as the _revisions property.
+    // See: hooks/entities/revisions.js
+    if (name !== 'Revision' && name.endsWith('Revision')) {
       return null
+    }
+
+    const entityType: EntityType = definitions[name]
+    // Don't expose the native file path.
+    delete entityType._filePath
+
+    return {
+      name,
+      data: JSON.stringify(entityType)
     }
   }
 
@@ -66,20 +73,16 @@ const entityTypeResolvers = function (resolvers, entityTypes, modelQuery, getCli
   }
 
   resolvers.Mutation['_createEntityType'] = async (parent: any, { name, data, locationKey } : { name: string, data: string, locationKey: string}) => {
-    let response
-
     const saveResult = entityTypes.save(name, JSON.parse(data), locationKey)
 
-    if (saveResult.success) {
-      response = {
-        name,
-        data
-      }
-    } else {
-      response = new Error(saveResult.errorMessage)
+    if (!saveResult.success) {
+      return new Error(saveResult.errorMessage)
     }
 
-    return response
+    return {
+      name,
+      data
+    }
   }
 }
 

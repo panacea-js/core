@@ -53,13 +53,14 @@ const compileNestedObjects = function (field: EntityTypeField) {
         type: field.many && !field.fields ? [nestedFields] : nestedFields,
         index: !!field.index
       }
-    } else {
-      // Non nested objects only need their field type resolving and wrapping in
-      // an array if the field allows many values.
-      fieldDefinition = {
-        type: field.many ? [convertPanaceaFieldToMongo(field.type)] : convertPanaceaFieldToMongo(field.type),
-        index: !!field.index
-      }
+      return fieldDefinition
+    }
+
+    // Non nested objects only need their field type resolving and wrapping in
+    // an array if the field allows many values.
+    fieldDefinition = {
+      type: field.many ? [convertPanaceaFieldToMongo(field.type)] : convertPanaceaFieldToMongo(field.type),
+      index: !!field.index
     }
 
     return fieldDefinition

@@ -155,39 +155,41 @@ EntityTypes.prototype.save = function (name: string, data: EntityType, locationK
   if (!validates && entityTypeData._errors) {
     const validationErrors = entityTypeData._errors.join('\n')
     result.errorMessage = `Entity validation failed on: ${validationErrors}`
-  } else {
-    if (_(locationKey).isEmpty()) {
-      locationKey = this.defaults.locationKey
-    }
-
-    const basePath = this.locations[locationKey]
-
-    if (!fs.existsSync(basePath)) {
-      const errorMessage = `Location key ${locationKey} does not have a valid file path to save the entity.`
-      log.error(errorMessage)
-      result.errorMessage = errorMessage
-    } else {
-      name = _.upperFirst(_.camelCase(name))
-
-      const filePath = `${basePath}/${name}.yml`
-
-      try {
-        entityTypeData.fields = EntityTypes.prototype.removeFalsyFields(entityTypeData.fields)
-        entityTypeData = EntityTypes.prototype.stripMeta(entityTypeData)
-        result.success = true
-        writeYmlFile(filePath, entityTypeData)
-        hooks.invoke('core.reload', { reason: `entity ${name} was created` })
-      } catch (error) {
-        const errorMessage = `Could not write entity file ${name}.yml to ${basePath}: ${error.message}`
-        log.error(errorMessage)
-        result.errorMessage = errorMessage
-      }
-    }
-
-    if (result.success) {
-      hooks.invoke('core.entityTypes.postSave', { name, entityTypeData, locationKey })
-    }
+    return result
   }
+
+  if (_(locationKey).isEmpty()) {
+    locationKey = this.defaults.locationKey
+  }
+
+  const basePath = this.locations[locationKey]
+
+  if (!fs.existsSync(basePath)) {
+    const errorMessage = `Location key ${locationKey} does not have a valid file path to save the entity.`
+    log.error(errorMessage)
+    result.errorMessage = errorMessage
+    return result
+  }
+
+  // Transform entity type name to pascal case.
+  name = _.upperFirst(_.camelCase(name))
+
+  const filePath = `${basePath}/${name}.yml`
+
+  try {
+    entityTypeData.fields = EntityTypes.prototype.removeFalsyFields(entityTypeData.fields)
+    entityTypeData = EntityTypes.prototype.stripMeta(entityTypeData)
+    result.success = true
+    writeYmlFile(filePath, entityTypeData)
+    hooks.invoke('core.reload', { reason: `entity ${name} was created` })
+  } catch (error) {
+    const errorMessage = `Could not write entity file ${name}.yml to ${basePath}: ${error.message}`
+    log.error(errorMessage)
+    result.errorMessage = errorMessage
+    return result
+  }
+
+  hooks.invoke('core.entityTypes.postSave', { name, entityTypeData, locationKey })
 
   return result
 }
