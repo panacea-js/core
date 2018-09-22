@@ -1,7 +1,55 @@
 // @flow
-const { _ } = Panacea.container
+const { _, entityTypes } = Panacea.container
 
-const getDefinitions = function (translateEntityTypeFields, entityTypes: EntityTypes) {
+/**
+ * Get GraphQL schema for each field and provide two output types for the output object.
+ *
+ * One key is for where the references should be strings - in the case of Input Types and Mutations.
+ * Another key is for where the references should to the models (GraphQL types)- used in types and Query definitions.
+ *
+ * @param fields
+ *
+ * @returns {{refsAsStrings: object, refsAsModels: object}}
+ */
+const translateEntityTypeFields = function (fields: EntityTypeFields) {
+  let output = {
+    refsAsStrings: {},
+    refsAsModels: {}
+  }
+
+  _(fields).forEach((field, _fieldName) => {
+    Object.keys(output).forEach((refType) => {
+      let fieldType
+
+      if (field.type === 'reference') {
+        fieldType = (refType === 'refsAsStrings') ? 'String' : field.references
+      } else {
+        fieldType = entityTypes.convertFieldTypeToGraphQL(field.type)
+      }
+
+      field.required && (fieldType = `${fieldType}!`)
+      field.many && (fieldType = `[${fieldType}]`)
+
+      output[refType][field._meta.camel] = {
+        comment: field.description,
+        value: `${field._meta.camel}: ${fieldType}`
+      }
+
+      if (field.type === 'object' && field.hasOwnProperty('fields')) {
+        // Recurse this function to append output to the fields key.
+        // This allows for unlimited nesting of defined fields.
+        output[refType][field._meta.camel].fields = translateEntityTypeFields(field.fields)
+      }
+    })
+  })
+
+  return output
+}
+
+const getDefinitions = function () {
+
+  const entityTypeDefinitions: EntityTypes = entityTypes.getData()
+
   const definitions = {
     types: {},
     inputs: {},
@@ -10,7 +58,7 @@ const getDefinitions = function (translateEntityTypeFields, entityTypes: EntityT
   }
 
   // Get entity types, inputs, queries and mutations.
-  _(entityTypes).forEach((entityTypeData: EntityType, entityTypeName) => {
+  _(entityTypeDefinitions).forEach((entityTypeData: EntityType, entityTypeName) => {
     const definedFields = translateEntityTypeFields(entityTypeData.fields)
 
     const entityTypePascal = entityTypeData._meta.pascal
@@ -104,20 +152,20 @@ const getDefinitions = function (translateEntityTypeFields, entityTypes: EntityT
 
 export default {
   register (hooks: events$EventEmitter) {
-    hooks.on('core.graphql.definitions.types', ({ types, translateEntityTypeFields, entityTypes }) => {
-      const definitions = getDefinitions(translateEntityTypeFields, entityTypes)
+    hooks.on('core.graphql.definitions.types', ({ types }) => {
+      const definitions = getDefinitions()
       _.merge(types, definitions.types)
     })
-    hooks.on('core.graphql.definitions.inputs', ({ inputs, translateEntityTypeFields, entityTypes }) => {
-      const definitions = getDefinitions(translateEntityTypeFields, entityTypes)
+    hooks.on('core.graphql.definitions.inputs', ({ inputs }) => {
+      const definitions = getDefinitions()
       _.merge(inputs, definitions.inputs)
     })
-    hooks.on('core.graphql.definitions.queries', ({ queries, translateEntityTypeFields, entityTypes }) => {
-      const definitions = getDefinitions(translateEntityTypeFields, entityTypes)
+    hooks.on('core.graphql.definitions.queries', ({ queries }) => {
+      const definitions = getDefinitions()
       _.merge(queries, definitions.queries)
     })
-    hooks.on('core.graphql.definitions.mutations', ({ mutations, translateEntityTypeFields, entityTypes }) => {
-      const definitions = getDefinitions(translateEntityTypeFields, entityTypes)
+    hooks.on('core.graphql.definitions.mutations', ({ mutations }) => {
+      const definitions = getDefinitions()
       _.merge(mutations, definitions.mutations)
     })
   }

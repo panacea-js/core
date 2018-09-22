@@ -1,5 +1,5 @@
 // @flow
-const { _, log, hooks, Transaction } = Panacea.container
+const { _, log, hooks, entityTypes, Transaction } = Panacea.container
 
 /**
  * Resolves nested objects as separates types using an underscore to delineate
@@ -70,7 +70,7 @@ const ensureDocumentHasDefaultValues = function (fields: EntityTypeFields, docum
   })
 }
 
-const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientLanguage) {
+const entityResolvers = function (resolvers, modelQuery, getClientLanguage) {
   const types = {}
 
   const definitions = entityTypes.getData()
@@ -216,8 +216,8 @@ const entityResolvers = function (resolvers, entityTypes, modelQuery, getClientL
 
 export default {
   register (hooks: events$EventEmitter) {
-    hooks.on('core.graphql.resolvers', ({ resolvers, entityTypes, modelQuery, getClientLanguage }) => {
-      entityResolvers(resolvers, entityTypes, modelQuery, getClientLanguage)
+    hooks.on('core.graphql.resolvers', ({ resolvers, modelQuery, getClientLanguage }) => {
+      entityResolvers(resolvers, modelQuery, getClientLanguage)
     })
   }
 }

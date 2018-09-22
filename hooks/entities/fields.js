@@ -40,29 +40,29 @@ export default {
       }
     })
 
-    hooks.on('core.mongo.fieldsMap', ({ map } : { map: FieldMap }) => {
-      map.set('string', 'String')
-      map.set('password', 'String')
-      map.set('text', 'String')
-      map.set('float', 'Number')
-      map.set('int', 'Number')
-      map.set('boolean', 'Number')
-      map.set('reference', 'String')
+    hooks.on('core.entityTypes.fields.mapMongo', ({ fieldsMapMongo } : { fieldsMapMongo: FieldMap }) => {
+      fieldsMapMongo.set('string', 'String')
+      fieldsMapMongo.set('password', 'String')
+      fieldsMapMongo.set('text', 'String')
+      fieldsMapMongo.set('float', 'Number')
+      fieldsMapMongo.set('int', 'Number')
+      fieldsMapMongo.set('boolean', 'Number')
+      fieldsMapMongo.set('reference', 'String')
       // Objects are for nested data.
-      map.set('object', 'Object')
+      fieldsMapMongo.set('object', 'Object')
     })
 
-    hooks.on('core.graphql.fieldsMap', ({ map } : { map: FieldMap }) => {
-      map.set('id', 'String')
-      map.set('string', 'String')
-      map.set('password', 'String')
-      map.set('text', 'String')
-      map.set('float', 'Float')
-      map.set('int', 'Int')
-      map.set('boolean', 'Boolean')
-      map.set('reference', 'String')
+    hooks.on('core.entityTypes.fields.mapGraphQL', ({ fieldsMapGraphQL } : { fieldsMapGraphQL: FieldMap }) => {
+      fieldsMapGraphQL.set('id', 'String')
+      fieldsMapGraphQL.set('string', 'String')
+      fieldsMapGraphQL.set('password', 'String')
+      fieldsMapGraphQL.set('text', 'String')
+      fieldsMapGraphQL.set('float', 'Float')
+      fieldsMapGraphQL.set('int', 'Int')
+      fieldsMapGraphQL.set('boolean', 'Boolean')
+      fieldsMapGraphQL.set('reference', 'String')
       // objects are for nested data.
-      map.set('object', '__NestedObject')
+      fieldsMapGraphQL.set('object', '__NestedObject')
     })
   }
 }

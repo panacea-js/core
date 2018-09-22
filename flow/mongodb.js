@@ -1,3 +1,3 @@
 declare type dbModels = {
-  [name: string]: Mongoose$Document
+  [name: string]: typeof Mongoose$Document
 }

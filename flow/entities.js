@@ -10,23 +10,6 @@ declare type Meta = {|
   revisionEntityType?: string
 |}
 
-declare type EntityTypeFields = {
-  [string]: EntityTypeField
-}
-
-declare type EntityTypeField = {|
-  type: string,
-  label: string,
-  description?: string,
-  many?: boolean,
-  default?: string,
-  references?: string,
-  required?: boolean,
-  index?: boolean,
-  fields?: EntityTypeFields,
-  _meta?: Meta
-|}
-
 declare type EntityTypes = {
   [string]: EntityType
 }
@@ -56,7 +39,7 @@ declare type EntityTypePublic = EntityType | {
 }
 
 /**
- * Fields.
+ * Field types.
  */
 declare type FieldTypes = {
   [string] : {|
@@ -64,5 +47,29 @@ declare type FieldTypes = {
     description: string
   |}
 }
+
+/**
+ * Fields.
+ */
+declare type EntityTypeFields = {
+  [string]: EntityTypeField
+}
+
+declare type EntityTypeField = {|
+  type: string,
+  label: string,
+  description?: string,
+  many?: boolean,
+  default?: string,
+  references?: string,
+  required?: boolean,
+  index?: boolean,
+  fields?: EntityTypeFields,
+  _meta?: FieldMeta
+|}
+
+declare type FieldMeta = {|
+  camel: string
+|}
 
 declare type FieldMap = Map<string, string>

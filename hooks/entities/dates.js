@@ -14,12 +14,12 @@ export default {
       }
     })
 
-    hooks.on('core.mongo.fieldsMap', ({ map } : { map: FieldMap }) => {
-      map.set('date', 'Date')
+    hooks.on('core.entityTypes.fields.mapMongo', ({ fieldsMapMongo } : { fieldsMapMongo: FieldMap }) => {
+      fieldsMapMongo.set('date', 'Date')
     })
 
-    hooks.on('core.graphql.fieldsMap', ({ map } : { map: FieldMap }) => {
-      map.set('date', 'Date')
+    hooks.on('core.entityTypes.fields.mapGraphQL', ({ fieldsMapGraphQL } : { fieldsMapGraphQL: FieldMap }) => {
+      fieldsMapGraphQL.set('date', 'Date')
     })
 
     hooks.once('core.graphql.resolvers', ({ resolvers }) => {

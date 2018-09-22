@@ -7,11 +7,10 @@ const { _, entityTypes, i18n } = Panacea.container
  * types.
  *
  * @param {*} resolvers The mutable object of resolver definitions.
- * @param {*} entityTypes The entityTypes object.
  * @param {*} modelQuery Helper function to query entities on mongo model.
  * @param {*} getClientLanguage Helper function to determine to requested client language.
  */
-const entityTypeResolvers = function (resolvers, entityTypes, modelQuery, getClientLanguage) {
+const entityTypeResolvers = function (resolvers, modelQuery, getClientLanguage) {
   const definitions = entityTypes.getData()
 
   resolvers.Query['_entityType'] = async (
@@ -88,8 +87,8 @@ const entityTypeResolvers = function (resolvers, entityTypes, modelQuery, getCli
 
 export default {
   register (hooks: events$EventEmitter) {
-    hooks.on('core.graphql.resolvers', ({ resolvers, entityTypes, modelQuery, getClientLanguage }) => {
-      entityTypeResolvers(resolvers, entityTypes, modelQuery, getClientLanguage)
+    hooks.on('core.graphql.resolvers', ({ resolvers, modelQuery, getClientLanguage }) => {
+      entityTypeResolvers(resolvers, modelQuery, getClientLanguage)
     })
   }
 }

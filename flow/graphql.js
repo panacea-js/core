@@ -1,13 +1,13 @@
 /**
  * Entity Type Definitions.
  */
-declare type GraphQLEntityTypeDefinitions = {
+declare type GraphQLSchemaDefinitions = {
   [string] : {
-    [string] : GraphQLEntityTypeDefinition
+    [string] : GraphQLSchemaDefinition
   }
 }
 
-declare type GraphQLEntityTypeDefinition = {|
+declare type GraphQLSchemaDefinition = {|
   name: string,
   arguments?: {},
   returnType: string,
@@ -104,7 +104,7 @@ declare type GraphQLEnumsDefinition = {
 /**
  * Aggregates.
  */
-declare type GraphQLRootDefinitions = GraphQLEntityTypeDefinitions | GraphQLQueryDefinitions | GraphQLMutationDefinitions
+declare type GraphQLRootDefinitions = GraphQLSchemaDefinitions | GraphQLQueryDefinitions | GraphQLMutationDefinitions
 declare type GraphQLAllDefinitionsTypes = GraphQLRootDefinitions | GraphQLTypeDefinitions | GraphQLInputDefinitions
 
 declare type SortOrder = 'ASC' | 'DESC';
