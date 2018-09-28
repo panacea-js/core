@@ -1,3 +1,5 @@
+import { GraphQLTypeResolver } from 'graphql'
+
 /**
  * Entity Type Definitions.
  */
@@ -21,11 +23,24 @@ declare type GraphQLSchemaDefinition = {|
 |}
 
 /**
+ * Resolvers
+ */
+declare type GraphQLResolvers = {|
+  [typeName: string] : GraphQLTypeResolver,
+  Mutation : {
+    [mutationName: string] : GraphQLTypeResolver
+  },
+  Query : {
+    [typeName: string] : GraphQLTypeResolver
+  }
+|}
+
+/**
  * Query Definitions.
  */
 declare type GraphQLQueryDefinitions = {
-  [string]: {
-    [string]: GraphQLQueryDefinition
+  [queryGroup: string]: {
+    [query: string]: GraphQLQueryDefinition
   }
 }
 
@@ -40,8 +55,8 @@ declare type GraphQLQueryDefinition = {|
  * Mutation Definitions.
  */
 declare type GraphQLMutationDefinitions = {
-  [string]: {
-    [string]: GraphQLMutationDefinition
+  [mutationGroup: string]: {
+    [mutation: string]: GraphQLMutationDefinition
   }
 }
 
@@ -56,14 +71,14 @@ declare type GraphQLMutationDefinition = {|
  * Type Definitions.
  */
 declare type GraphQLTypeDefinitions = {
-  [string] : GraphQLTypeDefinition
+  [typeName: string] : GraphQLTypeDefinition
 }
 
 declare type GraphQLTypeDefinition = {|
   comment? : string,
   name: string,
   fields: {
-    [string] : {
+    [fieldName: string] : {
       comment: string,
       value: string
     }
@@ -74,7 +89,7 @@ declare type GraphQLTypeDefinition = {|
  * Input Definitions.
  */
 declare type GraphQLInputDefinitions = {
-  [string] : GraphQLInputDefinition
+  [inputParameter: string] : GraphQLInputDefinition
 }
 
 declare type GraphQLInputDefinition = {
@@ -87,7 +102,7 @@ declare type GraphQLInputDefinition = {
  * Enums Definitions.
  */
 declare type GraphQLEnumsDefinitions = {
-  [string] : GraphQLEnumsDefinition
+  [enumName: string] : GraphQLEnumsDefinition
 }
 
 declare type GraphQLEnumsDefinition = {
@@ -113,5 +128,5 @@ declare type QueryParams = {
   limit: number,
   sortBy: string,
   sortDirection: SortOrder | null,
-  [string]: any
+  [arbitraryParam: string]: any
 }

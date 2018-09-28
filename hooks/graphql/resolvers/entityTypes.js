@@ -1,21 +1,18 @@
 // @flow
-
-const { _, entityTypes, i18n } = Panacea.container
+const { _, entityTypes, i18n, getClientLanguage } = Panacea.container
 
 /**
  * Defines resolvers for introspection into the defined entity types and field
  * types.
  *
  * @param {*} resolvers The mutable object of resolver definitions.
- * @param {*} modelQuery Helper function to query entities on mongo model.
- * @param {*} getClientLanguage Helper function to determine to requested client language.
  */
-const entityTypeResolvers = function (resolvers, modelQuery, getClientLanguage) {
-  const definitions = entityTypes.getData()
+const entityTypeResolvers = function (resolvers: GraphQLResolvers) {
+  const definitions : EntityTypes = entityTypes.getData()
 
   resolvers.Query['_entityType'] = async (
     parent: {},
-    { name } : { name : String },
+    { name } : { name : string },
     { dbModels } : { dbModels: {} }
   ) => {
 
@@ -41,7 +38,7 @@ const entityTypeResolvers = function (resolvers, modelQuery, getClientLanguage) 
   resolvers.Query['_entityTypes'] = () => {
     const allEntities = []
 
-    _(definitions).forEach((entityType, entityTypeName) => {
+    _(definitions).forEach((entityType: EntityType, entityTypeName: string) => {
       // Exclude Revision entity types from being accessed directly.
       if (_(entityTypeName).endsWith('Revision')) {
         return
@@ -87,8 +84,8 @@ const entityTypeResolvers = function (resolvers, modelQuery, getClientLanguage) 
 
 export default {
   register (hooks: events$EventEmitter) {
-    hooks.on('core.graphql.resolvers', ({ resolvers, modelQuery, getClientLanguage }) => {
-      entityTypeResolvers(resolvers, modelQuery, getClientLanguage)
+    hooks.on('core.graphql.resolvers', ({ resolvers } : { resolvers: GraphQLResolvers }) => {
+      entityTypeResolvers(resolvers)
     })
   }
 }

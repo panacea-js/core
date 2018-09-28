@@ -22,7 +22,7 @@ export default {
       fieldsMapGraphQL.set('date', 'Date')
     })
 
-    hooks.once('core.graphql.resolvers', ({ resolvers }) => {
+    hooks.once('core.graphql.resolvers', ({ resolvers } : { resolvers: GraphQLResolvers }) => {
       resolvers.Date = new GraphQLScalarType({
         name: 'Date',
         description: 'ISO8601 Date value',

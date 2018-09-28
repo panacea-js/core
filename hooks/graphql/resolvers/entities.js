@@ -1,5 +1,5 @@
 // @flow
-const { _, log, hooks, entityTypes, Transaction } = Panacea.container
+const { _, log, hooks, entityTypes, Transaction, modelQuery } = Panacea.container
 
 /**
  * Resolves nested objects as separates types using an underscore to delineate
@@ -70,12 +70,17 @@ const ensureDocumentHasDefaultValues = function (fields: EntityTypeFields, docum
   })
 }
 
-const entityResolvers = function (resolvers, modelQuery, getClientLanguage) {
+/**
+ * Defines resolvers for single and multiple entities.
+ *
+ * @param {*} resolvers The mutable object of resolver definitions.
+ */
+const entityResolvers = function (resolvers: GraphQLResolvers) {
   const types = {}
 
-  const definitions = entityTypes.getData()
+  const definitions : EntityTypes = entityTypes.getData()
 
-  _(definitions).forEach(entityData => {
+  _(definitions).forEach((entityData : EntityType) => {
     // If exclude flag is set on entity, don't set any direct query or mutation
     // resolvers, but still resolve for any references made by other entity types.
     if (entityData._excludeGraphQL) {
@@ -216,8 +221,8 @@ const entityResolvers = function (resolvers, modelQuery, getClientLanguage) {
 
 export default {
   register (hooks: events$EventEmitter) {
-    hooks.on('core.graphql.resolvers', ({ resolvers, modelQuery, getClientLanguage }) => {
-      entityResolvers(resolvers, modelQuery, getClientLanguage)
+    hooks.on('core.graphql.resolvers', ({ resolvers } : { resolvers: GraphQLResolvers }) => {
+      entityResolvers(resolvers)
     })
   }
 }
