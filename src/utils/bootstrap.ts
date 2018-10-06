@@ -1,8 +1,17 @@
-// @flow
-import path from 'path'
-import fs from 'fs-extra'
+import * as path from 'path'
+import * as fs from 'fs-extra'
+import { IPanacea } from '../../types/globals';
+import { CorsOptions } from 'cors';
+import { GraphQLTypeDefinitions } from '../../types/graphql';
 
-const Bootstrap = function (panaceaConfigFile: string = '') {
+interface IBootstrap {
+  params: IPanacea
+  defaultCorePriority: number
+  defaultPluginPriority: number
+  defaultAppPriority: number
+}
+
+const Bootstrap = function (this: IBootstrap, panaceaConfigFile: string = '') : void {
   if (!panaceaConfigFile) {
     panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js')
   }
@@ -19,7 +28,7 @@ const Bootstrap = function (panaceaConfigFile: string = '') {
   this.defaultAppPriority = 10
 }
 
-Bootstrap.prototype.all = function () {
+Bootstrap.prototype.all = function () : Promise<string> {
   const startTime = Date.now()
 
   for (const method in this) {
@@ -41,21 +50,20 @@ Bootstrap.prototype.runStages = function (stages: Array<Number>) {
     throw new Error(`Stages parameter is invalid - should be an array of integers`) // Cannot translate as Panacea container isn't available for i18n.
   }
   stages.forEach(stage => {
-    stage = stage.toString()
     const stageFunction = `stage${stage}`
-    if (!typeof stage === 'number' || typeof this[stageFunction] !== 'function') {
+    if (typeof this[stageFunction] !== 'function') {
       throw new Error(`Stage ${stage} specified is invalid`) // Cannot translate as Panacea container isn't available for i18n.
     }
     this[stageFunction]()
   })
 }
 
-Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, subPath) {
+Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType: string, subPath: string) : Array<Registrant> {
   const { _, path, fs, registry, entityTypes, resolvePluginPath } = Panacea.container
 
   registry[registryType] = this.params[registryType] || {}
 
-  const unprioritizedRegistrants = []
+  const unprioritizedRegistrants: Array<Registrant> = []
 
   // Treat core as a plugin to itself so it can register its own hook
   // implementations when bootstrapping externally - i.e. as a dependency of
@@ -70,7 +78,7 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, sub
   })
 
   // Plugin Registrants.
-  _(registry.plugins).forEach((plugin, pluginKey) => {
+  Object.keys(registry.plugins).forEach((pluginKey) => {
     const pluginSubPath = path.resolve(resolvePluginPath(pluginKey), subPath)
     if (fs.existsSync(pluginSubPath)) {
       unprioritizedRegistrants.push({
@@ -119,6 +127,11 @@ Bootstrap.prototype.stage2 = function () {
   Panacea.value('registry', {})
 }
 
+interface Plugin {
+  path: string
+  priority: number
+}
+
 /**
 * Add plugins to the registry.
 */
@@ -134,7 +147,7 @@ Bootstrap.prototype.stage3 = function () {
 
   registry.plugins = {}
 
-  this.params.plugins.map(plugin => {
+  this.params.plugins.map((plugin : Plugin | string) => {
     // Allows plugins to be declared in panacea.js as single string without a priority.
     // Mutate plugin into plugin object structure.
     if (typeof plugin === 'string') {
@@ -167,7 +180,7 @@ Bootstrap.prototype.stage3 = function () {
 */
 Bootstrap.prototype.stage4 = function () {
   const { hooks } = Panacea.container
-  const directories = this.registryPathDiscoveryProcessor('hooks', 'hooks')
+  const directories : Array<Registrant> = this.registryPathDiscoveryProcessor('hooks', 'hooks')
   hooks.loadFromDirectories(directories.map(x => x.path))
 }
 
@@ -208,7 +221,7 @@ Bootstrap.prototype.stage7 = function () {
   } = Panacea.container
 
   graphQLTypeDefinitions()
-    .then(typeDefs => {
+    .then((typeDefs : string) => {
       const resolvers = graphQLResolvers()
 
       const schema = makeExecutableSchema({
@@ -219,7 +232,7 @@ Bootstrap.prototype.stage7 = function () {
       const app = express()
 
       const graphqlExpressDynamicMiddleware = dynamicMiddleware.create(
-        graphqlExpress(req => {
+        graphqlExpress((req : Express.Request) => {
           return {
             schema,
             context: {
@@ -230,10 +243,10 @@ Bootstrap.prototype.stage7 = function () {
         })
       )
 
-      let whitelist = []
+      let whitelist : Array<string> = []
       hooks.invoke('core.cors.whitelist', { whitelist, options })
 
-      var corsOptions = {
+      var corsOptions: CorsOptions = {
         origin: function (origin, callback) {
           if (options.main.disableCors || whitelist[0] === '*' || whitelist.indexOf(origin) !== -1) {
             callback(null, true)
@@ -254,13 +267,13 @@ Bootstrap.prototype.stage7 = function () {
       )
 
       // Allow middleware to be dynamically replaced via core.reload hook without needing to restart the server.
-      hooks.on('core.reload', ({ reason }) => {
+      hooks.on('core.reload', ({ reason } : { reason : string }) => {
         const startTime = Date.now()
 
         const { entityTypes } = Panacea.container
         entityTypes.clearCache()
 
-        graphQLTypeDefinitions().then(typeDefs => {
+        graphQLTypeDefinitions().then((typeDefs : string) => {
           const resolvers = graphQLResolvers()
 
           const schema = makeExecutableSchema({
@@ -269,7 +282,7 @@ Bootstrap.prototype.stage7 = function () {
           })
 
           graphqlExpressDynamicMiddleware.replace(
-            graphqlExpress(req => {
+            graphqlExpress((req : Express.Request) => {
               return {
                 schema,
                 context: {
@@ -279,7 +292,7 @@ Bootstrap.prototype.stage7 = function () {
               }
             })
           )
-        }).catch(error => console.error(error))
+        }).catch((error: Error) => console.error(error))
 
         const timeToReplace = Date.now() - startTime
 
@@ -309,7 +322,7 @@ Bootstrap.prototype.stage7 = function () {
       // Assign the express app onto the Panacea container so the bootstrap caller can serve it.
       Panacea.value('app', app)
     })
-    .catch(error => {
+    .catch((error: Error) => {
       log.error(i18n.t('core.bootstrap.typeDefsError', {error: error.message})) // Server not started. Type definitions error: {error}
     })
 }

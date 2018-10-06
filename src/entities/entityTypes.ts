@@ -1,15 +1,24 @@
-// @flow
 const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry } = Panacea.container
 
-const EntityTypes = function () {
+interface EntityTypesClass {
+  definitions: EntityTypes,
+  locations: object,
+  defaults: object,
+  fieldTypes: FieldTypes
+  fieldsMapMongo: FieldMap
+  fieldsMapGraphQL: FieldMap
+  addError: (entityTypeData: EntityType, error: Error) => void
+}
+
+const EntityTypes = function (this: EntityTypesClass) {
   this.definitions = {}
   this.locations = {}
   this.defaults = {
     locationKey: 'app'
   }
   this.fieldTypes = {}
-  this.fieldsMapMongo = {}
-  this.fieldsMapGraphQL = {}
+  this.fieldsMapMongo = new Map()
+  this.fieldsMapGraphQL = new Map()
 }
 
 /**
@@ -48,7 +57,7 @@ EntityTypes.prototype.convertFieldTypeToGraphQL = function (type : string) : str
   return this.fieldsMapGraphQL.get(type) || ''
 }
 
-EntityTypes.prototype.addError = function (entityTypeData: EntityType, error: Error) {
+EntityTypes.prototype.addError = function (entityTypeData: EntityType, error: Error) : void {
   // Ensure the _errors array exists.
   entityTypeData._errors = entityTypeData._errors || []
   entityTypeData._errors.push(error)
@@ -112,8 +121,8 @@ EntityTypes.prototype.addFieldsMeta = function (fields: EntityTypeFields) : void
 EntityTypes.prototype.clearCache = function (): void {
   this.definitions = {}
   this.fieldTypes = {}
-  this.fieldsMapMongo = {}
-  this.fieldsMapGraphQL = {}
+  this.fieldsMapMongo = new Map()
+  this.fieldsMapGraphQL = new Map()
 }
 
 EntityTypes.prototype.getData = function (): EntityTypes {
@@ -124,10 +133,10 @@ EntityTypes.prototype.getData = function (): EntityTypes {
 
   // Ensure that the filesystem is only hit once.
   if (_(this.definitions).isEmpty()) {
-    _.forIn(registry.entityTypes, registrantData => {
+    _.forIn(registry.entityTypes, (registrantData: Registrant) => {
       this.locations[registrantData.locationKey] = registrantData.path
       const fileEntityTypes = loadYmlFiles(registrantData.path)
-      _(fileEntityTypes).forEach((entity, entityName) => {
+      Object.keys(fileEntityTypes).forEach((entityName: string) => {
         fileEntityTypes[entityName]._locationKey = registrantData.locationKey
         fileEntityTypes[entityName]._errors = []
       })
@@ -137,7 +146,7 @@ EntityTypes.prototype.getData = function (): EntityTypes {
 
   hooks.invoke('core.entityTypes.definitions', { definitions: this.definitions })
 
-  _(this.definitions).forEach((entityTypeData, entityTypeName) => {
+  _(this.definitions).forEach((entityTypeData: EntityType, entityTypeName: string) => {
     this.validate(entityTypeData, entityTypeName, 'load')
     this.addMeta(entityTypeData, entityTypeName)
     this.addFieldsMeta(entityTypeData.fields)
@@ -202,10 +211,10 @@ EntityTypes.prototype.save = function (name: string, data: EntityType, locationK
   return result
 }
 
-EntityTypes.prototype.stripMeta = function (data: EntityType) : EntityType {
-  const clonedData : EntityType = _.cloneDeep(data)
+EntityTypes.prototype.stripMeta = function (data: object) : object {
+  const clonedData : { [property: string] : any } = _.cloneDeep(data)
 
-  _(clonedData).forEach((value, key) => {
+  _(clonedData).forEach((value: object, key: string) => {
     if (typeof clonedData === 'object') {
       clonedData[key] = EntityTypes.prototype.stripMeta(value)
     }
@@ -218,9 +227,9 @@ EntityTypes.prototype.stripMeta = function (data: EntityType) : EntityType {
   return clonedData
 }
 
-EntityTypes.prototype.removeFalsyFields = function (fields: EntityTypeFields) : EntityTypeFields {
-  _(fields).forEach((field, fieldName) => {
-    _(field).forEach((value, key) => {
+EntityTypes.prototype.removeFalsyFields = function (fields: { [property: string] : any }) : object {
+  _(fields).forEach((field: EntityTypeField, fieldName: string) => {
+    _(field).forEach((value: any, key: string) => {
       if (_(value).isEmpty() && value !== true) {
         delete fields[fieldName][key]
       }
@@ -239,8 +248,8 @@ EntityTypes.prototype.removeFalsyFields = function (fields: EntityTypeFields) : 
  *
  * @private
  */
-function checkObjectsHaveFields (fields: EntityTypeFields, entityTypeName: string) : void {
-  _(fields).forEach((fieldData, fieldId) => {
+function checkObjectsHaveFields (this: EntityTypesClass, fields: EntityTypeFields, entityTypeName: string) : void {
+  _(fields).forEach((fieldData: EntityTypeField, fieldId: string) => {
     if (fieldData.type === 'object' && !fieldData.fields) {
       console.warn(`Not loading ${fieldId} field on ${entityTypeName} because it doesn't have any nested fields.`)
       delete fields[fieldId]
@@ -256,7 +265,7 @@ function checkObjectsHaveFields (fields: EntityTypeFields, entityTypeName: strin
  *
  * @private
  */
-function registerFieldTypes () : void {
+function registerFieldTypes (this: EntityTypesClass) : void {
   const fieldTypes: FieldTypes = {}
   const fieldsMapMongo: FieldMap = new Map()
   const fieldsMapGraphQL: FieldMap = new Map()
@@ -275,7 +284,7 @@ function registerFieldTypes () : void {
  *
  * @private
  */
-function validateRequiredProperties (entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save') : void {
+function validateRequiredProperties (this: EntityTypesClass, entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save') : void {
   if (_(entityTypeData.fields).isEmpty()) this.addError(entityTypeData, TypeError(`Fields do not exist on entity type: ${entityTypeName}`))
   if (_(entityTypeData.plural).isEmpty()) this.addError(entityTypeData, TypeError(`A 'plural' key must be set on entity type: ${entityTypeName}`))
   if (_(entityTypeData.storage).isEmpty()) this.addError(entityTypeData, TypeError(`A 'storage' key must be set on entity type: ${entityTypeName}`))
@@ -286,8 +295,8 @@ function validateRequiredProperties (entityTypeData: EntityType, entityTypeName:
  *
  * @private
  */
-function validateRequiredFields (entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save', fields: EntityTypeFields) : void {
-  _(fields).forEach((field, fieldName) => {
+function validateRequiredFields (this: EntityTypesClass, entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save', fields: EntityTypeFields) : void {
+  _(fields).forEach((field: EntityTypeField, fieldName: string) => {
     // Validate field contains all the required attributes.
     if (_(field).isEmpty()) this.addError(entityTypeData, TypeError(`Field ${fieldName} configuration is empty`))
     if (_(field.type).isEmpty()) this.addError(entityTypeData, TypeError(`Field type not defined for ${fieldName}`))
@@ -302,6 +311,6 @@ function validateRequiredFields (entityTypeData: EntityType, entityTypeName: str
   })
 }
 
-const entityTypes = new EntityTypes()
+const entityTypes = new (EntityTypes as any)()
 
 export { entityTypes }
