@@ -4,14 +4,14 @@ const { _, hooks } = Panacea.container
 /**
  * Transforms structured data for GraphQL root types to an output string.
  */
-const formatRootTypeToOutput = function (rootType: 'Mutation' | 'Query', definitions: GraphQLRootDefinitions): string {
-  let output = []
+const formatRootTypeToOutput = function (rootType: 'Mutation' | 'Query', definitions: GraphQLMutationDefinitions | GraphQLQueryDefinitions): string {
+  let output: Array<string> = []
 
   output.push(`type ${rootType} {\n`)
 
-  _(definitions).forEach(function (schemaDefinitions: GraphQLSchemaDefinitions) {
-    _(schemaDefinitions).forEach(function (definition: GraphQLSchemaDefinition) {
-      const args = []
+  _(definitions).forEach(function (schemaDefinitions) {
+    _(schemaDefinitions).forEach(function (definition) {
+      const args: Array<string> = []
 
       _(definition.arguments).forEach(function (value, key) {
         args.push(`${key}: ${value}`)
@@ -32,13 +32,13 @@ const formatRootTypeToOutput = function (rootType: 'Mutation' | 'Query', definit
 /**
  * Transforms structured data for GraphQL types to an output string.
  */
-const formatTypesToOutput = function (type : 'type' | 'input', definitions: GraphQLAllDefinitionsTypes) : string {
-  let output = []
+const formatTypesToOutput = function (type : 'type' | 'input', definitions: GraphQLTypeDefinitions | GraphQLInputDefinitions) : string {
+  let output: Array<string> = []
 
   // Nested types (objects in fields) are deferred to be concatenated to the final output.
-  let nestedTypes = []
+  let nestedTypes: Array<string> = []
 
-  _(definitions).forEach(function (data: GraphQLSchemaDefinition, schemaName) {
+  _(definitions).forEach(function (data, schemaName) {
     output.push(`\n# ${data.comment || 'No description'}\n`)
 
     output.push(`${type} ${data.name} {\n`)
@@ -58,7 +58,7 @@ const formatTypesToOutput = function (type : 'type' | 'input', definitions: Grap
         const nestedFieldName = `${schemaName}_${fieldName}`
 
         // Mock an object to pass back through this function.
-        const nestedDefinition = {}
+        const nestedDefinition: any = {}
         nestedDefinition[nestedFieldName] = {
           comment: `Nested object on ${schemaName}. ${field.comment}`,
           name: nestedFieldName,
@@ -88,7 +88,7 @@ const formatTypesToOutput = function (type : 'type' | 'input', definitions: Grap
  * Transforms structured data for GraphQL enums to an output string.
  */
 const formatEnumsToOutput = function (enums: GraphQLEnumsDefinitions) {
-  const output = []
+  const output: Array<string> = []
 
   _(enums).forEach(function (definition) {
     output.push(`\n# ${definition.comment || 'No description'}\n`)
@@ -110,11 +110,9 @@ const formatEnumsToOutput = function (enums: GraphQLEnumsDefinitions) {
  * Loads schema types from hook implementations to define GraphQL type definitions.
  *
  * Allows overrides via core.graphql.definitions.* hooks.
- *
- * @returns Promise
  */
-export const graphQLTypeDefinitions = function () {
-  const definitions: Promise<string> = new Promise(function (resolve, reject) {
+export const graphQLTypeDefinitions = function () : Promise<string> {
+  return new Promise(function (resolve, reject) {
     try {
       const output = []
       const types: GraphQLTypeDefinitions = {}
@@ -148,7 +146,7 @@ export const graphQLTypeDefinitions = function () {
       hooks.invoke('core.graphql.definitions.scalars', { scalars })
       output.push('\n' + scalars.map(s => `scalar ${s}`).join('\n'))
 
-      const tidyDefinitionEndings = function (input) {
+      const tidyDefinitionEndings = function (input: string) {
         return input.replace(/\n\n\}/g, '\n}')
       }
 
@@ -158,6 +156,4 @@ export const graphQLTypeDefinitions = function () {
       reject(error)
     }
   })
-
-  return definitions
 }

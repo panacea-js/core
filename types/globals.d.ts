@@ -1,11 +1,13 @@
 import * as GraphQLToolsTypes from 'graphql-tools'
 import { makeExecutableSchema } from 'graphql-tools';
 import { IResolvers } from 'graphql-tools/dist/Interfaces';
+import { LoDashStatic } from 'lodash';
 
 interface IPanaceaDependencies {
   makeExecutableSchema: typeof makeExecutableSchema
+  graphQLTypeDefinitions: () => Promise<string>
   graphQLResolvers: () => IResolvers
-
+  _: LoDashStatic
   options: IPanaceaOptions
 }
 

@@ -2,7 +2,6 @@ import * as path from 'path'
 import * as fs from 'fs-extra'
 import { IPanacea } from '../../types/globals';
 import { CorsOptions } from 'cors';
-import { GraphQLTypeDefinitions } from '../../types/graphql';
 
 interface IBootstrap {
   params: IPanacea

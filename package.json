@@ -74,6 +74,7 @@
     "@types/express": "^4.16.0",
     "@types/fs-extra": "^5.0.4",
     "@types/graphql": "^14.0.1",
+    "@types/lodash": "^4.14.117",
     "@types/node-fetch": "^2.1.2",
     "ava": "^0.25.0",
     "babel-cli": "^6.26.0",

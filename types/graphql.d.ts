@@ -1,6 +1,3 @@
-import { GraphQLTypeResolver } from "graphql"
-import { IResolvers } from "graphql-tools/dist/Interfaces";
-
 /**
  * Entity Type Definitions.
  */
@@ -83,7 +80,9 @@ interface GraphQLInputDefinitions {
 interface GraphQLInputDefinition {
   name: string
   comment? : string
-  fields: {}
+  fields: {
+    [fieldId: string]: any
+  }
 }
 
 /**
@@ -107,8 +106,9 @@ interface GraphQLEnumsDefinition {
 /**
  * Aggregates.
  */
-type GraphQLRootDefinitions = GraphQLSchemaDefinitions | GraphQLQueryDefinitions | GraphQLMutationDefinitions
-type GraphQLAllDefinitionsTypes = GraphQLRootDefinitions | GraphQLTypeDefinitions | GraphQLInputDefinitions
+//type GraphQLRootDefinitions = GraphQLSchemaDefinitions | GraphQLQueryDefinitions | GraphQLMutationDefinitions
+
+//type GraphQLAllDefinitionsTypes = GraphQLRootDefinitions | GraphQLTypeDefinitions | GraphQLInputDefinitions
 
 type SortOrder = 'ASC' | 'DESC';
 
