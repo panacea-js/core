@@ -1,10 +1,22 @@
 // Dependency injection container library.
-import Bottle from 'bottlejs'
+import * as Bottle from 'bottlejs'
+
+interface ServicesBuilderClass {
+  services: {
+    [serviceName: string]: any
+  }
+  aliases: {
+    [aliasName: string]: any
+  }
+  prototype: {
+    alias: (alias: string, location: string) => void
+  }
+}
 
 /**
  * Service builder helper to pass to services file.
  */
-const ServicesBuilder = function () {
+const ServicesBuilder = function (this: ServicesBuilderClass) {
   this.services = {}
   this.aliases = {}
 }
@@ -23,7 +35,7 @@ const ServicesBuilder = function () {
  * @param callbackArguments Array|null
  *   Arguments as an array to pass to the instantiating call.
  */
-ServicesBuilder.prototype.add = function (serviceName, location, property = null, callbackArguments = null) {
+ServicesBuilder.prototype.add = function (this: ServicesBuilderClass, serviceName: string, location: string, property?: string, callbackArguments? : Array<any>) {
   // Process aliases.
   for (let alias in this.aliases) {
     location = location.replace(alias, this.aliases[alias])
@@ -48,7 +60,7 @@ ServicesBuilder.prototype.add = function (serviceName, location, property = null
  * @param location
  *   The absolute location to replace the alias when found.
  */
-ServicesBuilder.prototype.alias = function (alias, location) {
+ServicesBuilder.prototype.alias = function (alias: string, location: string) {
   this.aliases[alias] = location
 }
 
@@ -64,7 +76,7 @@ export const registerServices = function (params: typeof Panacea.options) {
   const defaultsDeep = require('lodash/defaultsDeep')
   const path = require('path')
 
-  const services = new ServicesBuilder()
+  const services = new (ServicesBuilder as any)()
 
   const coreServices = path.resolve(__dirname, '../default.services.js')
   const defaultOptions = require(coreServices).servicesConfig()
@@ -82,7 +94,7 @@ export const registerServices = function (params: typeof Panacea.options) {
     const callbackArguments = services.services[serviceName].callbackArguments
 
     const provider = function () { }
-    provider.prototype.$get = function (container) {
+    provider.prototype.$get = function () {
       if (property) {
         if (Array.isArray(callbackArguments)) {
           return require(location)[property].apply(null, callbackArguments)
@@ -98,6 +110,7 @@ export const registerServices = function (params: typeof Panacea.options) {
   // Set resolved options to be accessible on the container.
   bottle.value('options', options)
 
+  // @ts-ignore
   global[options.services.globalVariable] = bottle
 
   return bottle

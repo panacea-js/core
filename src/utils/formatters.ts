@@ -1,3 +1,9 @@
+const { i18n } = Panacea.container
+
+interface nest {
+  [parent: string] : nest | {}
+}
+
 /**
  * Creates a nested object where the nesting keys follow the paths
  * analogous to the dotted syntax provided in the hook.
@@ -15,16 +21,20 @@
  *
  * @returns Object
  */
-const compileNestFromDotSeparated = function (hook, nest = {}) {
+const compileNestFromDotSeparated = function (hook: string, nest: nest = {}) {
   if (hook.indexOf('.') !== -1) {
-    hook = hook.split('.')
-    let shifted = hook.shift()
+    let hookParts = hook.split('.')
+    let shifted = hookParts.shift()
+
+    if (!shifted) {
+      return nest
+    }
 
     if (!nest.hasOwnProperty(shifted)) {
       nest[shifted] = {}
     }
 
-    nest[shifted] = compileNestFromDotSeparated(hook.join('.'), nest[shifted])
+    nest[shifted] = compileNestFromDotSeparated(hookParts.join('.'), nest[shifted])
   } else {
     nest[hook] = {}
   }
@@ -48,7 +58,7 @@ const compileNestFromDotSeparated = function (hook, nest = {}) {
  *
  * @returns String
  */
-const formatNestedObjectKeys = function (nest, indentSize = 2, _level = 0) {
+const formatNestedObjectKeys = function (nest: nest, indentSize = 2, _level = 0) {
   const { _ } = Panacea.container
 
   let output = ''
@@ -77,13 +87,13 @@ const formatNestedObjectKeys = function (nest, indentSize = 2, _level = 0) {
  * @param value
  * @returns Integer
  */
-const convertFileSizeShortHandToBytes = function (value) {
+const convertFileSizeShortHandToBytes = function (value: string) {
   // If passed value is a string without any suffixes then treat as an integer.
   if (parseInt(value).toString() === value) {
-    value = parseInt(value)
+    return value
   }
 
-  const sizes = {
+  const sizes: any = {
     k: 1,
     m: 2,
     g: 3,
@@ -100,7 +110,7 @@ const convertFileSizeShortHandToBytes = function (value) {
         return parseInt(value.replace(size, '').replace(size.toUpperCase(), '')) * (Math.pow(1024, sizes[size]))
       }
     }
-    return new TypeError('core.formatters.shortHandToBytes.cannotConvert', {value}) // Could not find a way to convert file size shorthand string: {value}
+    return new TypeError(i18n('core.formatters.shortHandToBytes.cannotConvert', {value})) // Could not find a way to convert file size shorthand string: {value}
   }
 
   return value

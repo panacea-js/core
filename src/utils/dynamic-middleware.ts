@@ -1,14 +1,20 @@
+import * as express from 'express'
+
 class DynamicMiddleware {
-  constructor (middleware) {
-    this._init(middleware)
+  _middleware: express.RequestHandler
+
+  constructor (middleware: express.RequestHandler) {
+    if (typeof (middleware) !== 'function') {
+      throw new Error('Invalid middleware argument, must be a function')
+    }
+
+    this._middleware = middleware
   }
 
   /**
    *  Create a handler that can be used by express
-   *
-   *  @returns {Function} a express middleware
    */
-  handler () {
+  handler (): express.RequestHandler {
     return (req, res, next) => {
       this._middleware(req, res, next)
     }
@@ -17,11 +23,7 @@ class DynamicMiddleware {
   /**
    *  Replace the existing middleware with new middleware.
    */
-  replace (middleware) {
-    this._init(middleware)
-  }
-
-  _init (middleware) {
+  replace (middleware: express.RequestHandler) {
     if (typeof (middleware) !== 'function') {
       throw new Error('Invalid middleware argument, must be a function')
     }
@@ -30,6 +32,6 @@ class DynamicMiddleware {
   }
 }
 
-export const create = function (middleware) {
+export const create = function (middleware: express.RequestHandler) {
   return new DynamicMiddleware(middleware)
 }
