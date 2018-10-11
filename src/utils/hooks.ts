@@ -2,11 +2,11 @@
 import * as events from 'events'
 
 interface IHooks extends events.EventEmitter,IHooksProto {
-  availableHooks: Array<string>
   prototype: IHooksProto
 }
 
 interface IHooksProto {
+  availableHooks: Array<string>
   invoke: (this: IHooks, type: string, defaultData?: any) => any
   getAvailableHooks: (this: IHooks) => Array<string>
   getAvailableHooksOutput: (this: IHooks, nested: boolean) => string
@@ -19,7 +19,7 @@ const Hooks: IHooks = (events.EventEmitter as any)
 /**
  * Registry of hooks that have been invoked
  */
-Hooks.availableHooks = []
+Hooks.prototype.availableHooks = []
 
 /**
  * Invoke method sets a one-time listener to capture the resulting data and then invokes all listeners.

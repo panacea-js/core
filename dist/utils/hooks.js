@@ -7,7 +7,7 @@ const Hooks = events.EventEmitter;
 /**
  * Registry of hooks that have been invoked
  */
-Hooks.availableHooks = [];
+Hooks.prototype.availableHooks = [];
 /**
  * Invoke method sets a one-time listener to capture the resulting data and then invokes all listeners.
  *

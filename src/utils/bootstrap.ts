@@ -68,7 +68,7 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType: str
   // implementations when bootstrapping externally - i.e. as a dependency of
   // another project. If core is bootstrapping itself (e.g. when running tests)
   // core effectively works in place of the application registrant below.
-  const corePath = resolvePluginPath('@panaceajs/core') || './'
+  const corePath = resolvePluginPath('@panaceajs/core') || './dist/core/'
   // Core Registrants.
   unprioritizedRegistrants.push({
     locationKey: 'core',
@@ -90,7 +90,7 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType: str
 
   // Application Registrant.
   // Only include if core is not bootstrapping itself. See above.
-  if (corePath !== './') {
+  if (corePath !== './dist/core/') {
     const applicationSubPath = path.resolve(process.cwd(), subPath)
     if (fs.existsSync(applicationSubPath)) {
       unprioritizedRegistrants.push({

@@ -2,7 +2,7 @@ import * as Mongoose from 'mongoose'
 
 const { hooks } = Panacea.container
 interface dbModels {
-  [name: string]: Mongoose.Document
+  [name: string]: Mongoose.Model<Mongoose.Document>
 }
 
 /**
@@ -10,7 +10,7 @@ interface dbModels {
  * @returns {object}
  */
 export const dbModels = function () : dbModels {
-  const models = {}
+  const models: dbModels = {}
   hooks.invoke('core.mongo.models', { models })
 
   return models

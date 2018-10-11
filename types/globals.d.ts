@@ -7,6 +7,7 @@ import * as jsYaml from 'js-yaml'
 import * as glob from 'glob'
 import * as path from 'path'
 import * as fsExtra from 'fs-extra'
+import * as Mongoose from 'mongoose'
 
 interface IPanaceaDependencies {
   makeExecutableSchema: typeof makeExecutableSchema
@@ -19,6 +20,8 @@ interface IPanaceaDependencies {
   jsYaml: typeof jsYaml
   options: IPanaceaOptions
   fs: typeof fsExtra
+  dbConnection: typeof Mongoose.connection
+  mongoose: typeof Mongoose
 }
 
 interface IPanaceaOptions {

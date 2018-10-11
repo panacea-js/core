@@ -1,6 +1,7 @@
-// @flow
+import * as events from 'events'
+
 export default {
-  register (hooks: events$EventEmitter) {
+  register (hooks: events.EventEmitter) {
     hooks.on('core.entityTypes.fields.definitions', ({ fieldTypes } : { fieldTypes: FieldTypes }) => {
       fieldTypes.id = {
         label: 'core.entityTypes.fields.id.label',

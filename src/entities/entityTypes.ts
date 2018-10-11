@@ -1,6 +1,6 @@
 const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry } = Panacea.container
 
-interface EntityTypesClass {
+interface IEntityTypes {
   definitions: EntityTypes,
   locations: object,
   defaults: object,
@@ -10,7 +10,7 @@ interface EntityTypesClass {
   addError: (entityTypeData: EntityType, error: Error) => void
 }
 
-const EntityTypes = function (this: EntityTypesClass) {
+const EntityTypes = function (this: IEntityTypes) {
   this.definitions = {}
   this.locations = {}
   this.defaults = {
@@ -248,7 +248,7 @@ EntityTypes.prototype.removeFalsyFields = function (fields: { [property: string]
  *
  * @private
  */
-function checkObjectsHaveFields (this: EntityTypesClass, fields: EntityTypeFields, entityTypeName: string) : void {
+function checkObjectsHaveFields (this: IEntityTypes, fields: EntityTypeFields, entityTypeName: string) : void {
   _(fields).forEach((fieldData: EntityTypeField, fieldId: string) => {
     if (fieldData.type === 'object' && !fieldData.fields) {
       console.warn(`Not loading ${fieldId} field on ${entityTypeName} because it doesn't have any nested fields.`)
@@ -265,7 +265,7 @@ function checkObjectsHaveFields (this: EntityTypesClass, fields: EntityTypeField
  *
  * @private
  */
-function registerFieldTypes (this: EntityTypesClass) : void {
+function registerFieldTypes (this: IEntityTypes) : void {
   const fieldTypes: FieldTypes = {}
   const fieldsMapMongo: FieldMap = new Map()
   const fieldsMapGraphQL: FieldMap = new Map()
@@ -284,7 +284,7 @@ function registerFieldTypes (this: EntityTypesClass) : void {
  *
  * @private
  */
-function validateRequiredProperties (this: EntityTypesClass, entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save') : void {
+function validateRequiredProperties (this: IEntityTypes, entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save') : void {
   if (_(entityTypeData.fields).isEmpty()) this.addError(entityTypeData, TypeError(`Fields do not exist on entity type: ${entityTypeName}`))
   if (_(entityTypeData.plural).isEmpty()) this.addError(entityTypeData, TypeError(`A 'plural' key must be set on entity type: ${entityTypeName}`))
   if (_(entityTypeData.storage).isEmpty()) this.addError(entityTypeData, TypeError(`A 'storage' key must be set on entity type: ${entityTypeName}`))
@@ -295,7 +295,7 @@ function validateRequiredProperties (this: EntityTypesClass, entityTypeData: Ent
  *
  * @private
  */
-function validateRequiredFields (this: EntityTypesClass, entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save', fields: EntityTypeFields) : void {
+function validateRequiredFields (this: IEntityTypes, entityTypeData: EntityType, entityTypeName: string, action: 'load' | 'save', fields: EntityTypeFields) : void {
   _(fields).forEach((field: EntityTypeField, fieldName: string) => {
     // Validate field contains all the required attributes.
     if (_(field).isEmpty()) this.addError(entityTypeData, TypeError(`Field ${fieldName} configuration is empty`))
