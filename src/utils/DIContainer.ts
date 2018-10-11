@@ -1,22 +1,34 @@
 // Dependency injection container library.
 import * as Bottle from 'bottlejs'
 
-interface ServicesBuilderClass {
+interface IServicesBuilderProto {
+  alias: (
+    this: IServicesBuilder,
+    alias: string,
+    location: string
+  ) => void
+  add: (
+    this: IServicesBuilder,
+    serviceName: string,
+    location: string,
+    property?: string,
+    callbackArguments? : Array<any>
+  ) => void
+}
+
+export interface IServicesBuilder extends IServicesBuilderProto {
   services: {
     [serviceName: string]: any
   }
   aliases: {
     [aliasName: string]: any
   }
-  prototype: {
-    alias: (alias: string, location: string) => void
-  }
 }
 
 /**
  * Service builder helper to pass to services file.
  */
-const ServicesBuilder = function (this: ServicesBuilderClass) {
+const ServicesBuilder = function (this: IServicesBuilder) {
   this.services = {}
   this.aliases = {}
 }
@@ -35,7 +47,7 @@ const ServicesBuilder = function (this: ServicesBuilderClass) {
  * @param callbackArguments Array|null
  *   Arguments as an array to pass to the instantiating call.
  */
-ServicesBuilder.prototype.add = function (this: ServicesBuilderClass, serviceName: string, location: string, property?: string, callbackArguments? : Array<any>) {
+ServicesBuilder.prototype.add = <IServicesBuilderProto['add']>function (serviceName, location, property, callbackArguments) {
   // Process aliases.
   for (let alias in this.aliases) {
     location = location.replace(alias, this.aliases[alias])
@@ -60,7 +72,7 @@ ServicesBuilder.prototype.add = function (this: ServicesBuilderClass, serviceNam
  * @param location
  *   The absolute location to replace the alias when found.
  */
-ServicesBuilder.prototype.alias = function (alias: string, location: string) {
+ServicesBuilder.prototype.alias = <IServicesBuilderProto['alias']>function (alias, location) {
   this.aliases[alias] = location
 }
 

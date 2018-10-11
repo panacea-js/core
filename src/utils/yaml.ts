@@ -1,3 +1,5 @@
+const { i18n } = Panacea.container
+
 /**
  * Get structures data from stored yml files in a directory.
  *
@@ -8,13 +10,13 @@
  *   Keyed by the filename.
  *   Value is a parsed YAML to JSON.
  */
-export function loadYmlFiles (directory) {
+export function loadYmlFiles (directory: string) {
   const { jsYaml, fs, _, glob, path } = Panacea.container
 
-  let result = {}
+  let result: any = {}
 
   if (!fs.pathExistsSync(directory)) {
-    return new Error('core.yaml.noDirectory', {directory}) // Directory {directory} doesn't exist.
+    return new Error(i18n.t('core.yaml.noDirectory', {directory})) // Directory {directory} doesn't exist.
   }
 
   let files = glob.sync(directory + '/*.yml')
@@ -22,11 +24,14 @@ export function loadYmlFiles (directory) {
   files.map(file => {
     // Entity type name is the file name stub.
     const filePath = path.resolve(file)
-    let filename = _(file).split('/').last().replace('.yml', '')
-    const fileContents = jsYaml.safeLoad(fs.readFileSync(file, 'utf8'))
-    if (fileContents) {
-      fileContents._filePath = filePath
-      result[filename] = fileContents
+    let filename = _(file).split('/').last()
+    if (filename) {
+      filename = filename.replace('.yml', '')
+      const fileContents = jsYaml.safeLoad(fs.readFileSync(file, 'utf8'))
+      if (fileContents) {
+        fileContents._filePath = filePath
+        result[filename] = fileContents
+      }
     }
   })
 
@@ -41,7 +46,7 @@ export function loadYmlFiles (directory) {
  * @param options
  * @returns {*}
  */
-export function writeYmlFile (filepath, data, options = {}) {
+export function writeYmlFile (filepath: string, data: any, options = {}): string {
   const { jsYaml, fs } = Panacea.container
   const ymlData = jsYaml.safeDump(data, options)
   fs.outputFileSync(filepath, ymlData)

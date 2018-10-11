@@ -82,15 +82,12 @@ const formatNestedObjectKeys = function (nest: nest, indentSize = 2, _level = 0)
 }
 
 /**
- * Convert a string like '2Mb' to it's bytes equivalent.
- *
- * @param value
- * @returns Integer
+ * Convert a string like '2Mb' to its bytes equivalent.
  */
-const convertFileSizeShortHandToBytes = function (value: string) {
+const convertFileSizeShortHandToBytes = function (value: string): number | Error {
   // If passed value is a string without any suffixes then treat as an integer.
   if (parseInt(value).toString() === value) {
-    return value
+    return parseInt(value)
   }
 
   const sizes: any = {
@@ -110,10 +107,10 @@ const convertFileSizeShortHandToBytes = function (value: string) {
         return parseInt(value.replace(size, '').replace(size.toUpperCase(), '')) * (Math.pow(1024, sizes[size]))
       }
     }
-    return new TypeError(i18n('core.formatters.shortHandToBytes.cannotConvert', {value})) // Could not find a way to convert file size shorthand string: {value}
+    return new TypeError(i18n.t('core.formatters.shortHandToBytes.cannotConvert', {value})) // Could not find a way to convert file size shorthand string: {value}
   }
 
-  return value
+  return parseInt(value)
 }
 
 export {

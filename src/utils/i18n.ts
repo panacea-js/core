@@ -14,7 +14,7 @@ const messages = _([
     const locale = path.basename(file).replace('.json', '')
     acc[locale] = _.merge(acc[locale] || {}, fs.readJsonSync(file))
     return acc
-  }, {})
+  }, ({} as any))
 
 const i18n = new VueI18n({
   locale: options.locales.default,

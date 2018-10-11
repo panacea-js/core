@@ -15,7 +15,7 @@ test('compileNestFromDotSeparated can successfully create a nest', t => {
 
   const hook = `${hookTop}.${hookSecond}.${hookThird}`
 
-  const nest = {}
+  const nest: any = {}
   formatters.compileNestFromDotSeparated(hook, nest)
 
   t.true(nest.hasOwnProperty(hookTop))

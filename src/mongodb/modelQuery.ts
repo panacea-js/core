@@ -1,3 +1,5 @@
+import * as Mongoose from 'mongoose'
+
 /**
  * Generic entity model query.
  *
@@ -5,18 +7,23 @@
  * @param {*} parent The parent resolver.
  * @param {object} args The GraphQL query arguments.
  */
-const modelQuery = function (
-  model: Mongoose$Collection,
-  parent: {},
-  args: { params: QueryParams }
-) : typeof Mongoose$Query {
+
+interface ImodelQuery {
+  (
+    model: Mongoose.Model<Mongoose.Document>,
+    parent: {},
+    args: { params: QueryParams }
+  ) : Mongoose.DocumentQuery<Mongoose.Document[], Mongoose.Document>
+}
+
+const modelQuery = <ImodelQuery>function (model, parent, args) {
   const params = args.params || {
     limit: 100,
     sortBy: null,
     sortDirection: null
   }
 
-  const sortOptions = {}
+  const sortOptions: any = {}
 
   if (params.sortBy) {
     sortOptions[params.sortBy] = params.sortDirection === 'DESC' ? -1 : 1

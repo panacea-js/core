@@ -1,14 +1,24 @@
 import * as GraphQLToolsTypes from 'graphql-tools'
-import { makeExecutableSchema } from 'graphql-tools';
-import { IResolvers } from 'graphql-tools/dist/Interfaces';
-import { LoDashStatic } from 'lodash';
+import { makeExecutableSchema } from 'graphql-tools'
+import { IResolvers } from 'graphql-tools/dist/Interfaces'
+import { LoDashStatic } from 'lodash'
+import * as winston from 'winston'
+import * as jsYaml from 'js-yaml'
+import * as glob from 'glob'
+import * as path from 'path'
+import * as fsExtra from 'fs-extra'
 
 interface IPanaceaDependencies {
   makeExecutableSchema: typeof makeExecutableSchema
   graphQLTypeDefinitions: () => Promise<string>
   graphQLResolvers: () => IResolvers
   _: LoDashStatic
+  winston: typeof winston
+  glob: typeof glob
+  path: typeof path
+  jsYaml: typeof jsYaml
   options: IPanaceaOptions
+  fs: typeof fsExtra
 }
 
 interface IPanaceaOptions {

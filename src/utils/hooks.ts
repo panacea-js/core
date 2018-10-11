@@ -1,8 +1,20 @@
 // Import node core events.
-import events from 'events'
+import * as events from 'events'
+
+interface IHooks extends events.EventEmitter,IHooksProto {
+  availableHooks: Array<string>
+  prototype: IHooksProto
+}
+
+interface IHooksProto {
+  invoke: (this: IHooks, type: string, defaultData?: any) => any
+  getAvailableHooks: (this: IHooks) => Array<string>
+  getAvailableHooksOutput: (this: IHooks, nested: boolean) => string
+  loadFromDirectories: (paths: Array<string>) => string
+}
 
 // Create a Hooks base object which extends node's event emitter.
-const Hooks = events.EventEmitter
+const Hooks: IHooks = (events.EventEmitter as any)
 
 /**
  * Registry of hooks that have been invoked
@@ -18,11 +30,11 @@ Hooks.availableHooks = []
  * @param defaultData
  *   Optional default value which can be altered by other consuming listeners with the 'on' method.
  *
- * @returns mixed
+ * @returns any
  */
 Hooks.prototype.invoke = function (type, defaultData = null) {
   // Add hook type to the availableHooks registry.
-  if (Hooks.availableHooks.indexOf(type) === -1) Hooks.availableHooks.push(type)
+  if (this.availableHooks.indexOf(type) === -1) this.availableHooks.push(type)
 
   let returnData = null
 
@@ -39,11 +51,9 @@ Hooks.prototype.invoke = function (type, defaultData = null) {
  *
  * The result may change over time, so it's suggested that this is called late in the bootstrap lifecycle.
  * For example, at the end of the main application entry point file.
- *
- * @returns {Array}
  */
 Hooks.prototype.getAvailableHooks = function () {
-  return Hooks.availableHooks
+  return this.availableHooks
 }
 
 /**
@@ -51,8 +61,6 @@ Hooks.prototype.getAvailableHooks = function () {
  *
  * The result may change over time, so it's suggested that this is called late in the bootstrap lifecycle.
  * For example, at the end of the main application entry point file.
- *
- * @returns void
  */
 Hooks.prototype.getAvailableHooksOutput = function (nested = true) {
   const { formatters, i18n } = Panacea.container
@@ -60,9 +68,9 @@ Hooks.prototype.getAvailableHooksOutput = function (nested = true) {
   let output = i18n.t('core.hooks.none') // None
 
   if (nested) {
-    const nest = hooks.getAvailableHooks().map(hook => formatters.compileNestFromDotSeparated(hook))
+    const nest = this.getAvailableHooks().map(hook => formatters.compileNestFromDotSeparated(hook))
     output = formatters.formatNestedObjectKeys(nest)
-  } else if (hooks.getAvailableHooks().length > 0) {
+  } else if (this.getAvailableHooks().length > 0) {
     output = '\n  - ' + hooks.getAvailableHooks().join('\n  - ')
   }
 
@@ -114,4 +122,4 @@ Hooks.prototype.loadFromDirectories = function (paths) {
 }
 
 // The instance gets passed around between modules from the service container.
-export const hooks = new Hooks()
+export const hooks = <IHooks> new (Hooks as any)()

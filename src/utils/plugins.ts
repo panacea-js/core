@@ -4,7 +4,7 @@
  *
  * @param {*} pluginPath
  */
-const resolvePluginPath = function (pluginPath) {
+const resolvePluginPath = function (pluginPath: string) {
   const { path, fs } = Panacea.container
 
   // First try to find plugin directly in the process path, otherwise try to resolve an absolute or relative path..

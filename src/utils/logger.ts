@@ -1,7 +1,11 @@
+import { IPanacea } from "../../types/globals";
+
 const { fs, winston, formatters, moment } = Panacea.container
 
-const getFileTransports = function (options) {
-  const fileFormatter = winston.format.printf(info => {
+type loggerOptions = IPanacea['options']['services']['options']['log']
+
+const getFileTransports = function (options: loggerOptions) {
+  const fileFormatter = winston.format.printf((info) => {
     return JSON.stringify({
       t: moment().format(),
       l: info.level,
@@ -29,14 +33,14 @@ const getFileTransports = function (options) {
   if (options.showLogsInConsole) {
     transports.push(new winston.transports.Console({
       format: winston.format.simple(),
-      colorize: true
+      //colorize: true
     }))
   }
 
   return transports
 }
 
-const Logger = function (options) {
+const Logger = function (options: loggerOptions) {
   fs.ensureDirSync(options.directory)
 
   const fileTransports = getFileTransports(options)

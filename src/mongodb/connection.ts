@@ -1,4 +1,3 @@
-// @flow
 /**
  * Creates a MongoDB connection object.
  *
