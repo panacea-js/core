@@ -2,6 +2,7 @@ const { _, entityTypes, mongoose, dbConnection } = Panacea.container
 import * as events from 'events'
 import * as Mongoose from 'mongoose'
 import { Transaction, transactionHandler } from '../../../utils/transaction'
+import { dbModels } from '../../../mongodb/models';
 
 interface nestedFieldDefinition {
   [fieldName: string] : Mongoose.SchemaTypeOpts<any> | Array<Mongoose.SchemaTypeOpts<any>>
@@ -48,16 +49,12 @@ const compileNestedObjects = function (field: EntityTypeField) {
   }
 }
 
-interface dbModels {
-  [name: string]: Mongoose.Model<Mongoose.Document>
-}
-
 const addEntityTypeModels = function ({ models } : { models: dbModels }) {
   const db = dbConnection
 
-  const entityTypeDefinitions : EntityTypes = entityTypes.getData()
+  const entityTypeDefinitions : EntityTypeDefinitions = entityTypes.getData()
 
-  _(entityTypeDefinitions).forEach((entityTypeData: EntityType, entityTypeName: string) => {
+  _(entityTypeDefinitions).forEach((entityTypeData: EntityTypeDefinition, entityTypeName: string) => {
     // Only create a mongoose model if the entity type is for the database.
     if (entityTypeData.storage !== 'db') return
 

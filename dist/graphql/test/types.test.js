@@ -33,6 +33,7 @@ ava_1.default.serial('When an convertSystemFieldToGraphQL() does not have a fiel
     entityTypes.getData();
     entityTypes.definitions.Cat.fields.name.type = 'notValid';
     entityTypes.fieldTypes.notValid = {
+        label: 'Broken field',
         description: 'Setting an known invalid type to test whether convertSystemFieldToGraphQL() throws an error'
     };
     const error = await t.throws(graphQLTypeDefinitions(), TypeError);

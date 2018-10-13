@@ -1,7 +1,7 @@
 import * as Mongoose from 'mongoose'
 
 const { hooks } = Panacea.container
-interface dbModels {
+export interface dbModels {
   [name: string]: Mongoose.Model<Mongoose.Document>
 }
 

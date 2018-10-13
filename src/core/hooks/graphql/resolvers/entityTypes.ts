@@ -1,4 +1,8 @@
-// @flow
+
+import * as events from 'events'
+import * as express from 'express'
+import { IResolvers } from 'graphql-tools';
+
 const { _, entityTypes, i18n, getClientLanguage } = Panacea.container
 
 /**
@@ -7,8 +11,8 @@ const { _, entityTypes, i18n, getClientLanguage } = Panacea.container
  *
  * @param {*} resolvers The mutable object of resolver definitions.
  */
-const entityTypeResolvers = function (resolvers: GraphQLResolvers) {
-  const definitions : EntityTypes = entityTypes.getData()
+const entityTypeResolvers = function (resolvers: any) {
+  const definitions : EntityTypeDefinitions = entityTypes.getData()
 
   resolvers.Query['_entityType'] = async (
     parent: {},
@@ -25,7 +29,7 @@ const entityTypeResolvers = function (resolvers: GraphQLResolvers) {
       return null
     }
 
-    const entityType: EntityType = definitions[name]
+    const entityType: EntityTypeDefinition = definitions[name]
     // Don't expose the native file path.
     delete entityType._filePath
 
@@ -36,9 +40,9 @@ const entityTypeResolvers = function (resolvers: GraphQLResolvers) {
   }
 
   resolvers.Query['_entityTypes'] = () => {
-    const allEntities = []
+    const allEntities: Array<{ name: string, data: string }> = []
 
-    _(definitions).forEach((entityType: EntityType, entityTypeName: string) => {
+    _(definitions).forEach((entityType: EntityTypeDefinition, entityTypeName: string) => {
       // Exclude Revision entity types from being accessed directly.
       if (_(entityTypeName).endsWith('Revision')) {
         return
@@ -55,10 +59,12 @@ const entityTypeResolvers = function (resolvers: GraphQLResolvers) {
     return allEntities
   }
 
-  resolvers.Query['_fieldTypes'] = (parent: {}, args: {}, { req } : { req: express$Request }) => {
+  resolvers.Query['_fieldTypes'] = (parent: {}, args: {}, { req } : { req: express.Request }) => {
     const language = getClientLanguage(req)
 
-    return _(entityTypes.fieldTypes).reduce((result, attributes, type) => {
+    type fieldResults = Array<{ type: string, label: string, description: string }>
+
+    return _(entityTypes.fieldTypes).reduce((result: fieldResults, attributes, type) => {
       result.push({
         type,
         label: i18n.t(attributes.label, language),
@@ -83,8 +89,8 @@ const entityTypeResolvers = function (resolvers: GraphQLResolvers) {
 }
 
 export default {
-  register (hooks: events$EventEmitter) {
-    hooks.on('core.graphql.resolvers', ({ resolvers } : { resolvers: GraphQLResolvers }) => {
+  register (hooks: events.EventEmitter) {
+    hooks.on('core.graphql.resolvers', ({ resolvers } : { resolvers: IResolvers }) => {
       entityTypeResolvers(resolvers)
     })
   }

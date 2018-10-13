@@ -1,4 +1,4 @@
-import { IResolvers } from "graphql-tools/dist/Interfaces"
+import { IResolvers } from 'graphql-tools/dist/Interfaces'
 
 const { hooks } = Panacea.container
 

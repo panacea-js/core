@@ -23,7 +23,7 @@ test.serial('Cat entity should resolve to GraphQL type, input and query', t => {
 
 test.serial('When an entity field defines an invalid type an error is thrown', async t => {
   // Append via a hook.
-  hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions : EntityTypes}) => {
+  hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions : EntityTypeDefinitions }) => {
     definitions.Cat.fields.breakingField = {
       type: 'FakeTypeNoExist',
       label: 'A valid label'
@@ -38,6 +38,7 @@ test.serial('When an convertSystemFieldToGraphQL() does not have a field mapping
   entityTypes.getData()
   entityTypes.definitions.Cat.fields.name.type = 'notValid'
   entityTypes.fieldTypes.notValid = {
+    label: 'Broken field',
     description: 'Setting an known invalid type to test whether convertSystemFieldToGraphQL() throws an error'
   }
 

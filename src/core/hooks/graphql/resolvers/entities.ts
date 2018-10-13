@@ -1,4 +1,8 @@
-// @flow
+import * as events from 'events'
+import { IResolvers } from 'graphql-tools'
+import { dbModels } from '../../../../mongodb/models';
+import { transactionHandler, Transaction as ITransaction } from '../../../../utils/transaction';
+
 const { _, log, hooks, entityTypes, Transaction, modelQuery } = Panacea.container
 
 /**
@@ -16,11 +20,11 @@ const { _, log, hooks, entityTypes, Transaction, modelQuery } = Panacea.containe
  *   recursion.
  */
 const resolveNestedFields = function (
-  types: {},
+  types: any,
   currentType: string,
   fields: EntityTypeFields
 ) : void {
-  _(fields).forEach((field: EntityTypeField, fieldName: string) => {
+  _(fields).forEach((field, fieldName) => {
     if (field.type === 'object' && field.fields) {
       resolveNestedFields(types, `${currentType}_${fieldName}`, field.fields)
     }
@@ -28,11 +32,15 @@ const resolveNestedFields = function (
     if (field.type === 'reference') {
       types[currentType] = types[currentType] || {}
 
-      types[currentType][fieldName] = function (sourceDocument, args, { dbModels }) {
+      types[currentType][fieldName] = function (sourceDocument: any, args: any, { dbModels } : { dbModels : dbModels}) {
+        if (!field.references || !dbModels[field.references]) {
+          return
+        }
+
         if (field.many) {
-          let targetEntities = []
-          sourceDocument[fieldName].map(targetId => {
-            targetEntities.push(dbModels[field.references].findById(targetId))
+          let targetEntities: Array<any> = []
+          sourceDocument[fieldName].map((targetId: string) => {
+            field.references && targetEntities.push(dbModels[field.references].findById(targetId))
           })
           return targetEntities
         }
@@ -45,7 +53,7 @@ const resolveNestedFields = function (
 /**
  * Ensure that mongoose documents have expected values as per the GraphQL constraints.
  */
-const ensureDocumentHasDefaultValues = function (fields: EntityTypeFields, documentPartial: {}) {
+const ensureDocumentHasDefaultValues = function (fields: EntityTypeFields, documentPartial: any) {
   _(fields).forEach((field: EntityTypeField, fieldId: string) => {
     if (field.fields && documentPartial[fieldId]) {
       ensureDocumentHasDefaultValues(field.fields, documentPartial[fieldId])
@@ -75,12 +83,12 @@ const ensureDocumentHasDefaultValues = function (fields: EntityTypeFields, docum
  *
  * @param {*} resolvers The mutable object of resolver definitions.
  */
-const entityResolvers = function (resolvers: GraphQLResolvers) {
-  const types = {}
+const entityResolvers = function (resolvers: any) {
+  const types: any = {}
 
-  const definitions : EntityTypes = entityTypes.getData()
+  const definitions = entityTypes.getData()
 
-  _(definitions).forEach((entityData : EntityType) => {
+  _(definitions).forEach((entityData) => {
     // If exclude flag is set on entity, don't set any direct query or mutation
     // resolvers, but still resolve for any references made by other entity types.
     if (entityData._excludeGraphQL) {
@@ -95,8 +103,8 @@ const entityResolvers = function (resolvers: GraphQLResolvers) {
     const hasFields = Object.keys(entityData.fields).length > 1
 
     // Get single entity.
-    resolvers.Query[entityData._meta.camel] = async (parent, args, { dbModels }) => {
-      let document = {}
+    resolvers.Query[entityData._meta.camel] = async (parent: any, args: any, { dbModels } : { dbModels : dbModels}) => {
+      let document: any = {}
       let error
 
       await dbModels[entityData._meta.pascal].findById(args.id).exec()
@@ -125,15 +133,15 @@ const entityResolvers = function (resolvers: GraphQLResolvers) {
     }
 
     // Get many entities.
-    resolvers.Query[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => {
-      let documents = {}
+    resolvers.Query['entityData._meta.pluralCamel'] = async (parent: any, args: any, { dbModels } : { dbModels : dbModels}) => {
+      let documents: Array<any> = []
       let error
 
       await modelQuery(dbModels[entityData._meta.pascal], parent, args).exec()
-        .then(docs => {
+        .then((docs: Array<any>) => {
           documents = docs
         })
-        .catch(err => {
+        .catch((err: Error) => {
           error = err
         })
 
@@ -157,7 +165,7 @@ const entityResolvers = function (resolvers: GraphQLResolvers) {
     // Only allow mutations of entities that have fields.
     if (hasFields) {
       // Create entity.
-      resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent, args, { dbModels }) => {
+      resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent: any, args: any, { dbModels } : { dbModels : dbModels}) => {
         const transactionContext = {
           parent,
           args,
@@ -170,7 +178,7 @@ const entityResolvers = function (resolvers: GraphQLResolvers) {
         hooks.invoke('core.entity.createHandlers', { transactionHandlers })
 
         return new Transaction(transactionHandlers, transactionContext).execute()
-          .then(txn => {
+          .then((txn: ITransaction) => {
             if (txn.status === 'complete') {
               const createdEntity = txn.context.createdEntity
               createdEntity._id = createdEntity._id.toString()
@@ -182,7 +190,7 @@ const entityResolvers = function (resolvers: GraphQLResolvers) {
       }
 
       // Delete entity.
-      resolvers.Mutation[`delete${entityData._meta.pascal}`] = (parent, args, { dbModels }) => {
+      resolvers.Mutation[`delete${entityData._meta.pascal}`] = (parent: any, args: any, { dbModels } : { dbModels : dbModels}) => {
         return new Promise((resolve, reject) => {
           dbModels[entityData._meta.pascal].findById(args.id).exec((err, entity) => {
             if (err) {
@@ -220,8 +228,8 @@ const entityResolvers = function (resolvers: GraphQLResolvers) {
 }
 
 export default {
-  register (hooks: events$EventEmitter) {
-    hooks.on('core.graphql.resolvers', ({ resolvers } : { resolvers: GraphQLResolvers }) => {
+  register (hooks: events.EventEmitter) {
+    hooks.on('core.graphql.resolvers', ({ resolvers } : { resolvers: IResolvers }) => {
       entityResolvers(resolvers)
     })
   }

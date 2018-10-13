@@ -8,6 +8,9 @@ import * as glob from 'glob'
 import * as path from 'path'
 import * as fsExtra from 'fs-extra'
 import * as Mongoose from 'mongoose'
+import { GraphQLScalarType } from 'graphql'
+import { entityTypes } from '../src/entities/entityTypes'
+import { Transaction } from '../src/utils/transaction'
 
 interface IPanaceaDependencies {
   makeExecutableSchema: typeof makeExecutableSchema
@@ -22,6 +25,9 @@ interface IPanaceaDependencies {
   fs: typeof fsExtra
   dbConnection: typeof Mongoose.connection
   mongoose: typeof Mongoose
+  GraphQLScalarType: typeof GraphQLScalarType
+  entityTypes: typeof entityTypes
+  Transaction: typeof Transaction
 }
 
 interface IPanaceaOptions {

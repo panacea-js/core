@@ -26,7 +26,7 @@ const initTasks = function (test: RegisterContextual<any>) {
   })
 }
 
-const entityHasErrorMessage = function (entity: EntityType, message: string) {
+const entityHasErrorMessage = function (entity: EntityTypeDefinition, message: string) {
   if (!entity._errors) {
     return false
   }

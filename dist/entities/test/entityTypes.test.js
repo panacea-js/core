@@ -78,7 +78,7 @@ ava_1.default('When field definitions key is empty an error is thrown', t => {
 });
 ava_1.default('When validating and EntityType without _errors property, it is added by the call to entityTypes.validate', t => {
     const entityTypeData = {};
-    entityTypes.validate(entityTypeData, 'testEmptyArray');
+    entityTypes.validate(entityTypeData, 'testEmptyArray', 'load');
     t.true(entityTypeData.hasOwnProperty('_errors'));
 });
 ava_1.default('Saving an EntityType in the correct required format writes a yml file to disk', t => {
@@ -92,7 +92,13 @@ ava_1.default('Saving an EntityType in the correct required format writes a yml 
             }
         },
         plural: 'Mice',
-        description: 'A successful created entity type'
+        description: 'A successful created entity type',
+        _meta: {
+            camel: 'mouse',
+            pascal: 'Mouse',
+            pluralCamel: 'mice',
+            descriptionLowerFirst: ''
+        }
     };
     const saveResult = entityTypes.save('Mouse', entityTypeData, 'sandbox');
     t.true(saveResult.success);

@@ -11,11 +11,11 @@ interface Meta {
   revisionEntityType?: string
 }
 
-interface EntityTypes {
-  [name: string]: EntityType
+interface EntityTypeDefinitions {
+  [name: string]: EntityTypeDefinition
 }
 
-interface EntityType {
+interface EntityTypeDefinition {
   description: string
   fields: EntityTypeFields
   plural: string
@@ -25,7 +25,7 @@ interface EntityType {
   _filePath? : string
   _excludeGraphQL?: boolean
   _errors?: Array<Error>
-  _meta?: Meta
+  _meta: Meta
 }
 
 /**

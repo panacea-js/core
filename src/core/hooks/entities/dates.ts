@@ -1,8 +1,11 @@
-// @flow
+import * as events from 'events'
+import { IResolvers } from 'graphql-tools/dist/Interfaces'
+import { Transaction, transactionHandler } from '../../../utils/transaction'
+
 const { _, i18n, GraphQLScalarType } = Panacea.container
 
 export default {
-  register (hooks: events$EventEmitter) {
+  register (hooks: events.EventEmitter) {
     hooks.once('core.graphql.definitions.scalars', ({ scalars } : { scalars: Array<string> }) => {
       scalars.push('Date')
     })
@@ -22,7 +25,7 @@ export default {
       fieldsMapGraphQL.set('date', 'Date')
     })
 
-    hooks.once('core.graphql.resolvers', ({ resolvers } : { resolvers: GraphQLResolvers }) => {
+    hooks.once('core.graphql.resolvers', ({ resolvers } : { resolvers: IResolvers }) => {
       resolvers.Date = new GraphQLScalarType({
         name: 'Date',
         description: 'ISO8601 Date value',
@@ -34,10 +37,10 @@ export default {
       })
     })
 
-    hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions: EntityTypes }) => {
+    hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions: EntityTypeDefinitions }) => {
       const dateFields = ['created', 'updated', 'deleted']
 
-      _(definitions).forEach((entityType: EntityType, entityTypeName: string) => {
+      _(definitions).forEach((entityType: EntityTypeDefinition) => {
         dateFields.forEach(dateFieldName => {
           entityType.fields[`_${dateFieldName}`] = {
             type: 'date',
@@ -51,7 +54,7 @@ export default {
 
     hooks.once('core.entity.createHandlers', ({ transactionHandlers } : { transactionHandlers: Array<transactionHandler> }) => {
       const datesCreateHandler = {
-        prepare: async function (txn) {
+        prepare: async function (txn: Transaction) {
           const { args } = txn.context
           args.fields._created = Date.now()
         }
