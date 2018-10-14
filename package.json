@@ -24,7 +24,7 @@
     "prepare": "npm run snyk-protect"
   },
   "nyc": {
-    "sourceMap": false,
+    "sourceMap": true,
     "instrument": true,
     "reporter": [
       "lcov",
