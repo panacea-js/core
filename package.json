@@ -24,8 +24,8 @@
     "prepare": "npm run snyk-protect"
   },
   "nyc": {
-    "sourceMap": true,
-    "instrument": true,
+    "sourceMap": false,
+    "instrument": false,
     "reporter": [
       "lcov",
       "text",
@@ -42,7 +42,6 @@
     "extension": [
       ".ts"
     ],
-    "all": true,
     "lines": 10,
     "statements": 10,
     "functions": 10,
@@ -53,8 +52,7 @@
       "ts"
     ],
     "require": [
-      "ts-node/register/transpile-only",
-      "./dist/test/setupTestEnv"
+      "ts-node/register/transpile-only"
     ],
     "sources": [
       "src/**/*.ts"
