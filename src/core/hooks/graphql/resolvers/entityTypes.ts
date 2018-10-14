@@ -1,5 +1,5 @@
 
-import * as events from 'events'
+import { IHooks } from '../../../../utils/hooks';
 import * as express from 'express'
 import { IResolvers } from 'graphql-tools';
 
@@ -89,7 +89,7 @@ const entityTypeResolvers = function (resolvers: any) {
 }
 
 export default {
-  register (hooks: events.EventEmitter) {
+  register (hooks: IHooks) {
     hooks.on('core.graphql.resolvers', ({ resolvers } : { resolvers: IResolvers }) => {
       entityTypeResolvers(resolvers)
     })

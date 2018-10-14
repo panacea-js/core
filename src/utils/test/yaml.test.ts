@@ -1,5 +1,5 @@
 import test from 'ava'
-import { bootstrap, initTasks, getSandboxDir } from '../../test/test-common'
+import { bootstrap, initTasks, getSandboxDir } from '../../test/testCommon'
 initTasks(test)
 bootstrap()
 

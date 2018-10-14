@@ -1,4 +1,4 @@
-import * as events from 'events'
+import { IHooks } from '../../../../utils/hooks';
 import { IResolvers } from 'graphql-tools'
 import { dbModels } from '../../../../mongodb/models';
 import { transactionHandler, Transaction as ITransaction } from '../../../../utils/transaction';
@@ -133,7 +133,7 @@ const entityResolvers = function (resolvers: any) {
     }
 
     // Get many entities.
-    resolvers.Query['entityData._meta.pluralCamel'] = async (parent: any, args: any, { dbModels } : { dbModels : dbModels}) => {
+    resolvers.Query[entityData._meta.pluralCamel] = async (parent: any, args: any, { dbModels } : { dbModels : dbModels}) => {
       let documents: Array<any> = []
       let error
 
@@ -228,7 +228,7 @@ const entityResolvers = function (resolvers: any) {
 }
 
 export default {
-  register (hooks: events.EventEmitter) {
+  register (hooks: IHooks) {
     hooks.on('core.graphql.resolvers', ({ resolvers } : { resolvers: IResolvers }) => {
       entityResolvers(resolvers)
     })

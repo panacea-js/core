@@ -1,4 +1,3 @@
-// @flow
 const { _, hooks } = Panacea.container
 
 /**

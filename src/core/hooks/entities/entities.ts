@@ -1,8 +1,9 @@
-const { _, entityTypes, mongoose, dbConnection } = Panacea.container
-import * as events from 'events'
+import { IHooks } from '../../../utils/hooks';
 import * as Mongoose from 'mongoose'
 import { Transaction, transactionHandler } from '../../../utils/transaction'
 import { dbModels } from '../../../mongodb/models';
+
+const { _, entityTypes, mongoose, dbConnection } = Panacea.container
 
 interface nestedFieldDefinition {
   [fieldName: string] : Mongoose.SchemaTypeOpts<any> | Array<Mongoose.SchemaTypeOpts<any>>
@@ -87,7 +88,7 @@ const entityCreateHandler = {
 }
 
 export default {
-  register (hooks: events.EventEmitter) {
+  register (hooks: IHooks) {
     hooks.on('core.entity.createHandlers', ({ transactionHandlers } : { transactionHandlers: Array<transactionHandler> }) => {
       transactionHandlers.push(entityCreateHandler)
     })

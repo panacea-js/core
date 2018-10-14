@@ -11,6 +11,8 @@ import * as Mongoose from 'mongoose'
 import { GraphQLScalarType } from 'graphql'
 import { entityTypes } from '../src/entities/entityTypes'
 import { Transaction } from '../src/utils/transaction'
+import { IHooks } from '../src/utils/hooks';
+import { Logger } from '../src/utils/logger';
 
 interface IPanaceaDependencies {
   makeExecutableSchema: typeof makeExecutableSchema
@@ -21,55 +23,91 @@ interface IPanaceaDependencies {
   glob: typeof glob
   path: typeof path
   jsYaml: typeof jsYaml
-  options: IPanaceaOptions
+  options: IPanaceaOptionsComplete
   fs: typeof fsExtra
   dbConnection: typeof Mongoose.connection
   mongoose: typeof Mongoose
   GraphQLScalarType: typeof GraphQLScalarType
   entityTypes: typeof entityTypes
   Transaction: typeof Transaction
+  hooks: IHooks
+  log: winston.Logger
 }
 
 interface IPanaceaOptions {
-  main: {
-    protocol: 'http' | 'https'
-    host: string
-    endpoint: string
-    port: Promise<number>
-    disableCors: boolean
+  main?: IPanaceaOptionsSectionMain
+  plugins?: IPanaceaOptionsSectionPlugins
+  locales?: IPanaceaOptionsSectionLocales
+  services: {
+    file?: string,
+    globalVariable?: string
+    options?: IPanaceaOptionsSectionServicesOptions
   },
-  locales: {
-    default: string
-  },
+  entityTypes?: IPanaceaOptionsEntityTypes,
+  graphiql?: IPanaceaOptionsSectionGraphiql,
+  voyager?: IPanaceaOptionsSectionVoyager
+}
+
+interface IPanaceaOptionsComplete {
+  main: IPanaceaOptionsSectionMain
+  plugins: IPanaceaOptionsSectionPlugins
+  locales: IPanaceaOptionsSectionLocales
   services: {
     file: string,
     globalVariable: string
-    options: {
-      log: {
-        directory: string
-        maxSize: string
-        showLogsInConsole: boolean
-        logToFiles: boolean
-      },
-      db: {
-        type: string
-        host: string
-        dbName: string
-        port: number
-      }
-    }
+    options: IPanaceaOptionsSectionServicesOptions
   },
-  graphiql: {
-    endpoint: string
-    enable: boolean
+  entityTypes: IPanaceaOptionsEntityTypes,
+  graphiql: IPanaceaOptionsSectionGraphiql,
+  voyager: IPanaceaOptionsSectionVoyager
+}
+
+interface IPanaceaOptionsSectionMain {
+  protocol: 'http' | 'https'
+  host: string
+  endpoint: string
+  port: Promise<number>
+  disableCors?: boolean
+}
+type IPanaceaOptionsSectionPlugins = Array<string>
+
+interface IPanaceaOptionsSectionLocales {
+  default: string
+}
+
+interface IPanaceaOptionsSectionServicesOptions {
+  log: {
+    directory: string
+    maxSize: string
+    showLogsInConsole: boolean
+    logToFiles: boolean
   },
-  voyager: {
-    endpoint: string
-    enable: boolean
+  db: {
+    type: string
+    host: string
+    dbName: string
+    port: number
   }
 }
 
-export interface IPanacea {
+interface IPanaceaOptionsEntityTypes {
+  [locationName: string]: {
+    locationKey: string
+    path: string
+  }
+}
+
+interface IPanaceaOptionsSectionGraphiql {
+  endpoint: string
+  enable: boolean
+}
+
+interface IPanaceaOptionsSectionVoyager {
+  endpoint: string
+  enable: boolean
+}
+
+interface IPanacea {
   container: IPanaceaDependencies & {
     [dependency: string]: any
   }

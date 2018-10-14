@@ -1,3 +1,5 @@
+import { Registrant } from '../utils/bootstrap'
+
 const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry } = Panacea.container
 
 class EntityTypes {

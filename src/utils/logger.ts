@@ -1,8 +1,8 @@
-import { IPanacea } from "../../types/globals";
+import { IPanaceaOptionsComplete } from "../../types/globals";
 
 const { fs, winston, formatters, moment } = Panacea.container
 
-type loggerOptions = IPanacea['options']['services']['options']['log']
+type loggerOptions = IPanaceaOptionsComplete['services']['options']['log']
 
 const getFileTransports = function (options: loggerOptions) {
   const fileFormatter = winston.format.printf((info) => {

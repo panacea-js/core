@@ -1,4 +1,4 @@
-import { IPanacea } from "../types/globals";
+import { IPanaceaOptionsComplete } from "../types/globals";
 import { IServicesBuilder } from "./utils/DIContainer";
 
 /**
@@ -10,7 +10,7 @@ import { IServicesBuilder } from "./utils/DIContainer";
  * @param options
  *   Options injected from bootstrapping file to configure dependencies
  */
-export const registerServices = function (s: IServicesBuilder, options: IPanacea['options']) {
+export const registerServices = function (s: IServicesBuilder, options: IPanaceaOptionsComplete) {
   const servicesOptions = options.services.options
 
   // Third-party.

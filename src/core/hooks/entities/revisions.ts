@@ -1,11 +1,11 @@
-import * as events from 'events'
+import { IHooks } from '../../../utils/hooks';
 import { Transaction, transactionHandler } from '../../../utils/transaction'
 import { dbModels } from '../../../mongodb/models';
 
 const { _, i18n } = Panacea.container
 
 export default {
-  register (hooks: events.EventEmitter) {
+  register (hooks: IHooks) {
     hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions: EntityTypeDefinitions }) => {
       const revisionsText = i18n.t('core.entityTypes.revisions.label') // Revisions
 

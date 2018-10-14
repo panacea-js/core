@@ -5,9 +5,8 @@
   "repository": "panacea-js/core",
   "author": "Barry Fisher <hello@reallifedigital.com> (https://www.reallifedigital.com)",
   "license": "Apache-2.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "flow": "flow",
     "start:test-db": "mongod --directoryperdb --dbpath=src/test/data/db --port=27018 --logappend --logRotate=rename --logpath=src/test/data/db_log/mongod.log &",
     "stop:test-db": "mongod --directoryperdb --dbpath=src/test/data/db --shutdown && rm -Rf src/test/data/db/*",
     "test": "npm run start:test-db && snyk test && ava && npm run stop:test-db",
@@ -24,23 +23,12 @@
     "prepare": "npm run snyk-protect"
   },
   "standard": {
-    "parser": "babel-eslint",
     "globals": [
       "Panacea",
       "Panacea_Testing"
-    ],
-    "plugins": [
-      "flowtype"
-    ],
-    "ignore": [
-      "flow",
-      "flow-typed"
     ]
   },
   "nyc": {
-    "require": [
-      "babel-register"
-    ],
     "sourceMap": false,
     "instrument": false,
     "reporter": [
@@ -49,7 +37,6 @@
       "html"
     ],
     "exclude": [
-      "src/test",
       "**/*.test.js"
     ],
     "lines": 10,
@@ -59,13 +46,11 @@
   },
   "ava": {
     "files": [
-      "**/*.test.js"
+      "dist/**/*.test.js"
     ],
     "require": [
-      "babel-register",
-      "./dist/test/setup-test-env.js"
+      "./dist/test/setupTestEnv.js"
     ],
-    "babel": "inherit",
     "failWithoutAssertions": false
   },
   "devDependencies": {
@@ -80,17 +65,10 @@
     "@types/mongoose": "^5.2.19",
     "@types/node-fetch": "^2.1.2",
     "ava": "^0.25.0",
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^7.2.1",
-    "babel-plugin-istanbul": "^4.1.5",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-register": "^6.26.0",
     "codecov": "^3.0.4",
     "cross-env": "^5.1.1",
     "escope": "^3.6.0",
-    "eslint-plugin-flowtype": "^2.50.0",
     "eslint-plugin-import": "^2.12.0",
-    "flow-bin": "^0.77.0",
     "node-fetch": "^2.1.2",
     "nodemon": "^1.18.3",
     "nyc": "^13.0.0",
@@ -100,9 +78,6 @@
   "dependencies": {
     "accepts": "^1.3.5",
     "apollo-server-express": "^1.0.5",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-flow": "^6.23.0",
-    "babel-preset-stage-2": "^6.24.1",
     "body-parser": "^1.17.2",
     "bottlejs": "^1.6.1",
     "chalk": "^2.3.0",

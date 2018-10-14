@@ -1,11 +1,11 @@
-import * as events from 'events'
+import { IHooks } from '../../../utils/hooks';
 import { IResolvers } from 'graphql-tools/dist/Interfaces'
 import { Transaction, transactionHandler } from '../../../utils/transaction'
 
 const { _, i18n, GraphQLScalarType } = Panacea.container
 
 export default {
-  register (hooks: events.EventEmitter) {
+  register (hooks: IHooks) {
     hooks.once('core.graphql.definitions.scalars', ({ scalars } : { scalars: Array<string> }) => {
       scalars.push('Date')
     })
@@ -40,7 +40,7 @@ export default {
     hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions: EntityTypeDefinitions }) => {
       const dateFields = ['created', 'updated', 'deleted']
 
-      _(definitions).forEach((entityType: EntityTypeDefinition) => {
+      _(definitions).forEach((entityType) => {
         dateFields.forEach(dateFieldName => {
           entityType.fields[`_${dateFieldName}`] = {
             type: 'date',

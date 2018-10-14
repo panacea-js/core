@@ -1,5 +1,6 @@
 // Dependency injection container library.
 import * as Bottle from 'bottlejs'
+import { IPanaceaOptionsComplete } from '../../types/globals';
 
 interface IServicesBuilderProto {
   alias: (
@@ -94,7 +95,7 @@ export const registerServices = function (params: typeof Panacea.options) {
   const defaultOptions = require(coreServices).servicesConfig()
 
   // Prioritize passed in params then default.services.js.
-  const options: typeof Panacea.options = defaultsDeep(params || {}, defaultOptions)
+  const options: IPanaceaOptionsComplete = defaultsDeep(params || {}, defaultOptions)
 
   require(options.services.file).registerServices(services, options)
 

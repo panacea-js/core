@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const ava_1 = require("ava");
-const test_common_1 = require("../../test/test-common");
-test_common_1.initTasks(ava_1.default);
-test_common_1.bootstrap();
+const testCommon_1 = require("../../test/testCommon");
+testCommon_1.initTasks(ava_1.default);
+testCommon_1.bootstrap();
 const { loadYmlFiles, writeYmlFile, glob, path } = Panacea.container;
 ava_1.default('Calling loadYmlFiles should throw Error when no directory is provided', t => {
     t.true(loadYmlFiles() instanceof Error);
@@ -28,7 +28,7 @@ ava_1.default('Call to loadYmlFiles returns correct structured data', t => {
     t.true(test1 && test2 && test3 && test4);
 });
 ava_1.default('Writing a yaml file is successful', t => {
-    const sandboxDir = test_common_1.getSandboxDir();
+    const sandboxDir = testCommon_1.getSandboxDir();
     const testFile = path.join(sandboxDir, 'writeYamlFileWithData.yml');
     const testData = {
         something: {

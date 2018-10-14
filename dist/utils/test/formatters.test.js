@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const ava_1 = require("ava");
-const test_common_1 = require("../../test/test-common");
-test_common_1.initTasks(ava_1.default);
-test_common_1.bootstrap();
+const testCommon_1 = require("../../test/testCommon");
+testCommon_1.initTasks(ava_1.default);
+testCommon_1.bootstrap();
 const { formatters } = Panacea.container;
 ava_1.default('compileNestFromDotSeparated can successfully create a nest', t => {
     t.plan(2);

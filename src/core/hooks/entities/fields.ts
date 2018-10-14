@@ -1,7 +1,7 @@
-import * as events from 'events'
+import { IHooks } from '../../../utils/hooks';
 
 export default {
-  register (hooks: events.EventEmitter) {
+  register (hooks: IHooks) {
     hooks.on('core.entityTypes.fields.definitions', ({ fieldTypes } : { fieldTypes: FieldTypes }) => {
       fieldTypes.id = {
         label: 'core.entityTypes.fields.id.label',

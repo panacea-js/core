@@ -1,6 +1,7 @@
-import { getSandboxDir } from '../../test-common'
+import { getSandboxDir } from '../../testCommon'
 import * as path from 'path'
 import * as portfinder from 'portfinder'
+import { IPanaceaOptions } from '../../../../types/globals';
 
 const sandboxDir = getSandboxDir()
 
@@ -9,19 +10,22 @@ const sandboxDir = getSandboxDir()
 const microTime = Math.ceil(Date.now() % 1000)
 const availablePort = (startPort: number) => portfinder.getPortPromise({host: '127.0.0.1', port: startPort + microTime })
 
-export default function () {
+export default function () : IPanaceaOptions {
   return {
     main: {
       port: availablePort(6000),
       protocol: 'http',
-      disableCors: true
+      disableCors: true,
+      host: process.env.APP_SERVE_HOST || 'localhost',
+      endpoint: process.env.APP_SERVE_ENDPOINT || 'graphql',
     },
     services: {
       options: {
         log: {
           directory: `${sandboxDir}/logs`,
           maxSize: '1024k',
-          showLogsInConsole: false
+          showLogsInConsole: false,
+          logToFiles: true
         },
         db: {
           type: 'mongodb',

@@ -1,10 +1,12 @@
+import { IPanaceaOptionsComplete } from "../../types/globals";
+
 /**
  * Creates a MongoDB connection object.
  *
  * @returns Promise<Mongoose$Connection>
  */
 
-const dbConnection = function (options: typeof Panacea.options.services.options.db) {
+const dbConnection = function (options: IPanaceaOptionsComplete['services']['options']['db']) {
   const { host, dbName, port } = options
 
   const { mongoose } = Panacea.container

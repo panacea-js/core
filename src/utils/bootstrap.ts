@@ -10,6 +10,12 @@ interface IBootstrap {
   defaultAppPriority: number
 }
 
+export interface Registrant {
+  locationKey: string
+  path: string
+  priority: number
+}
+
 const Bootstrap = function (this: IBootstrap, panaceaConfigFile: string = '') : void {
   if (!panaceaConfigFile) {
     panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js')

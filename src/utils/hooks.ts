@@ -1,15 +1,15 @@
 // Import node core events.
 import * as events from 'events'
 
-interface IHooks extends events.EventEmitter,IHooksProto {
+export interface IHooks extends events.EventEmitter,IHooksProto {
   prototype: IHooksProto
 }
 
-interface IHooksProto {
+interface IHooksProto extends events.EventEmitter {
   availableHooks: Array<string>
   invoke: (this: IHooks, type: string, defaultData?: any) => any
   getAvailableHooks: (this: IHooks) => Array<string>
-  getAvailableHooksOutput: (this: IHooks, nested: boolean) => string
+  getAvailableHooksOutput: (this: IHooks, nested?: boolean) => string
   loadFromDirectories: (paths: Array<string>) => string
 }
 

@@ -107,7 +107,7 @@ const entityResolvers = function (resolvers) {
             return document;
         };
         // Get many entities.
-        resolvers.Query['entityData._meta.pluralCamel'] = async (parent, args, { dbModels }) => {
+        resolvers.Query[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => {
             let documents = [];
             let error;
             await modelQuery(dbModels[entityData._meta.pascal], parent, args).exec()

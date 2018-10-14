@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// @flow
 const { _, hooks } = Panacea.container;
 /**
  * Transforms structured data for GraphQL root types to an output string.
