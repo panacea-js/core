@@ -43,9 +43,5 @@ jobs:
           key: node-dependencies-{{ checksum "package.json" }}
 
       - run:
-          name: Run flow type checks
-          command: npm run flow
-
-      - run:
           name: Run tests and send coverage report to codecov
           command: npm run codecov-report
