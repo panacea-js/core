@@ -1,31 +1,31 @@
-import { IHooks } from '../../../utils/hooks';
+import { IHooks } from '../../../utils/hooks'
 import { IResolvers } from 'graphql-tools/dist/Interfaces'
-import { Transaction, transactionHandler } from '../../../utils/transaction'
+import { Transaction, TransactionHandler } from '../../../utils/transaction'
 
 const { _, i18n, GraphQLScalarType } = Panacea.container
 
 export default {
   register (hooks: IHooks) {
-    hooks.once('core.graphql.definitions.scalars', ({ scalars } : { scalars: Array<string> }) => {
+    hooks.once('core.graphql.definitions.scalars', ({ scalars }: { scalars: Array<string> }) => {
       scalars.push('Date')
     })
 
-    hooks.on('core.entityTypes.fields.definitions', ({ fieldTypes } : { fieldTypes: FieldTypes }) => {
+    hooks.on('core.entityTypes.fields.definitions', ({ fieldTypes }: { fieldTypes: FieldTypes }) => {
       fieldTypes.date = {
         label: 'core.entityTypes.fields.date.label',
         description: 'core.entityTypes.fields.date.description'
       }
     })
 
-    hooks.on('core.entityTypes.fields.mapMongo', ({ fieldsMapMongo } : { fieldsMapMongo: FieldMap }) => {
+    hooks.on('core.entityTypes.fields.mapMongo', ({ fieldsMapMongo }: { fieldsMapMongo: FieldMap }) => {
       fieldsMapMongo.set('date', 'Date')
     })
 
-    hooks.on('core.entityTypes.fields.mapGraphQL', ({ fieldsMapGraphQL } : { fieldsMapGraphQL: FieldMap }) => {
+    hooks.on('core.entityTypes.fields.mapGraphQL', ({ fieldsMapGraphQL }: { fieldsMapGraphQL: FieldMap }) => {
       fieldsMapGraphQL.set('date', 'Date')
     })
 
-    hooks.once('core.graphql.resolvers', ({ resolvers } : { resolvers: IResolvers }) => {
+    hooks.once('core.graphql.resolvers', ({ resolvers }: { resolvers: IResolvers }) => {
       resolvers.Date = new GraphQLScalarType({
         name: 'Date',
         description: 'ISO8601 Date value',
@@ -37,7 +37,7 @@ export default {
       })
     })
 
-    hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions: EntityTypeDefinitions }) => {
+    hooks.once('core.entityTypes.definitions', ({ definitions }: { definitions: EntityTypeDefinitions }) => {
       const dateFields = ['created', 'updated', 'deleted']
 
       _(definitions).forEach((entityType) => {
@@ -52,7 +52,7 @@ export default {
       })
     })
 
-    hooks.once('core.entity.createHandlers', ({ transactionHandlers } : { transactionHandlers: Array<transactionHandler> }) => {
+    hooks.once('core.entity.createHandlers', ({ transactionHandlers }: { transactionHandlers: Array<TransactionHandler> }) => {
       const datesCreateHandler = {
         prepare: async function (txn: Transaction) {
           const { args } = txn.context

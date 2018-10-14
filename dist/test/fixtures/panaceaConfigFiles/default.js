@@ -15,7 +15,7 @@ function default_1() {
             protocol: 'http',
             disableCors: true,
             host: process.env.APP_SERVE_HOST || 'localhost',
-            endpoint: process.env.APP_SERVE_ENDPOINT || 'graphql',
+            endpoint: process.env.APP_SERVE_ENDPOINT || 'graphql'
         },
         services: {
             options: {

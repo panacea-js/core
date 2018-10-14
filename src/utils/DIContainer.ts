@@ -1,6 +1,6 @@
 // Dependency injection container library.
 import * as Bottle from 'bottlejs'
-import { IPanaceaOptionsComplete } from '../../types/globals';
+import { IPanaceaOptionsComplete } from '../../types/globals'
 
 interface IServicesBuilderProto {
   alias: (
@@ -13,7 +13,7 @@ interface IServicesBuilderProto {
     serviceName: string,
     location: string,
     property?: string,
-    callbackArguments? : Array<any>
+    callbackArguments?: Array<any>
   ) => void
 }
 
@@ -48,7 +48,7 @@ const ServicesBuilder = function (this: IServicesBuilder) {
  * @param callbackArguments Array|null
  *   Arguments as an array to pass to the instantiating call.
  */
-ServicesBuilder.prototype.add = <IServicesBuilderProto['add']>function (serviceName, location, property, callbackArguments) {
+ServicesBuilder.prototype.add = function (serviceName, location, property, callbackArguments) {
   // Process aliases.
   for (let alias in this.aliases) {
     location = location.replace(alias, this.aliases[alias])
@@ -59,7 +59,7 @@ ServicesBuilder.prototype.add = <IServicesBuilderProto['add']>function (serviceN
     property,
     callbackArguments
   }
-}
+} as IServicesBuilderProto['add']
 
 /**
  * Add an alias for path resolution.
@@ -73,9 +73,9 @@ ServicesBuilder.prototype.add = <IServicesBuilderProto['add']>function (serviceN
  * @param location
  *   The absolute location to replace the alias when found.
  */
-ServicesBuilder.prototype.alias = <IServicesBuilderProto['alias']>function (alias, location) {
+ServicesBuilder.prototype.alias = function (alias, location) {
   this.aliases[alias] = location
-}
+} as IServicesBuilderProto['alias']
 
 /**
  * Register a service container from a file.
@@ -106,7 +106,9 @@ export const registerServices = function (params: typeof Panacea.options) {
     const property = services.services[serviceName].property
     const callbackArguments = services.services[serviceName].callbackArguments
 
-    const provider = function () { }
+    const provider = function () {
+      // @ts-ignore
+    }
     provider.prototype.$get = function () {
       if (property) {
         if (Array.isArray(callbackArguments)) {

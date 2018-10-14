@@ -20,10 +20,10 @@ test('Hooks can be invoked (twice) with a default value made available to listen
     t.true(data.defaultValue === 'isCorrectlySetAndAvailable')
   })
 
-  hooks.invoke('invokable', {defaultValue: 'isCorrectlySetAndAvailable'})
+  hooks.invoke('invokable', { defaultValue: 'isCorrectlySetAndAvailable' })
 
   // Double invocation should be perfectly fine too.
-  hooks.invoke('invokable', {defaultValue: 'isCorrectlySetAndAvailable'})
+  hooks.invoke('invokable', { defaultValue: 'isCorrectlySetAndAvailable' })
 })
 
 test('Hooks can be invoked without default data where the listeners should receive a null object', t => {
@@ -45,7 +45,7 @@ test('Multiple listeners can alter the data passed to them which persists', t =>
     t.true(data.defaultValue === 'isCorrectlySetAndAvailable')
   })
 
-  hooks.invoke('persistentData', {defaultValue: 'isCorrectlySetAndAvailable'})
+  hooks.invoke('persistentData', { defaultValue: 'isCorrectlySetAndAvailable' })
 })
 
 test('Available hooks can be retrieved', t => {

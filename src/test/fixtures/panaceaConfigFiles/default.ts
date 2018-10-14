@@ -1,23 +1,23 @@
 import { getSandboxDir } from '../../testCommon'
 import * as path from 'path'
 import * as portfinder from 'portfinder'
-import { IPanaceaOptions } from '../../../../types/globals';
+import { IPanaceaOptions } from '../../../../types/globals'
 
 const sandboxDir = getSandboxDir()
 
 // Add extra port entropy to portfinder start port to prevent port clashes.
 // This is a workaround for portfinder as it is doesn't return an available port every time.
 const microTime = Math.ceil(Date.now() % 1000)
-const availablePort = (startPort: number) => portfinder.getPortPromise({host: '127.0.0.1', port: startPort + microTime })
+const availablePort = (startPort: number) => portfinder.getPortPromise({ host: '127.0.0.1', port: startPort + microTime })
 
-export default function () : IPanaceaOptions {
+export default function (): IPanaceaOptions {
   return {
     main: {
       port: availablePort(6000),
       protocol: 'http',
       disableCors: true,
       host: process.env.APP_SERVE_HOST || 'localhost',
-      endpoint: process.env.APP_SERVE_ENDPOINT || 'graphql',
+      endpoint: process.env.APP_SERVE_ENDPOINT || 'graphql'
     },
     services: {
       options: {

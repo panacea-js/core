@@ -1,4 +1,4 @@
-import { IPanaceaOptionsComplete } from "../../types/globals";
+import { IPanaceaOptionsComplete } from '../../types/globals'
 
 const { fs, winston, formatters, moment } = Panacea.container
 
@@ -32,8 +32,8 @@ const getFileTransports = function (options: loggerOptions) {
 
   if (options.showLogsInConsole) {
     transports.push(new winston.transports.Console({
-      format: winston.format.simple(),
-      //colorize: true
+      format: winston.format.simple()
+      // colorize: true
     }))
   }
 

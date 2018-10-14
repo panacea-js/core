@@ -4,11 +4,11 @@ const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry } = Panacea.cont
 
 class EntityTypes {
   definitions: EntityTypeDefinitions
-  locations:  {
-    [locationId: string] : string
+  locations: {
+    [locationId: string]: string
   }
   defaults: {
-    [key: string] : string
+    [key: string]: string
   }
   fieldTypes: FieldTypes
   fieldsMapMongo: FieldMap
@@ -26,7 +26,7 @@ class EntityTypes {
     this._errors = []
   }
 
-  addError (entityTypeData: EntityTypeDefinition, error: Error) : void {
+  addError (entityTypeData: EntityTypeDefinition, error: Error): void {
     // Ensure the _errors array exists.
     entityTypeData._errors = entityTypeData._errors || []
     entityTypeData._errors.push(error)
@@ -50,7 +50,7 @@ class EntityTypes {
   /**
    * Converts system field definitions to GraphQL equivalents.
    */
-  convertFieldTypeToGraphQL (type : string) {
+  convertFieldTypeToGraphQL (type: string) {
     if (typeof type !== 'string' || type === '') {
       throw TypeError('No type specified in GraphQL field types conversion mapping')
     }
@@ -62,7 +62,7 @@ class EntityTypes {
     return this.fieldsMapGraphQL.get(type) || ''
   }
 
-  validate (entityTypeData: EntityTypeDefinition, entityTypeName: string, action: 'load' | 'save') : boolean {
+  validate (entityTypeData: EntityTypeDefinition, entityTypeName: string, action: 'load' | 'save'): boolean {
     // Entity type validators.
     const entityTypeValidators = [
       this.validateRequiredProperties
@@ -155,7 +155,7 @@ class EntityTypes {
     return this.definitions
   }
 
-  save (name: string, data: EntityTypeDefinition, locationKey: string) : { success: boolean, errorMessage: string } {
+  save (name: string, data: EntityTypeDefinition, locationKey: string): { success: boolean, errorMessage: string } {
     const result = {
       success: false,
       errorMessage: ''
@@ -194,7 +194,7 @@ class EntityTypes {
 
     try {
       entityTypeData.fields = this.removeFalsyFields(entityTypeData.fields)
-      entityTypeData = <EntityTypeDefinition>this.stripMeta(entityTypeData)
+      entityTypeData = this.stripMeta(entityTypeData) as EntityTypeDefinition
       result.success = true
       writeYmlFile(filePath, entityTypeData)
       hooks.invoke('core.reload', { reason: `entity ${name} was created` })
@@ -214,7 +214,7 @@ class EntityTypes {
    * Strip metadata (properties starting with an underscore) from all entity
    * type definitions or a single entity type definition recursively.
    */
-  stripMeta (data: EntityTypeDefinitions | EntityTypeDefinition & { [key: string] : any }) {
+  stripMeta (data: EntityTypeDefinitions | EntityTypeDefinition & { [key: string]: any }) {
     const clonedData = _.cloneDeep(data)
 
     _(clonedData).forEach((value, key) => {
@@ -230,12 +230,11 @@ class EntityTypes {
     return clonedData
   }
 
-
   removeFalsyFields (fields: EntityTypeFields) {
     _(fields).forEach((field, fieldName) => {
       _(field).forEach((value, key) => {
         if (_(value).isEmpty() && value !== true) {
-          delete fields[fieldName][<keyof EntityTypeField>key]
+          delete fields[fieldName][key as keyof EntityTypeField]
         }
       })
       if (field.type === 'object' && field.fields) {
@@ -252,7 +251,7 @@ class EntityTypes {
    * Is is a soft validation. If an object doesn't have sub-fields then exclude it
    * from the definition rather than raising a validator error.
    */
-  private checkObjectsHaveFields (this: EntityTypes, fields: EntityTypeFields, entityTypeName: string) : void {
+  private checkObjectsHaveFields (this: EntityTypes, fields: EntityTypeFields, entityTypeName: string): void {
     _(fields).forEach((fieldData: EntityTypeField, fieldId: string) => {
       if (fieldData.type === 'object' && !fieldData.fields) {
         console.warn(`Not loading ${fieldId} field on ${entityTypeName} because it doesn't have any nested fields.`)
@@ -267,7 +266,7 @@ class EntityTypes {
   /**
    * Register Panacea field type definitions.
    */
-  private registerFieldTypes (this: EntityTypes) : void {
+  private registerFieldTypes (this: EntityTypes): void {
     const fieldTypes: FieldTypes = {}
     const fieldsMapMongo: FieldMap = new Map()
     const fieldsMapGraphQL: FieldMap = new Map()
@@ -284,7 +283,7 @@ class EntityTypes {
   /**
    * Entity type validator for required base properties on the entity type.
    */
-  private validateRequiredProperties (this: EntityTypes, entityTypeData: EntityTypeDefinition, entityTypeName: string, action: 'load' | 'save') : void {
+  private validateRequiredProperties (this: EntityTypes, entityTypeData: EntityTypeDefinition, entityTypeName: string, action: 'load' | 'save'): void {
     if (_(entityTypeData.fields).isEmpty()) this.addError(entityTypeData, TypeError(`Fields do not exist on entity type: ${entityTypeName}`))
     if (_(entityTypeData.plural).isEmpty()) this.addError(entityTypeData, TypeError(`A 'plural' key must be set on entity type: ${entityTypeName}`))
     if (_(entityTypeData.storage).isEmpty()) this.addError(entityTypeData, TypeError(`A 'storage' key must be set on entity type: ${entityTypeName}`))
@@ -293,7 +292,7 @@ class EntityTypes {
   /**
    * Entity type field validator to ensure field can be parsed as expected by Panacea.
    */
-  private validateRequiredFields (this: EntityTypes, entityTypeData: EntityTypeDefinition, entityTypeName: string, action: 'load' | 'save', fields: EntityTypeFields) : void {
+  private validateRequiredFields (this: EntityTypes, entityTypeData: EntityTypeDefinition, entityTypeName: string, action: 'load' | 'save', fields: EntityTypeFields): void {
     _(fields).forEach((field: EntityTypeField, fieldName: string) => {
       // Validate field contains all the required attributes.
       if (_(field).isEmpty()) this.addError(entityTypeData, TypeError(`Field ${fieldName} configuration is empty`))

@@ -1,4 +1,4 @@
-export interface transactionHandler {
+export interface TransactionHandler {
   prepare?: (txn: Transaction) => Promise<void>
   operation?: (txn: Transaction) => Promise<void>
   rollback?: (txn: Transaction) => Promise<void>
@@ -15,8 +15,8 @@ export class Transaction {
   created: number
   completed?: number
   error?: Error
-  _handlers: Array<transactionHandler>
-  constructor (handlers: Array<transactionHandler> = [], context: {} = {}) {
+  _handlers: Array<TransactionHandler>
+  constructor (handlers: Array<TransactionHandler> = [], context: {} = {}) {
     this.status = 'init'
     this.context = context
     this._handlers = handlers
@@ -26,13 +26,13 @@ export class Transaction {
     this.status = 'rollback'
     this.error = error
   }
-  async _asyncForEach (array: Array<transactionHandler>, callback: Function) {
+  async _asyncForEach (array: Array<TransactionHandler>, callback: Function) {
     for (let index = 0; index < array.length; index++) {
       await callback(array[index], index, array)
     }
   }
   async _invokeHandlers (stage: transactionHandlerCallbacks, proceedOnFail: boolean = false) {
-    await this._asyncForEach(this._handlers, async (handler: transactionHandler) => {
+    await this._asyncForEach(this._handlers, async (handler: TransactionHandler) => {
       if ((!this.error || proceedOnFail) && typeof handler[stage] === 'function') {
         try {
           // @ts-ignore

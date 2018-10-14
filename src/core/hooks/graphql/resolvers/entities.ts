@@ -1,7 +1,7 @@
-import { IHooks } from '../../../../utils/hooks';
+import { IHooks } from '../../../../utils/hooks'
 import { IResolvers } from 'graphql-tools'
-import { dbModels } from '../../../../mongodb/models';
-import { transactionHandler, Transaction as ITransaction } from '../../../../utils/transaction';
+import { DbModels } from '../../../../mongodb/models'
+import { TransactionHandler, Transaction as ITransaction } from '../../../../utils/transaction'
 
 const { _, log, hooks, entityTypes, Transaction, modelQuery } = Panacea.container
 
@@ -23,7 +23,7 @@ const resolveNestedFields = function (
   types: any,
   currentType: string,
   fields: EntityTypeFields
-) : void {
+): void {
   _(fields).forEach((field, fieldName) => {
     if (field.type === 'object' && field.fields) {
       resolveNestedFields(types, `${currentType}_${fieldName}`, field.fields)
@@ -32,7 +32,7 @@ const resolveNestedFields = function (
     if (field.type === 'reference') {
       types[currentType] = types[currentType] || {}
 
-      types[currentType][fieldName] = function (sourceDocument: any, args: any, { dbModels } : { dbModels : dbModels}) {
+      types[currentType][fieldName] = function (sourceDocument: any, args: any, { dbModels }: { dbModels: DbModels}) {
         if (!field.references || !dbModels[field.references]) {
           return
         }
@@ -103,7 +103,7 @@ const entityResolvers = function (resolvers: any) {
     const hasFields = Object.keys(entityData.fields).length > 1
 
     // Get single entity.
-    resolvers.Query[entityData._meta.camel] = async (parent: any, args: any, { dbModels } : { dbModels : dbModels}) => {
+    resolvers.Query[entityData._meta.camel] = async (parent: any, args: any, { dbModels }: { dbModels: DbModels}) => {
       let document: any = {}
       let error
 
@@ -133,7 +133,7 @@ const entityResolvers = function (resolvers: any) {
     }
 
     // Get many entities.
-    resolvers.Query[entityData._meta.pluralCamel] = async (parent: any, args: any, { dbModels } : { dbModels : dbModels}) => {
+    resolvers.Query[entityData._meta.pluralCamel] = async (parent: any, args: any, { dbModels }: { dbModels: DbModels}) => {
       let documents: Array<any> = []
       let error
 
@@ -165,7 +165,7 @@ const entityResolvers = function (resolvers: any) {
     // Only allow mutations of entities that have fields.
     if (hasFields) {
       // Create entity.
-      resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent: any, args: any, { dbModels } : { dbModels : dbModels}) => {
+      resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent: any, args: any, { dbModels }: { dbModels: DbModels}) => {
         const transactionContext = {
           parent,
           args,
@@ -174,7 +174,7 @@ const entityResolvers = function (resolvers: any) {
           entityData
         }
 
-        const transactionHandlers: Array<transactionHandler> = []
+        const transactionHandlers: Array<TransactionHandler> = []
         hooks.invoke('core.entity.createHandlers', { transactionHandlers })
 
         return new Transaction(transactionHandlers, transactionContext).execute()
@@ -190,7 +190,7 @@ const entityResolvers = function (resolvers: any) {
       }
 
       // Delete entity.
-      resolvers.Mutation[`delete${entityData._meta.pascal}`] = (parent: any, args: any, { dbModels } : { dbModels : dbModels}) => {
+      resolvers.Mutation[`delete${entityData._meta.pascal}`] = (parent: any, args: any, { dbModels }: { dbModels: DbModels}) => {
         return new Promise((resolve, reject) => {
           dbModels[entityData._meta.pascal].findById(args.id).exec((err, entity) => {
             if (err) {
@@ -229,7 +229,7 @@ const entityResolvers = function (resolvers: any) {
 
 export default {
   register (hooks: IHooks) {
-    hooks.on('core.graphql.resolvers', ({ resolvers } : { resolvers: IResolvers }) => {
+    hooks.on('core.graphql.resolvers', ({ resolvers }: { resolvers: IResolvers }) => {
       entityResolvers(resolvers)
     })
   }

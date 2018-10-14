@@ -7,7 +7,7 @@ const { accepts, i18n } = Panacea.container
  * PANACEA-LANGUAGE cookie value. Falls back to the client's Accept-Language
  * header using the accepts module.
  */
-const getClientLanguage = function (req: express.Request) : string | boolean {
+const getClientLanguage = function (req: express.Request): string | boolean {
   const availableLanguages = Object.keys(i18n.messages)
 
   let cookieLanguage = ''

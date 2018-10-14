@@ -1,12 +1,12 @@
-import { IHooks } from '../../../utils/hooks';
-import { Transaction, transactionHandler } from '../../../utils/transaction'
-import { dbModels } from '../../../mongodb/models';
+import { IHooks } from '../../../utils/hooks'
+import { Transaction, TransactionHandler } from '../../../utils/transaction'
+import { DbModels } from '../../../mongodb/models'
 
 const { _, i18n } = Panacea.container
 
 export default {
   register (hooks: IHooks) {
-    hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions: EntityTypeDefinitions }) => {
+    hooks.once('core.entityTypes.definitions', ({ definitions }: { definitions: EntityTypeDefinitions }) => {
       const revisionsText = i18n.t('core.entityTypes.revisions.label') // Revisions
 
       for (const entityTypeName of Object.keys(definitions)) {
@@ -43,7 +43,7 @@ export default {
       }
     })
 
-    hooks.on('core.entity.createHandlers', ({ transactionHandlers } : { transactionHandlers: Array<transactionHandler> }) => {
+    hooks.on('core.entity.createHandlers', ({ transactionHandlers }: { transactionHandlers: Array<TransactionHandler> }) => {
       const revisionCreateHandler = {
         prepare: async function (txn: Transaction) {
           const { entityData, dbModels, args } = txn.context
@@ -56,7 +56,7 @@ export default {
           }
         },
         rollback: async function (txn: Transaction) {
-          const { entityData, dbModels, createdRevisionId } : { entityData: EntityTypeDefinition, dbModels: dbModels, createdRevisionId: string } = txn.context
+          const { entityData, dbModels, createdRevisionId }: { entityData: EntityTypeDefinition, dbModels: DbModels, createdRevisionId: string } = txn.context
           if (entityData.revisions && createdRevisionId) {
             if (entityData._meta && entityData._meta.revisionEntityType) {
               const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType]

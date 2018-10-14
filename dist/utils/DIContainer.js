@@ -71,7 +71,9 @@ exports.registerServices = function (params) {
         const location = services.services[serviceName].location;
         const property = services.services[serviceName].property;
         const callbackArguments = services.services[serviceName].callbackArguments;
-        const provider = function () { };
+        const provider = function () {
+            // @ts-ignore
+        };
         provider.prototype.$get = function () {
             if (property) {
                 if (Array.isArray(callbackArguments)) {

@@ -31,7 +31,7 @@ const formatRootTypeToOutput = function (rootType: 'Mutation' | 'Query', definit
 /**
  * Transforms structured data for GraphQL types to an output string.
  */
-const formatTypesToOutput = function (type : 'type' | 'input', definitions: GraphQLTypeDefinitions | GraphQLInputDefinitions) : string {
+const formatTypesToOutput = function (type: 'type' | 'input', definitions: GraphQLTypeDefinitions | GraphQLInputDefinitions): string {
   let output: Array<string> = []
 
   // Nested types (objects in fields) are deferred to be concatenated to the final output.
@@ -110,7 +110,7 @@ const formatEnumsToOutput = function (enums: GraphQLEnumsDefinitions) {
  *
  * Allows overrides via core.graphql.definitions.* hooks.
  */
-export const graphQLTypeDefinitions = function () : Promise<string> {
+export const graphQLTypeDefinitions = function (): Promise<string> {
   return new Promise(function (resolve, reject) {
     try {
       const output = []
@@ -150,8 +150,7 @@ export const graphQLTypeDefinitions = function () : Promise<string> {
       }
 
       resolve(tidyDefinitionEndings(output.join('\n')))
-    }
-    catch (error) {
+    } catch (error) {
       reject(error)
     }
   })

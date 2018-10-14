@@ -3,7 +3,7 @@ import { initTasks } from '../../test/testCommon'
 import * as path from 'path'
 import panacea from '../../index'
 import Bootstrap from '../bootstrap'
-import { LogEntry } from 'winston';
+import { LogEntry } from 'winston'
 
 initTasks(test)
 

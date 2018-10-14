@@ -73,9 +73,10 @@ exports.formatNestedObjectKeys = formatNestedObjectKeys;
  * Convert a string like '2Mb' to its bytes equivalent.
  */
 const convertFileSizeShortHandToBytes = function (value) {
+    const radix = 10;
     // If passed value is a string without any suffixes then treat as an integer.
-    if (parseInt(value).toString() === value) {
-        return parseInt(value);
+    if (parseInt(value, radix).toString() === value) {
+        return parseInt(value, radix);
     }
     const sizes = {
         k: 1,
@@ -90,12 +91,12 @@ const convertFileSizeShortHandToBytes = function (value) {
     if (typeof value === 'string') {
         for (let size in sizes) {
             if (value.indexOf(size) !== -1 || value.indexOf(size.toUpperCase()) !== -1) {
-                return parseInt(value.replace(size, '').replace(size.toUpperCase(), '')) * (Math.pow(1024, sizes[size]));
+                return parseInt(value.replace(size, '').replace(size.toUpperCase(), ''), radix) * (Math.pow(1024, sizes[size]));
             }
         }
         return new TypeError(i18n.t('core.formatters.shortHandToBytes.cannotConvert', { value })); // Could not find a way to convert file size shorthand string: {value}
     }
-    return parseInt(value);
+    return parseInt(value, radix);
 };
 exports.convertFileSizeShortHandToBytes = convertFileSizeShortHandToBytes;
 //# sourceMappingURL=formatters.js.map

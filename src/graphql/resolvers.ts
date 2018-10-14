@@ -2,8 +2,8 @@ import { IResolvers } from 'graphql-tools/dist/Interfaces'
 
 const { hooks } = Panacea.container
 
-export const graphQLResolvers = function () : IResolvers {
-  const resolvers : IResolvers = {
+export const graphQLResolvers = function (): IResolvers {
+  const resolvers: IResolvers = {
     Query: {},
     Mutation: {}
   }

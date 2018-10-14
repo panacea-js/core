@@ -16,7 +16,7 @@ export function loadYmlFiles (directory: string) {
   let result: any = {}
 
   if (!fs.pathExistsSync(directory)) {
-    return new Error(i18n.t('core.yaml.noDirectory', {directory})) // Directory {directory} doesn't exist.
+    return new Error(i18n.t('core.yaml.noDirectory', { directory })) // Directory {directory} doesn't exist.
   }
 
   let files = glob.sync(directory + '/*.yml')

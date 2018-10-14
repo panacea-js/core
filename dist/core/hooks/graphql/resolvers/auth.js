@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = {
-    register(hooks) {
-        hooks.on('core.graphql.resolvers', ({ resolvers }) => {
-        });
-    }
-};
+// export default {
+//   register (hooks: IHooks) {
+//     hooks.on('core.graphql.resolvers', ({ resolvers }: { resolvers: IResolvers }) => {
+//     })
+//   }
+// }
 //# sourceMappingURL=auth.js.map

@@ -1,7 +1,7 @@
 import * as Mongoose from 'mongoose'
 
 const { hooks } = Panacea.container
-export interface dbModels {
+export interface DbModels {
   [name: string]: Mongoose.Model<Mongoose.Document>
 }
 
@@ -9,8 +9,8 @@ export interface dbModels {
  * Loads entity types from yml files to define MongoDB models.
  * @returns {object}
  */
-export const dbModels = function () : dbModels {
-  const models: dbModels = {}
+export const dbModels = function (): DbModels {
+  const models: DbModels = {}
   hooks.invoke('core.mongo.models', { models })
 
   return models

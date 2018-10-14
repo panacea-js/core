@@ -1,5 +1,5 @@
-import { IPanaceaOptionsComplete } from "../types/globals";
-import { IServicesBuilder } from "./utils/DIContainer";
+import { IPanaceaOptionsComplete } from '../types/globals'
+import { IServicesBuilder } from './utils/DIContainer'
 
 /**
  * Add services to the Panacea.container.

@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = {
-    register(hooks) {
-        hooks.on('core.graphql.definitions.mutations', ({ mutations }) => {
-        });
-    }
-};
+// export default {
+//   register (hooks: IHooks) {
+//     hooks.on('core.graphql.definitions.mutations', ({ mutations }: { mutations: GraphQLMutationDefinitions}) => {
+//     })
+//   }
+// }
 //# sourceMappingURL=auth.js.map

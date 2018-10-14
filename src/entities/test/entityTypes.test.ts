@@ -41,7 +41,7 @@ test('Stripping entity metadata should remove _filePath and _meta keys', t => {
 })
 
 test('When an entity has no label defined an error should be thrown', t => {
-  hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions : EntityTypeDefinitions }) => {
+  hooks.once('core.entityTypes.definitions', ({ definitions }: { definitions: EntityTypeDefinitions }) => {
     delete definitions.Cat.plural
   })
 
@@ -50,7 +50,7 @@ test('When an entity has no label defined an error should be thrown', t => {
 })
 
 test('When an entity has no storage defined an error should be thrown', t => {
-  hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions : EntityTypeDefinitions }) => {
+  hooks.once('core.entityTypes.definitions', ({ definitions }: { definitions: EntityTypeDefinitions }) => {
     delete definitions.Cat.storage
   })
 
@@ -59,7 +59,7 @@ test('When an entity has no storage defined an error should be thrown', t => {
 })
 
 test('When an entity field has empty definition an error should be thrown', t => {
-  hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions : EntityTypeDefinitions }) => {
+  hooks.once('core.entityTypes.definitions', ({ definitions }: { definitions: EntityTypeDefinitions }) => {
     // @ts-ignore
     definitions.Cat.fields.breakingField = {}
   })
@@ -68,7 +68,7 @@ test('When an entity field has empty definition an error should be thrown', t =>
 })
 
 test('When an entity field has no type defined an error should be thrown', t => {
-  hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions : EntityTypeDefinitions }) => {
+  hooks.once('core.entityTypes.definitions', ({ definitions }: { definitions: EntityTypeDefinitions }) => {
     definitions.Cat.fields.breakingField = {
       // @ts-ignore
       incorrectTypeKey: 'Incorrect Type',
@@ -80,7 +80,7 @@ test('When an entity field has no type defined an error should be thrown', t => 
 })
 
 test('When an entity field has no label defined an error should be thrown', t => {
-  hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions : EntityTypeDefinitions }) => {
+  hooks.once('core.entityTypes.definitions', ({ definitions }: { definitions: EntityTypeDefinitions }) => {
     definitions.Cat.fields.breakingField = {
       type: 'string',
       // @ts-ignore
@@ -92,7 +92,7 @@ test('When an entity field has no label defined an error should be thrown', t =>
 })
 
 test('When field definitions key is empty an error is thrown', t => {
-  hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions : EntityTypeDefinitions }) => {
+  hooks.once('core.entityTypes.definitions', ({ definitions }: { definitions: EntityTypeDefinitions }) => {
     definitions.Cat.fields = {}
   })
 
@@ -100,7 +100,7 @@ test('When field definitions key is empty an error is thrown', t => {
 })
 
 test('When validating and EntityType without _errors property, it is added by the call to entityTypes.validate', t => {
-  const entityTypeData = <EntityTypeDefinition>{}
+  const entityTypeData = {} as EntityTypeDefinition
   entityTypes.validate(entityTypeData, 'testEmptyArray', 'load')
   t.true(entityTypeData.hasOwnProperty('_errors'))
 })
@@ -108,7 +108,7 @@ test('When validating and EntityType without _errors property, it is added by th
 test('Saving an EntityType in the correct required format writes a yml file to disk', t => {
   t.plan(2)
 
-  const entityTypeData = <EntityTypeDefinition>{
+  const entityTypeData = {
     storage: 'db',
     fields: {
       id: {
@@ -124,7 +124,7 @@ test('Saving an EntityType in the correct required format writes a yml file to d
       pluralCamel: 'mice',
       descriptionLowerFirst: ''
     }
-  }
+  } as EntityTypeDefinition
 
   const saveResult = entityTypes.save('Mouse', entityTypeData, 'sandbox')
 

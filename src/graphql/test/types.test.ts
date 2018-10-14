@@ -23,7 +23,7 @@ test.serial('Cat entity should resolve to GraphQL type, input and query', t => {
 
 test.serial('When an entity field defines an invalid type an error is thrown', async t => {
   // Append via a hook.
-  hooks.once('core.entityTypes.definitions', ({ definitions } : { definitions : EntityTypeDefinitions }) => {
+  hooks.once('core.entityTypes.definitions', ({ definitions }: { definitions: EntityTypeDefinitions }) => {
     definitions.Cat.fields.breakingField = {
       type: 'FakeTypeNoExist',
       label: 'A valid label'

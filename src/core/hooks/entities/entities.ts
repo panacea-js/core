@@ -1,12 +1,12 @@
-import { IHooks } from '../../../utils/hooks';
+import { IHooks } from '../../../utils/hooks'
 import * as Mongoose from 'mongoose'
-import { Transaction, transactionHandler } from '../../../utils/transaction'
-import { dbModels } from '../../../mongodb/models';
+import { Transaction, TransactionHandler } from '../../../utils/transaction'
+import { DbModels } from '../../../mongodb/models'
 
 const { _, entityTypes, mongoose, dbConnection } = Panacea.container
 
-interface nestedFieldDefinition {
-  [fieldName: string] : Mongoose.SchemaTypeOpts<any> | Array<Mongoose.SchemaTypeOpts<any>>
+interface NestedFieldDefinition {
+  [fieldName: string]: Mongoose.SchemaTypeOpts<any> | Array<Mongoose.SchemaTypeOpts<any>>
 }
 
 /**
@@ -21,7 +21,7 @@ const compileNestedObjects = function (field: EntityTypeField) {
     if (field.type === 'object' && field.fields) {
       // Objects require recursion to resolve each nested field which themselves
       // could be objects.
-      let nestedFieldDefinition: nestedFieldDefinition = {}
+      let nestedFieldDefinition: NestedFieldDefinition = {}
       const nestedFields = _(field.fields).map((nestedField, fieldName) => {
         const compiledNestedObject = compileNestedObjects(nestedField)
         if (typeof compiledNestedObject !== 'undefined') {
@@ -50,16 +50,16 @@ const compileNestedObjects = function (field: EntityTypeField) {
   }
 }
 
-const addEntityTypeModels = function ({ models } : { models: dbModels }) {
+const addEntityTypeModels = function ({ models }: { models: DbModels }) {
   const db = dbConnection
 
-  const entityTypeDefinitions : EntityTypeDefinitions = entityTypes.getData()
+  const entityTypeDefinitions: EntityTypeDefinitions = entityTypes.getData()
 
   _(entityTypeDefinitions).forEach((entityTypeData: EntityTypeDefinition, entityTypeName: string) => {
     // Only create a mongoose model if the entity type is for the database.
     if (entityTypeData.storage !== 'db') return
 
-    const definedFields = _(entityTypeData.fields).reduce((acc, field : EntityTypeField, fieldId : string) => {
+    const definedFields = _(entityTypeData.fields).reduce((acc, field: EntityTypeField, fieldId: string) => {
       // Skip native id mapping as MongoDB automatically assigns IDs.
       if (field.type !== 'id') {
         const compiledNestedObject = compileNestedObjects(field)
@@ -68,7 +68,7 @@ const addEntityTypeModels = function ({ models } : { models: dbModels }) {
         }
       }
       return acc
-    }, ({} as nestedFieldDefinition))
+    }, ({} as NestedFieldDefinition))
 
     const schema = new mongoose.Schema(definedFields)
 
@@ -89,11 +89,11 @@ const entityCreateHandler = {
 
 export default {
   register (hooks: IHooks) {
-    hooks.on('core.entity.createHandlers', ({ transactionHandlers } : { transactionHandlers: Array<transactionHandler> }) => {
+    hooks.on('core.entity.createHandlers', ({ transactionHandlers }: { transactionHandlers: Array<TransactionHandler> }) => {
       transactionHandlers.push(entityCreateHandler)
     })
 
-    hooks.on('core.mongo.models', ({ models } : { models: dbModels }) => {
+    hooks.on('core.mongo.models', ({ models }: { models: DbModels }) => {
       addEntityTypeModels({ models })
     })
   }

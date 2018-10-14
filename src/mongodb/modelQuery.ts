@@ -13,10 +13,10 @@ interface ImodelQuery {
     model: Mongoose.Model<Mongoose.Document>,
     parent: {},
     args: { params: QueryParams }
-  ) : Mongoose.DocumentQuery<Mongoose.Document[], Mongoose.Document>
+  ): Mongoose.DocumentQuery<Mongoose.Document[], Mongoose.Document>
 }
 
-const modelQuery = <ImodelQuery>function (model, parent, args) {
+const modelQuery = function (model, parent, args) {
   const params = args.params || {
     limit: 100,
     sortBy: null,
@@ -30,6 +30,6 @@ const modelQuery = <ImodelQuery>function (model, parent, args) {
   }
 
   return model.find().limit(params.limit).sort(sortOptions)
-}
+} as ImodelQuery
 
 export { modelQuery }

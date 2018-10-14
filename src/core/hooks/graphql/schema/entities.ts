@@ -1,17 +1,17 @@
-import { IHooks } from '../../../../utils/hooks';
+import { IHooks } from '../../../../utils/hooks'
 
 const { _, entityTypes } = Panacea.container
 
 interface IEntityTypeRefsDefinitions {
   refsAsStrings: {
-    [fieldName: string] : {
+    [fieldName: string]: {
       comment?: string
       value: string
       fields?: IEntityTypeRefsDefinitions
     }
   },
   refsAsModels: {
-    [fieldName: string] : {
+    [fieldName: string]: {
       comment?: string
       value: string
       fields?: IEntityTypeRefsDefinitions
@@ -53,7 +53,7 @@ const translateEntityTypeFields = function (fields: EntityTypeFields) {
       field.required && (fieldType = `${fieldType}!`)
       field.many && (fieldType = `[${fieldType}]`)
 
-      output[<EntityTypeRefTypes>refType][field._meta.camel] = {
+      output[refType as EntityTypeRefTypes][field._meta.camel] = {
         comment: field.description,
         value: `${field._meta.camel}: ${fieldType}`
       }
@@ -61,7 +61,7 @@ const translateEntityTypeFields = function (fields: EntityTypeFields) {
       if (field.type === 'object' && field.fields) {
         // Recurse this function to append output to the fields key.
         // This allows for unlimited nesting of defined fields.
-        output[<EntityTypeRefTypes>refType][field._meta.camel].fields = translateEntityTypeFields(field.fields)
+        output[refType as EntityTypeRefTypes][field._meta.camel].fields = translateEntityTypeFields(field.fields)
       }
     })
   })
@@ -216,19 +216,19 @@ const getDefinitions = function () {
 
 export default {
   register (hooks: IHooks) {
-    hooks.on('core.graphql.definitions.types', ({ types } : { types: GraphQLTypeDefinitions}) => {
+    hooks.on('core.graphql.definitions.types', ({ types }: { types: GraphQLTypeDefinitions}) => {
       const definitions = getDefinitions()
       _.merge(types, definitions.types)
     })
-    hooks.on('core.graphql.definitions.inputs', ({ inputs } : { inputs: GraphQLInputDefinitions}) => {
+    hooks.on('core.graphql.definitions.inputs', ({ inputs }: { inputs: GraphQLInputDefinitions}) => {
       const definitions = getDefinitions()
       _.merge(inputs, definitions.inputs)
     })
-    hooks.on('core.graphql.definitions.queries', ({ queries } : { queries: GraphQLQueryDefinitions}) => {
+    hooks.on('core.graphql.definitions.queries', ({ queries }: { queries: GraphQLQueryDefinitions}) => {
       const definitions = getDefinitions()
       _.merge(queries, definitions.queries)
     })
-    hooks.on('core.graphql.definitions.mutations', ({ mutations } : { mutations: GraphQLMutationDefinitions}) => {
+    hooks.on('core.graphql.definitions.mutations', ({ mutations }: { mutations: GraphQLMutationDefinitions}) => {
       const definitions = getDefinitions()
       _.merge(mutations, definitions.mutations)
     })

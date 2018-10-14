@@ -1,4 +1,4 @@
-import { IHooks } from '../../../../utils/hooks';
+import { IHooks } from '../../../../utils/hooks'
 
 const { _ } = Panacea.container
 

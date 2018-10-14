@@ -15,23 +15,23 @@ import { IHooks } from '../src/utils/hooks';
 import { Logger } from '../src/utils/logger';
 
 interface IPanaceaDependencies {
-  makeExecutableSchema: typeof makeExecutableSchema
-  graphQLTypeDefinitions: () => Promise<string>
-  graphQLResolvers: () => IResolvers
   _: LoDashStatic
-  winston: typeof winston
-  glob: typeof glob
-  path: typeof path
-  jsYaml: typeof jsYaml
-  options: IPanaceaOptionsComplete
-  fs: typeof fsExtra
   dbConnection: typeof Mongoose.connection
-  mongoose: typeof Mongoose
-  GraphQLScalarType: typeof GraphQLScalarType
   entityTypes: typeof entityTypes
-  Transaction: typeof Transaction
+  fs: typeof fsExtra
+  glob: typeof glob
+  graphQLResolvers: () => IResolvers
+  graphQLTypeDefinitions: () => Promise<string>
+  GraphQLScalarType: typeof GraphQLScalarType
   hooks: IHooks
+  jsYaml: typeof jsYaml
   log: winston.Logger
+  makeExecutableSchema: typeof makeExecutableSchema
+  mongoose: typeof Mongoose
+  options: IPanaceaOptionsComplete
+  path: typeof path
+  Transaction: typeof Transaction
+  winston: typeof winston
 }
 
 interface IPanaceaOptions {

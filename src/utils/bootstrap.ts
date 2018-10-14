@@ -1,7 +1,7 @@
 import * as path from 'path'
 import * as fs from 'fs-extra'
-import { IPanacea } from '../../types/globals';
-import { CorsOptions } from 'cors';
+import { IPanacea } from '../../types/globals'
+import { CorsOptions } from 'cors'
 
 interface IBootstrap {
   params: IPanacea
@@ -16,7 +16,7 @@ export interface Registrant {
   priority: number
 }
 
-const Bootstrap = function (this: IBootstrap, panaceaConfigFile: string = '') : void {
+const Bootstrap = function (this: IBootstrap, panaceaConfigFile: string = ''): void {
   if (!panaceaConfigFile) {
     panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js')
   }
@@ -33,7 +33,7 @@ const Bootstrap = function (this: IBootstrap, panaceaConfigFile: string = '') : 
   this.defaultAppPriority = 10
 }
 
-Bootstrap.prototype.all = function () : Promise<string> {
+Bootstrap.prototype.all = function (): Promise<string> {
   const startTime = Date.now()
 
   for (const method in this) {
@@ -47,7 +47,7 @@ Bootstrap.prototype.all = function () : Promise<string> {
 
   const { i18n } = Panacea.container
 
-  return Promise.resolve(i18n.t('core.bootstrap.completed', {completedTime})) // Completed full bootstrap (in {completedTime}ms)
+  return Promise.resolve(i18n.t('core.bootstrap.completed', { completedTime })) // Completed full bootstrap (in {completedTime}ms)
 }
 
 Bootstrap.prototype.runStages = function (stages: Array<Number>) {
@@ -63,7 +63,7 @@ Bootstrap.prototype.runStages = function (stages: Array<Number>) {
   })
 }
 
-Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType: string, subPath: string) : Array<Registrant> {
+Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType: string, subPath: string): Array<Registrant> {
   const { _, path, fs, registry, entityTypes, resolvePluginPath } = Panacea.container
 
   registry[registryType] = this.params[registryType] || {}
@@ -117,17 +117,17 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType: str
 }
 
 /**
-* Register services.
-*/
+ * Register services.
+ */
 Bootstrap.prototype.stage1 = function () {
   this.container = require('./DIContainer').registerServices(this.params)
 }
 
 /**
-* Initialize the registry onto the Panacea.container.
-*
-* Adds the application level hooks.
-*/
+ * Initialize the registry onto the Panacea.container.
+ *
+ * Adds the application level hooks.
+ */
 Bootstrap.prototype.stage2 = function () {
   Panacea.value('registry', {})
 }
@@ -138,8 +138,8 @@ interface Plugin {
 }
 
 /**
-* Add plugins to the registry.
-*/
+ * Add plugins to the registry.
+ */
 Bootstrap.prototype.stage3 = function () {
   const { registry, log } = Panacea.container
 
@@ -152,7 +152,7 @@ Bootstrap.prototype.stage3 = function () {
 
   registry.plugins = {}
 
-  this.params.plugins.map((plugin : Plugin | string) => {
+  this.params.plugins.map((plugin: Plugin | string) => {
     // Allows plugins to be declared in panacea.js as single string without a priority.
     // Mutate plugin into plugin object structure.
     if (typeof plugin === 'string') {
@@ -167,45 +167,45 @@ Bootstrap.prototype.stage3 = function () {
     // Only add plugin to the registry if its path can be resolved.
     if (!resolvePluginPath(plugin.path)) {
       const error = [chalk.bgRed(' 😕  ')]
-      error.push(i18n.t('core.bootstrap.pluginPathNotFound.line1', {pluginPath: chalk.underline(plugin.path)})) // Plugin {pluginPath} was not found as defined in panacea.js.
-      error.push(i18n.t('core.bootstrap.pluginPathNotFound.line2', {pluginPath: plugin.path})) // If this is a external (contributed) plugin: Check that you have run `npm install {pluginPath}`
+      error.push(i18n.t('core.bootstrap.pluginPathNotFound.line1', { pluginPath: chalk.underline(plugin.path) })) // Plugin {pluginPath} was not found as defined in panacea.js.
+      error.push(i18n.t('core.bootstrap.pluginPathNotFound.line2', { pluginPath: plugin.path })) // If this is a external (contributed) plugin: Check that you have run `npm install {pluginPath}`
       error.push(i18n.t('core.bootstrap.pluginPathNotFound.line3')) // If this plugin is part of your application: Check that it can be resolved in the <app_root>/plugins/ directory
       log.error(error.join('\n'))
       return
     }
 
-    log.info(chalk.green('✔ ' + i18n.t('core.bootstrap.pluginLoaded', {pluginPath: plugin.path}))) // {pluginPath} plugin loaded
+    log.info(chalk.green('✔ ' + i18n.t('core.bootstrap.pluginLoaded', { pluginPath: plugin.path }))) // {pluginPath} plugin loaded
 
     registry.plugins[plugin.path] = plugin
   })
 }
 
 /**
-* Load application and plugins hooks.
-*/
+ * Load application and plugins hooks.
+ */
 Bootstrap.prototype.stage4 = function () {
   const { hooks } = Panacea.container
-  const directories : Array<Registrant> = this.registryPathDiscoveryProcessor('hooks', 'hooks')
+  const directories: Array<Registrant> = this.registryPathDiscoveryProcessor('hooks', 'hooks')
   hooks.loadFromDirectories(directories.map(x => x.path))
 }
 
 /**
-* Discover and register application and plugins entity types.
-*/
+ * Discover and register application and plugins entity types.
+ */
 Bootstrap.prototype.stage5 = function () {
   this.registryPathDiscoveryProcessor('entityTypes', 'config/entityTypes/schemas')
 }
 
 /**
-* Discover and register application and plugins settings.
-*/
+ * Discover and register application and plugins settings.
+ */
 Bootstrap.prototype.stage6 = function () {
   this.registryPathDiscoveryProcessor('settings', 'config/settings/schemas')
 }
 
 /**
-* Prepares GraphQL schema and prepares express app ready to be served.
-*/
+ * Prepares GraphQL schema and prepares express app ready to be served.
+ */
 Bootstrap.prototype.stage7 = function () {
   const {
     makeExecutableSchema,
@@ -226,7 +226,7 @@ Bootstrap.prototype.stage7 = function () {
   } = Panacea.container
 
   graphQLTypeDefinitions()
-    .then((typeDefs : string) => {
+    .then((typeDefs: string) => {
       const resolvers = graphQLResolvers()
 
       const schema = makeExecutableSchema({
@@ -237,7 +237,7 @@ Bootstrap.prototype.stage7 = function () {
       const app = express()
 
       const graphqlExpressDynamicMiddleware = dynamicMiddleware.create(
-        graphqlExpress((req : Express.Request) => {
+        graphqlExpress((req: Express.Request) => {
           return {
             schema,
             context: {
@@ -248,10 +248,10 @@ Bootstrap.prototype.stage7 = function () {
         })
       )
 
-      let whitelist : Array<string> = []
+      let whitelist: Array<string> = []
       hooks.invoke('core.cors.whitelist', { whitelist, options })
 
-      var corsOptions: CorsOptions = {
+      let corsOptions: CorsOptions = {
         origin: function (origin, callback) {
           if (options.main.disableCors || whitelist[0] === '*' || whitelist.indexOf(origin) !== -1) {
             callback(null, true)
@@ -272,13 +272,13 @@ Bootstrap.prototype.stage7 = function () {
       )
 
       // Allow middleware to be dynamically replaced via core.reload hook without needing to restart the server.
-      hooks.on('core.reload', ({ reason } : { reason : string }) => {
+      hooks.on('core.reload', ({ reason }: { reason: string }) => {
         const startTime = Date.now()
 
         const { entityTypes } = Panacea.container
         entityTypes.clearCache()
 
-        graphQLTypeDefinitions().then((typeDefs : string) => {
+        graphQLTypeDefinitions().then((typeDefs: string) => {
           const resolvers = graphQLResolvers()
 
           const schema = makeExecutableSchema({
@@ -287,7 +287,7 @@ Bootstrap.prototype.stage7 = function () {
           })
 
           graphqlExpressDynamicMiddleware.replace(
-            graphqlExpress((req : Express.Request) => {
+            graphqlExpress((req: Express.Request) => {
               return {
                 schema,
                 context: {
@@ -301,7 +301,7 @@ Bootstrap.prototype.stage7 = function () {
 
         const timeToReplace = Date.now() - startTime
 
-        log.info(i18n.t('core.bootstrap.reloadGraphql', {timeToReplace, reason})) // Reloaded graphql middleware (in {timeToReplace}ms) because {reason}
+        log.info(i18n.t('core.bootstrap.reloadGraphql', { timeToReplace, reason })) // Reloaded graphql middleware (in {timeToReplace}ms) because {reason}
       })
 
       // GraphiQL endpoint.
@@ -328,7 +328,7 @@ Bootstrap.prototype.stage7 = function () {
       Panacea.value('app', app)
     })
     .catch((error: Error) => {
-      log.error(i18n.t('core.bootstrap.typeDefsError', {error: error.message})) // Server not started. Type definitions error: {error}
+      log.error(i18n.t('core.bootstrap.typeDefsError', { error: error.message })) // Server not started. Type definitions error: {error}
     })
 }
 

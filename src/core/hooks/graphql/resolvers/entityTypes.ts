@@ -1,7 +1,7 @@
 
-import { IHooks } from '../../../../utils/hooks';
+import { IHooks } from '../../../../utils/hooks'
 import * as express from 'express'
-import { IResolvers } from 'graphql-tools';
+import { IResolvers } from 'graphql-tools'
 
 const { _, entityTypes, i18n, getClientLanguage } = Panacea.container
 
@@ -12,12 +12,12 @@ const { _, entityTypes, i18n, getClientLanguage } = Panacea.container
  * @param {*} resolvers The mutable object of resolver definitions.
  */
 const entityTypeResolvers = function (resolvers: any) {
-  const definitions : EntityTypeDefinitions = entityTypes.getData()
+  const definitions: EntityTypeDefinitions = entityTypes.getData()
 
   resolvers.Query['_entityType'] = async (
     parent: {},
-    { name } : { name : string },
-    { dbModels } : { dbModels: {} }
+    { name }: { name: string },
+    { dbModels }: { dbModels: {} }
   ) => {
 
     // It's possible that a user creates an entity type called 'Revision'.
@@ -59,7 +59,7 @@ const entityTypeResolvers = function (resolvers: any) {
     return allEntities
   }
 
-  resolvers.Query['_fieldTypes'] = (parent: {}, args: {}, { req } : { req: express.Request }) => {
+  resolvers.Query['_fieldTypes'] = (parent: {}, args: {}, { req }: { req: express.Request }) => {
     const language = getClientLanguage(req)
 
     type fieldResults = Array<{ type: string, label: string, description: string }>
@@ -74,7 +74,7 @@ const entityTypeResolvers = function (resolvers: any) {
     }, [])
   }
 
-  resolvers.Mutation['_createEntityType'] = async (parent: any, { name, data, locationKey } : { name: string, data: string, locationKey: string}) => {
+  resolvers.Mutation['_createEntityType'] = async (parent: any, { name, data, locationKey }: { name: string, data: string, locationKey: string}) => {
     const saveResult = entityTypes.save(name, JSON.parse(data), locationKey)
 
     if (!saveResult.success) {
@@ -90,7 +90,7 @@ const entityTypeResolvers = function (resolvers: any) {
 
 export default {
   register (hooks: IHooks) {
-    hooks.on('core.graphql.resolvers', ({ resolvers } : { resolvers: IResolvers }) => {
+    hooks.on('core.graphql.resolvers', ({ resolvers }: { resolvers: IResolvers }) => {
       entityTypeResolvers(resolvers)
     })
   }

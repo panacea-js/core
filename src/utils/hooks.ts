@@ -92,29 +92,29 @@ Hooks.prototype.loadFromDirectories = function (paths) {
     const resolvedPath = path.resolve(hooksDirectory)
 
     if (!fs.pathExistsSync(resolvedPath)) {
-      result = i18n.t('core.hooks.cannotLoadFromPath', {resolvedPath}) // Could not load hooks from {resolvedPath}
+      result = i18n.t('core.hooks.cannotLoadFromPath', { resolvedPath }) // Could not load hooks from {resolvedPath}
       log.warn(result)
       return
     }
 
-    const hookFiles = glob.sync(path.resolve(hooksDirectory) + '/**/*.js', {ignore: '**/*test.js'})
+    const hookFiles = glob.sync(path.resolve(hooksDirectory) + '/**/*.js', { ignore: '**/*test.js' })
 
     hookFiles.forEach(filePath => {
       const file = require(filePath)
       if (!file.hasOwnProperty('default')) {
-        result = i18n.t('core.hooks.shouldExportObject', {filePath}) // Hook file {filePath} should export an object. See the Panacea hooks documentation.
+        result = i18n.t('core.hooks.shouldExportObject', { filePath }) // Hook file {filePath} should export an object. See the Panacea hooks documentation.
         log.warn(result)
         return
       }
       if (!file.default.hasOwnProperty('register')) {
-        result = i18n.t('core.hooks.couldNotRegister', {filePath}) // Could not execute register() in hook file: {filePath}.
+        result = i18n.t('core.hooks.couldNotRegister', { filePath }) // Could not execute register() in hook file: {filePath}.
         log.warn(result)
         return
       }
 
       file.default.register(hooks)
 
-      log.info(chalk.green(i18n.t('core.hooks.registeredPath', {filePath}))) // Registered hooks in {filePath}
+      log.info(chalk.green(i18n.t('core.hooks.registeredPath', { filePath }))) // Registered hooks in {filePath}
     })
   })
 
@@ -122,4 +122,4 @@ Hooks.prototype.loadFromDirectories = function (paths) {
 }
 
 // The instance gets passed around between modules from the service container.
-export const hooks = <IHooks> new (Hooks as any)()
+export const hooks = new (Hooks as any)() as IHooks

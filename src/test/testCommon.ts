@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra'
 import Bootstrap from '../utils/bootstrap'
 import fetch from 'node-fetch'
-import { RegisterContextual } from 'ava';
+import { RegisterContextual } from 'ava'
 
 const getTestingKey = function () {
   return `ava-test-${process.pid}`
@@ -18,6 +18,7 @@ const initTasks = function (test: RegisterContextual<any>) {
 
   // Set up.
   test.before(t => {
+    // @ts-ignore
   })
 
   // Tear down.

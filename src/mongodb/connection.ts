@@ -1,4 +1,4 @@
-import { IPanaceaOptionsComplete } from "../../types/globals";
+import { IPanaceaOptionsComplete } from '../../types/globals'
 
 /**
  * Creates a MongoDB connection object.

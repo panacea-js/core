@@ -1,8 +1,8 @@
-import { IHooks } from '../../../utils/hooks';
+import { IHooks } from '../../../utils/hooks'
 
 export default {
   register (hooks: IHooks) {
-    hooks.on('core.entityTypes.fields.definitions', ({ fieldTypes } : { fieldTypes: FieldTypes }) => {
+    hooks.on('core.entityTypes.fields.definitions', ({ fieldTypes }: { fieldTypes: FieldTypes }) => {
       fieldTypes.id = {
         label: 'core.entityTypes.fields.id.label',
         description: 'core.entityTypes.fields.id.description'
@@ -41,7 +41,7 @@ export default {
       }
     })
 
-    hooks.on('core.entityTypes.fields.mapMongo', ({ fieldsMapMongo } : { fieldsMapMongo: FieldMap }) => {
+    hooks.on('core.entityTypes.fields.mapMongo', ({ fieldsMapMongo }: { fieldsMapMongo: FieldMap }) => {
       fieldsMapMongo.set('string', 'String')
       fieldsMapMongo.set('password', 'String')
       fieldsMapMongo.set('text', 'String')
@@ -53,7 +53,7 @@ export default {
       fieldsMapMongo.set('object', 'Object')
     })
 
-    hooks.on('core.entityTypes.fields.mapGraphQL', ({ fieldsMapGraphQL } : { fieldsMapGraphQL: FieldMap }) => {
+    hooks.on('core.entityTypes.fields.mapGraphQL', ({ fieldsMapGraphQL }: { fieldsMapGraphQL: FieldMap }) => {
       fieldsMapGraphQL.set('id', 'String')
       fieldsMapGraphQL.set('string', 'String')
       fieldsMapGraphQL.set('password', 'String')

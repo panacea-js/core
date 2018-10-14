@@ -16,6 +16,7 @@ const initTasks = function (test) {
     const sandboxDir = getSandboxDir();
     // Set up.
     test.before(t => {
+        // @ts-ignore
     });
     // Tear down.
     test.after.always(t => {

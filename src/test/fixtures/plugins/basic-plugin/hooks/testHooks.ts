@@ -1,4 +1,4 @@
-import { IHooks } from "../../../../../utils/hooks";
+import { IHooks } from '../../../../../utils/hooks'
 
 export default {
   register (hooks: IHooks) {

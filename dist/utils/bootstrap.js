@@ -83,22 +83,22 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, sub
     return directories;
 };
 /**
-* Register services.
-*/
+ * Register services.
+ */
 Bootstrap.prototype.stage1 = function () {
     this.container = require('./DIContainer').registerServices(this.params);
 };
 /**
-* Initialize the registry onto the Panacea.container.
-*
-* Adds the application level hooks.
-*/
+ * Initialize the registry onto the Panacea.container.
+ *
+ * Adds the application level hooks.
+ */
 Bootstrap.prototype.stage2 = function () {
     Panacea.value('registry', {});
 };
 /**
-* Add plugins to the registry.
-*/
+ * Add plugins to the registry.
+ */
 Bootstrap.prototype.stage3 = function () {
     const { registry, log } = Panacea.container;
     if (!this.params.hasOwnProperty('plugins')) {
@@ -131,28 +131,28 @@ Bootstrap.prototype.stage3 = function () {
     });
 };
 /**
-* Load application and plugins hooks.
-*/
+ * Load application and plugins hooks.
+ */
 Bootstrap.prototype.stage4 = function () {
     const { hooks } = Panacea.container;
     const directories = this.registryPathDiscoveryProcessor('hooks', 'hooks');
     hooks.loadFromDirectories(directories.map(x => x.path));
 };
 /**
-* Discover and register application and plugins entity types.
-*/
+ * Discover and register application and plugins entity types.
+ */
 Bootstrap.prototype.stage5 = function () {
     this.registryPathDiscoveryProcessor('entityTypes', 'config/entityTypes/schemas');
 };
 /**
-* Discover and register application and plugins settings.
-*/
+ * Discover and register application and plugins settings.
+ */
 Bootstrap.prototype.stage6 = function () {
     this.registryPathDiscoveryProcessor('settings', 'config/settings/schemas');
 };
 /**
-* Prepares GraphQL schema and prepares express app ready to be served.
-*/
+ * Prepares GraphQL schema and prepares express app ready to be served.
+ */
 Bootstrap.prototype.stage7 = function () {
     const { makeExecutableSchema, dbModels, graphiqlExpress, graphqlExpress, bodyParser, express, cors, voyagerMiddleware, graphQLTypeDefinitions, graphQLResolvers, dynamicMiddleware, hooks, log, options, i18n } = Panacea.container;
     graphQLTypeDefinitions()
@@ -174,7 +174,7 @@ Bootstrap.prototype.stage7 = function () {
         }));
         let whitelist = [];
         hooks.invoke('core.cors.whitelist', { whitelist, options });
-        var corsOptions = {
+        let corsOptions = {
             origin: function (origin, callback) {
                 if (options.main.disableCors || whitelist[0] === '*' || whitelist.indexOf(origin) !== -1) {
                     callback(null, true);

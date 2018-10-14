@@ -103,10 +103,10 @@ test.serial('_createEntityType creates a yml file given the provided entityData 
         data
       }
     }`, {
-    name: 'Bear',
-    data: JSON.stringify(bearData),
-    locationKey: 'test'
-  })
+      name: 'Bear',
+      data: JSON.stringify(bearData),
+      locationKey: 'test'
+    })
     .then(json => {
       const entityFixtures = loadYmlFiles(path.resolve(__dirname, '../fixtures/entityTypes/schemas'))
       t.is(bearData.plural, entityFixtures.Bear.plural) // 'Bears'
