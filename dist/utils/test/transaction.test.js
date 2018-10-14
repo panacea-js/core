@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const ava_1 = require("ava");
 const _ = require("lodash");
-const transaction_js_1 = require("../transaction.js");
-ava_1.test('A transaction executes in the expected order', async (t) => {
+const transaction_1 = require("../transaction");
+ava_1.default('A transaction executes in the expected order', async (t) => {
     t.plan(1);
     const context = {
         // Stack stores the order in which handlers are executed.
@@ -61,7 +61,7 @@ ava_1.test('A transaction executes in the expected order', async (t) => {
             }
         }
     ];
-    await new transaction_js_1.Transaction(handlers, context).execute().then(txn => {
+    await new transaction_1.Transaction(handlers, context).execute().then(txn => {
         const expectedStack = [
             'First prepare handler called',
             'Second prepare handler called',
@@ -72,7 +72,7 @@ ava_1.test('A transaction executes in the expected order', async (t) => {
         t.true(_.isEqual(expectedStack, txn.context.stack));
     });
 });
-ava_1.test('A transaction can fail and rollbacks are called', async (t) => {
+ava_1.default('A transaction can fail and rollbacks are called', async (t) => {
     t.plan(3);
     const context = {
         // Stack stores the order in which handlers are executed.
@@ -108,7 +108,7 @@ ava_1.test('A transaction can fail and rollbacks are called', async (t) => {
             }
         }
     ];
-    await new transaction_js_1.Transaction(handlers, context).execute().then(txn => {
+    await new transaction_1.Transaction(handlers, context).execute().then(txn => {
         if (txn.error) {
             t.is(txn.error.message, 'Test failure');
         }
@@ -124,7 +124,7 @@ ava_1.test('A transaction can fail and rollbacks are called', async (t) => {
         t.true(_.isEqual(expectedStack, txn.context.stack));
     });
 });
-ava_1.test('A transaction can catch unexpected errors when thrown and run fail function to capture it.', async (t) => {
+ava_1.default('A transaction can catch unexpected errors when thrown and run fail function to capture it.', async (t) => {
     t.plan(3);
     const context = {
         // Stack stores the order in which handlers are executed.
@@ -160,7 +160,7 @@ ava_1.test('A transaction can catch unexpected errors when thrown and run fail f
             }
         }
     ];
-    await new transaction_js_1.Transaction(handlers, context).execute().then(txn => {
+    await new transaction_1.Transaction(handlers, context).execute().then(txn => {
         if (txn.error) {
             t.is(txn.error.message, 'Error was thrown');
         }
@@ -176,7 +176,7 @@ ava_1.test('A transaction can catch unexpected errors when thrown and run fail f
         t.true(_.isEqual(expectedStack, txn.context.stack));
     });
 });
-ava_1.test('A transaction does not execute the operation if a prepare handler issues a fail().', async (t) => {
+ava_1.default('A transaction does not execute the operation if a prepare handler issues a fail().', async (t) => {
     t.plan(3);
     const context = {
         // Stack stores the order in which handlers are executed.
@@ -201,7 +201,7 @@ ava_1.test('A transaction does not execute the operation if a prepare handler is
             }
         }
     ];
-    await new transaction_js_1.Transaction(handlers, context).execute().then(txn => {
+    await new transaction_1.Transaction(handlers, context).execute().then(txn => {
         if (txn.error) {
             t.is(txn.error.message, 'Prepare handler failed for some reason');
         }

@@ -7,7 +7,7 @@ initTasks(test)
 bootstrap()
 
 const testDir = path.resolve(__dirname, '../../test')
-const panaceaConfig = require(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.js'))
+const panaceaConfig = require(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.ts'))
 
 test('Panacea.container registers correctly to global Panacea object with no params passed in', t => {
   registerServices(panaceaConfig)

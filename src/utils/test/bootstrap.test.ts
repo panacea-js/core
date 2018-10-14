@@ -10,7 +10,7 @@ initTasks(test)
 const testDir = path.resolve(__dirname, '../../test')
 
 test.serial('Fully loaded and bootstrapped panacea core works without errors', async t => {
-  panacea(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.js')).then((message: string) => {
+  panacea(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default')).then((message: string) => {
     t.true(message.indexOf('Completed full bootstrap') !== -1)
   }).catch((err: Error) => console.error(err))
 })
@@ -20,7 +20,7 @@ test.serial('core.reload hook reloads the graphql middleware with a CopyCat enti
 
   const { _, hooks, log, fs, entityTypes, graphQLTypeDefinitions } = Panacea.container
 
-  await panacea(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.js')).then((message: string) => {
+  await panacea(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default')).then((message: string) => {
     t.true(message.indexOf('Completed full bootstrap') !== -1)
 
     log.on('data', (data: LogEntry) => {
@@ -51,7 +51,7 @@ test.serial('Attempting to load panacea core, searches for panacea.js in cwd() w
 
 test.serial('Can bootstrap individual stages', async t => {
   t.plan(2)
-  const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.js'))
+  const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default'))
   t.true(typeof bootstrap.container === 'undefined')
   bootstrap.runStages([1, 2, 3])
   t.true(typeof bootstrap.container === 'object')
@@ -59,7 +59,7 @@ test.serial('Can bootstrap individual stages', async t => {
 
 test.serial('Throws error when bootstrapping with invalid parameter', async t => {
   t.plan(3)
-  const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.js'))
+  const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default'))
   t.true(typeof bootstrap.container === 'undefined')
   const error = t.throws(() => bootstrap.runStages('1'))
   t.is(error.message, 'Stages parameter is invalid - should be an array of integers')
@@ -67,7 +67,7 @@ test.serial('Throws error when bootstrapping with invalid parameter', async t =>
 
 test.serial('Throws error when bootstrapping with no parameter', async t => {
   t.plan(3)
-  const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.js'))
+  const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default'))
   t.true(typeof bootstrap.container === 'undefined')
   const error = t.throws(() => bootstrap.runStages())
   t.is(error.message, 'Stages parameter is invalid - should be an array of integers')
@@ -75,7 +75,7 @@ test.serial('Throws error when bootstrapping with no parameter', async t => {
 
 test.serial('Throws error when bootstrapping with invalid stage (not a function)', async t => {
   t.plan(3)
-  const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.js'))
+  const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default'))
   t.true(typeof bootstrap.container === 'undefined')
   const error = t.throws(() => bootstrap.runStages([1000]))
   t.is(error.message, 'Stage 1000 specified is invalid')
@@ -83,7 +83,7 @@ test.serial('Throws error when bootstrapping with invalid stage (not a function)
 
 test.serial('Throws error when bootstrapping with invalid stage (not a number)', async t => {
   t.plan(3)
-  const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.js'))
+  const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default'))
   t.true(typeof bootstrap.container === 'undefined')
   const error = t.throws(() => bootstrap.runStages(['one']))
   t.is(error.message, 'Stage one specified is invalid')

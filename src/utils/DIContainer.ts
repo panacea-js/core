@@ -91,7 +91,7 @@ export const registerServices = function (params: typeof Panacea.options) {
 
   const services = new (ServicesBuilder as any)()
 
-  const coreServices = path.resolve(__dirname, '../default.services.js')
+  const coreServices = path.resolve(__dirname, '../default.services')
   const defaultOptions = require(coreServices).servicesConfig()
 
   // Prioritize passed in params then default.services.js.

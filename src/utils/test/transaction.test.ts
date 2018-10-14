@@ -1,6 +1,6 @@
-import { test } from 'ava'
+import test from 'ava'
 import * as _ from 'lodash'
-import { Transaction } from '../transaction.js'
+import { Transaction } from '../transaction'
 
 test('A transaction executes in the expected order', async t => {
   t.plan(1)

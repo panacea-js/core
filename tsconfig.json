@@ -11,14 +11,14 @@
             "es2018",
             "dom",
             "esnext.asynciterable"
+        ],
+        "typeRoots": [
+            "./node_modules/@types"
         ]
     },
     "compileOnSave": true,
     "include": [
         "./src/**/*.ts",
         "./types/**/*.d.ts"
-    ],
-    "typeRoots": [
-        "./node_modules/@types"
     ]
 }

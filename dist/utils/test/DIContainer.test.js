@@ -8,7 +8,7 @@ const DIContainer_1 = require("../DIContainer");
 testCommon_1.initTasks(ava_1.default);
 testCommon_1.bootstrap();
 const testDir = path.resolve(__dirname, '../../test');
-const panaceaConfig = require(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.js'));
+const panaceaConfig = require(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default.ts'));
 ava_1.default('Panacea.container registers correctly to global Panacea object with no params passed in', t => {
     DIContainer_1.registerServices(panaceaConfig);
     t.true(Panacea.container.hasOwnProperty('options'));

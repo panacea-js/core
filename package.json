@@ -9,7 +9,8 @@
   "scripts": {
     "start:test-db": "mongod --directoryperdb --dbpath=src/test/data/db --port=27018 --logappend --logRotate=rename --logpath=src/test/data/db_log/mongod.log &",
     "stop:test-db": "mongod --directoryperdb --dbpath=src/test/data/db --shutdown && rm -Rf src/test/data/db/*",
-    "test": "npm run start:test-db && snyk test && ava && npm run stop:test-db",
+    "build": "tsc",
+    "test": "npm run start:test-db && snyk test && npm run build && ava && npm run stop:test-db",
     "test:no-snyk": "npm run start:test-db && ava && npm run stop:test-db",
     "watch:test": "npm run start:test-db && ava -w",
     "cover": "nyc npm run test",
@@ -23,28 +24,45 @@
     "prepare": "npm run snyk-protect"
   },
   "nyc": {
-    "sourceMap": false,
-    "instrument": false,
+    "sourceMap": true,
+    "instrument": true,
     "reporter": [
       "lcov",
       "text",
       "html"
     ],
-    "exclude": [
-      "**/*.test.js"
+    "include": [
+      "src/*.ts",
+      "src/**/*.ts"
     ],
+    "exclude": [
+      "src/test",
+      "**/*.test.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "all": true,
     "lines": 10,
     "statements": 10,
     "functions": 10,
     "branches": 10
   },
   "ava": {
-    "files": [
-      "dist/**/*.test.js"
+    "extensions": [
+      "ts"
     ],
     "require": [
-      "./dist/test/setupTestEnv.js"
+      "ts-node/register/transpile-only",
+      "./dist/test/setupTestEnv"
     ],
+    "sources": [
+      "src/**/*.ts"
+    ],
+    "files": [
+      "src/**/*.test.ts"
+    ],
+    "compileEnhancements": false,
     "failWithoutAssertions": false
   },
   "devDependencies": {
@@ -58,14 +76,15 @@
     "@types/lodash": "^4.14.117",
     "@types/mongoose": "^5.2.19",
     "@types/node-fetch": "^2.1.2",
-    "ava": "^0.25.0",
+    "ava": "1.0.0-rc.1",
     "codecov": "^3.0.4",
     "cross-env": "^5.1.1",
     "escope": "^3.6.0",
     "node-fetch": "^2.1.2",
     "nodemon": "^1.18.3",
-    "nyc": "^13.0.0",
+    "nyc": "^13.1.0",
     "portfinder": "^1.0.15",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-config-standard": "^8.0.1",
     "typescript": "^3.1.3"

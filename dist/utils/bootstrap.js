@@ -7,6 +7,11 @@ const Bootstrap = function (panaceaConfigFile = '') {
         panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js');
     }
     panaceaConfigFile = path.resolve(panaceaConfigFile);
+    // Help path.resolve load typescript files. path.resolve won't get ts
+    // extensions so check if by adding the ts extension whether the file exists.
+    if (fs.existsSync(`${panaceaConfigFile}.ts`)) {
+        panaceaConfigFile = `${panaceaConfigFile}.ts`;
+    }
     if (!fs.existsSync(panaceaConfigFile)) {
         throw Error(`Could not load panacea.js config file at ${panaceaConfigFile}`); // Cannot translate as Panacea container isn't available for i18n.
     }
@@ -47,7 +52,7 @@ Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, sub
     // implementations when bootstrapping externally - i.e. as a dependency of
     // another project. If core is bootstrapping itself (e.g. when running tests)
     // core effectively works in place of the application registrant below.
-    const corePath = resolvePluginPath('@panaceajs/core') || './dist/core/';
+    const corePath = resolvePluginPath('@panaceajs/core/dist/core/') || './dist/core/';
     // Core Registrants.
     unprioritizedRegistrants.push({
         locationKey: 'core',
@@ -228,6 +233,7 @@ Bootstrap.prototype.stage7 = function () {
         Panacea.value('app', app);
     })
         .catch((error) => {
+        console.error(error);
         log.error(i18n.t('core.bootstrap.typeDefsError', { error: error.message })); // Server not started. Type definitions error: {error}
     });
 };

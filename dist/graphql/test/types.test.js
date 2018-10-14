@@ -26,7 +26,7 @@ ava_1.default.serial('When an entity field defines an invalid type an error is t
             label: 'A valid label'
         };
     });
-    const error = await t.throws(graphQLTypeDefinitions(), TypeError);
+    const error = await t.throwsAsync(graphQLTypeDefinitions(), TypeError);
     t.is(error.message, `FakeTypeNoExist not found in GraphQL type conversion mapping`);
 });
 ava_1.default.serial('When an convertSystemFieldToGraphQL() does not have a field mapping related to an entity field type an error is thrown from entityTypes.js', async (t) => {
@@ -36,7 +36,7 @@ ava_1.default.serial('When an convertSystemFieldToGraphQL() does not have a fiel
         label: 'Broken field',
         description: 'Setting an known invalid type to test whether convertSystemFieldToGraphQL() throws an error'
     };
-    const error = await t.throws(graphQLTypeDefinitions(), TypeError);
+    const error = await t.throwsAsync(graphQLTypeDefinitions(), TypeError);
     t.is(error.message, `notValid not found in GraphQL type conversion mapping`);
 });
 ava_1.default.beforeEach(t => entityTypes.clearCache());

@@ -32,7 +32,7 @@ const entityHasErrorMessage = function (entity, message) {
 };
 exports.entityHasErrorMessage = entityHasErrorMessage;
 const bootstrap = function (panaceaFile = 'default', runStages = []) {
-    const panaceaConfigFile = `${__dirname}/fixtures/panaceaConfigFiles/${panaceaFile}.js`;
+    const panaceaConfigFile = `${__dirname}/fixtures/panaceaConfigFiles/${panaceaFile}`;
     if (runStages.length > 0) {
         return new bootstrap_1.default(panaceaConfigFile).runStages(runStages);
     }
@@ -55,8 +55,14 @@ const graphqlQuery = function (query, variables, panaceaFile = 'default', fetchO
                 });
                 return node_fetch_1.default(url, fetchOptions)
                     .then(response => resolve(response.json()))
-                    .catch(error => console.error(error) && reject(error));
-            }).catch(error => console.error(error) && reject(error));
+                    .catch(error => {
+                    console.error(error);
+                    reject(error);
+                });
+            }).catch(error => {
+                console.error(error);
+                reject(error);
+            });
         };
         if (typeof Panacea === 'undefined') {
             bootstrap(panaceaFile).then(() => {
@@ -66,7 +72,10 @@ const graphqlQuery = function (query, variables, panaceaFile = 'default', fetchO
                 Promise.resolve(options.main.port).then(port => {
                     app.listen(port, graphqlQueryRequest(query, variables));
                 });
-            }).catch((error) => console.error(error) && reject(error));
+            }).catch((error) => {
+                console.error(error);
+                reject(error);
+            });
         }
         else {
             graphqlQueryRequest(query, variables);

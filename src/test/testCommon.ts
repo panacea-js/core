@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra'
 import Bootstrap from '../utils/bootstrap'
 import fetch from 'node-fetch'
-import { RegisterContextual } from 'ava'
+import { TestInterface } from 'ava'
 
 const getTestingKey = function () {
   return `ava-test-${process.pid}`
@@ -13,7 +13,7 @@ const getSandboxDir = function () {
   return `/tmp/${testingKey}`
 }
 
-const initTasks = function (test: RegisterContextual<any>) {
+const initTasks = function (test: TestInterface) {
   const sandboxDir = getSandboxDir()
 
   // Set up.
@@ -35,7 +35,7 @@ const entityHasErrorMessage = function (entity: EntityTypeDefinition, message: s
 }
 
 const bootstrap = function (panaceaFile = 'default', runStages: Array<number> = []) {
-  const panaceaConfigFile: string = `${__dirname}/fixtures/panaceaConfigFiles/${panaceaFile}.js`
+  const panaceaConfigFile: string = `${__dirname}/fixtures/panaceaConfigFiles/${panaceaFile}`
   if (runStages.length > 0) {
     return new (Bootstrap as any)(panaceaConfigFile).runStages(runStages)
   }
@@ -60,8 +60,14 @@ const graphqlQuery = function (query: string, variables?: object, panaceaFile = 
 
         return fetch(url, fetchOptions)
           .then(response => resolve(response.json()))
-          .catch(error => console.error(error) && reject(error))
-      }).catch(error => console.error(error) && reject(error))
+          .catch(error => {
+            console.error(error)
+            reject(error)
+          })
+      }).catch(error => {
+        console.error(error)
+        reject(error)
+      })
     }
 
     if (typeof Panacea === 'undefined') {
@@ -72,7 +78,10 @@ const graphqlQuery = function (query: string, variables?: object, panaceaFile = 
         Promise.resolve(options.main.port).then(port => {
           app.listen(port, graphqlQueryRequest(query, variables))
         })
-      }).catch((error: Error) => console.error(error) && reject(error))
+      }).catch((error: Error) => {
+        console.error(error)
+        reject(error)
+      })
     } else {
       graphqlQueryRequest(query, variables)
     }
