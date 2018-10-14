@@ -104,12 +104,8 @@ interface GraphQLEnumsDefinition {
 }
 
 /**
- * Aggregates.
+ * Query parameters.
  */
-//type GraphQLRootDefinitions = GraphQLSchemaDefinitions | GraphQLQueryDefinitions | GraphQLMutationDefinitions
-
-//type GraphQLAllDefinitionsTypes = GraphQLRootDefinitions | GraphQLTypeDefinitions | GraphQLInputDefinitions
-
 type SortOrder = 'ASC' | 'DESC';
 
 interface QueryParams {
