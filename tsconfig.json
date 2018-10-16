@@ -7,6 +7,7 @@
         "sourceMap": true,
         "outDir": "dist",
         "rootDir": "src",
+        "removeComments": true,
         "lib": [
             "es2018",
             "dom",

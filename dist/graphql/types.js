@@ -1,9 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const { _, hooks } = Panacea.container;
-/**
- * Transforms structured data for GraphQL root types to an output string.
- */
 const formatRootTypeToOutput = function (rootType, definitions) {
     let output = [];
     output.push(`type ${rootType} {\n`);
@@ -21,28 +18,16 @@ const formatRootTypeToOutput = function (rootType, definitions) {
     output.push('}\n');
     return output.join('');
 };
-/**
- * Transforms structured data for GraphQL types to an output string.
- */
 const formatTypesToOutput = function (type, definitions) {
     let output = [];
-    // Nested types (objects in fields) are deferred to be concatenated to the final output.
     let nestedTypes = [];
     _(definitions).forEach(function (data, schemaName) {
         output.push(`\n# ${data.comment || 'No description'}\n`);
         output.push(`${type} ${data.name} {\n`);
         _(data.fields).forEach((field, fieldName) => {
             if (field.hasOwnProperty('fields')) {
-                // This field has nested fields as an object, which needs to be execute recursively
-                // to allow for unlimited data nesting.
-                // The appropriate reference types should be:
-                // models if GraphQL types are being defined
-                // and strings for GraphQL inputs.
                 const refsType = (type === 'type') ? 'refsAsModels' : 'refsAsStrings';
-                // The nested field name is appended with an underscore to ALL parent fields and top level schemas.
-                // For example: 'User_subField_anotherSubField_yetAnotherSubField'
                 const nestedFieldName = `${schemaName}_${fieldName}`;
-                // Mock an object to pass back through this function.
                 const nestedDefinition = {};
                 nestedDefinition[nestedFieldName] = {
                     comment: `Nested object on ${schemaName}. ${field.comment}`,
@@ -50,10 +35,7 @@ const formatTypesToOutput = function (type, definitions) {
                     fields: field.fields[refsType]
                 };
                 const nestedType = formatTypesToOutput(type, nestedDefinition);
-                // Defer the nested field GraphQL type to be appending to the final output.
                 nestedTypes.push(nestedType);
-                // Replace placeholder with computed type name as this field still needs to be
-                // appended to this schema which references the nested field.
                 field.value = field.value.replace('__NestedObject', nestedFieldName);
             }
             output.push(`  # ${field.comment || 'No description'}\n`);
@@ -64,9 +46,6 @@ const formatTypesToOutput = function (type, definitions) {
     });
     return output.join('') + nestedTypes.join('');
 };
-/**
- * Transforms structured data for GraphQL enums to an output string.
- */
 const formatEnumsToOutput = function (enums) {
     const output = [];
     _(enums).forEach(function (definition) {
@@ -80,11 +59,6 @@ const formatEnumsToOutput = function (enums) {
     });
     return output.join('');
 };
-/**
- * Loads schema types from hook implementations to define GraphQL type definitions.
- *
- * Allows overrides via core.graphql.definitions.* hooks.
- */
 exports.graphQLTypeDefinitions = function () {
     return new Promise(function (resolve, reject) {
         try {
@@ -95,22 +69,16 @@ exports.graphQLTypeDefinitions = function () {
             const inputs = {};
             const enums = {};
             const scalars = [];
-            // Types.
             hooks.invoke('core.graphql.definitions.types', { types });
             output.push(formatTypesToOutput('type', types));
-            // Inputs.
             hooks.invoke('core.graphql.definitions.inputs', { inputs });
             output.push(formatTypesToOutput('input', inputs));
-            // Queries.
             hooks.invoke('core.graphql.definitions.queries', { queries });
             output.push(formatRootTypeToOutput('Query', queries));
-            // Mutations.
             hooks.invoke('core.graphql.definitions.mutations', { mutations });
             output.push(formatRootTypeToOutput('Mutation', mutations));
-            // Enums.
             hooks.invoke('core.graphql.definitions.enums', { enums });
             output.push(formatEnumsToOutput(enums));
-            // Scalars.
             hooks.invoke('core.graphql.definitions.scalars', { scalars });
             output.push('\n' + scalars.map(s => `scalar ${s}`).join('\n'));
             const tidyDefinitionEndings = function (input) {

@@ -1,17 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * Add services to the Panacea.container.
- *
- * @param s
- *   Services builder object from src/utils/DIContainer::servicesBuilder()
- *
- * @param options
- *   Options injected from bootstrapping file to configure dependencies
- */
 exports.registerServices = function (s, options) {
     const servicesOptions = options.services.options;
-    // Third-party.
     s.add('_', 'lodash');
     s.add('fs', 'fs-extra');
     s.add('path', 'path');
@@ -35,8 +25,6 @@ exports.registerServices = function (s, options) {
     s.add('moment', 'moment');
     s.add('vue', 'vue');
     s.add('vueI18n', 'vue-i18n');
-    // Panacea.
-    // Alias to panacea core module src directory.
     s.alias('%core', __dirname);
     s.add('bootstrap', '%core/utils/bootstrap');
     s.add('i18n', '%core/utils/i18n', 'i18n');
@@ -56,14 +44,6 @@ exports.registerServices = function (s, options) {
     s.add('dynamicMiddleware', '%core/utils/dynamic-middleware');
     s.add('getClientLanguage', '%core/utils/getClientLanguage', 'getClientLanguage');
 };
-/**
- * Defines the default options passed to register services.
- *
- * These can be overriden by the consumer via the params argument to the
- * initial panacea invocation.
- *
- * @returns Object
- */
 exports.servicesConfig = function () {
     require('dotenv-safe').load();
     const cwd = process.cwd();

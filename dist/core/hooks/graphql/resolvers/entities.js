@@ -1,20 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const { _, log, hooks, entityTypes, Transaction, modelQuery } = Panacea.container;
-/**
- * Resolves nested objects as separates types using an underscore to delineate
- * the nesting levels.
- *
- * These nested types are required as GraphQL does not natively allow types
- * beyond an array of scalars or defined types.
- *
- * @param {object} types A mutable object of the base types. This is appended to
- *   as this function recurses.
- * @param {string} currentType The current type being used at the current level
- *   of recursion.
- * @param {object} fields The list of fields defined at the current level of
- *   recursion.
- */
 const resolveNestedFields = function (types, currentType, fields) {
     _(fields).forEach((field, fieldName) => {
         if (field.type === 'object' && field.fields) {
@@ -38,51 +24,34 @@ const resolveNestedFields = function (types, currentType, fields) {
         }
     });
 };
-/**
- * Ensure that mongoose documents have expected values as per the GraphQL constraints.
- */
 const ensureDocumentHasDefaultValues = function (fields, documentPartial) {
     _(fields).forEach((field, fieldId) => {
         if (field.fields && documentPartial[fieldId]) {
             ensureDocumentHasDefaultValues(field.fields, documentPartial[fieldId]);
         }
-        // Required field must return a value:
         if (field.required && _.isEmpty(documentPartial[fieldId])) {
             if (field.default) {
-                // Use default value as set on the field definition.
                 documentPartial[fieldId] = field.default;
                 return;
             }
             if (['int', 'float', 'boolean'].includes(field.type)) {
-                // Implicit default value based on the field type.
                 documentPartial[fieldId] = 0;
                 return;
             }
-            // Fallback default value.
             documentPartial[fieldId] = '';
         }
     });
 };
-/**
- * Defines resolvers for single and multiple entities.
- *
- * @param {*} resolvers The mutable object of resolver definitions.
- */
 const entityResolvers = function (resolvers) {
     const types = {};
     const definitions = entityTypes.getData();
     _(definitions).forEach((entityData) => {
-        // If exclude flag is set on entity, don't set any direct query or mutation
-        // resolvers, but still resolve for any references made by other entity types.
         if (entityData._excludeGraphQL) {
-            // Resolve top-level and nested objects and references.
             resolveNestedFields(types, entityData._meta.pascal, entityData.fields);
             return;
         }
         types[entityData._meta.pascal] = {};
-        // Exclude the ID fields as user defined field, therefore > 1
         const hasFields = Object.keys(entityData.fields).length > 1;
-        // Get single entity.
         resolvers.Query[entityData._meta.camel] = async (parent, args, { dbModels }) => {
             let document = {};
             let error;
@@ -106,7 +75,6 @@ const entityResolvers = function (resolvers) {
             });
             return document;
         };
-        // Get many entities.
         resolvers.Query[entityData._meta.pluralCamel] = async (parent, args, { dbModels }) => {
             let documents = [];
             let error;
@@ -130,9 +98,7 @@ const entityResolvers = function (resolvers) {
             });
             return documents;
         };
-        // Only allow mutations of entities that have fields.
         if (hasFields) {
-            // Create entity.
             resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent, args, { dbModels }) => {
                 const transactionContext = {
                     parent,
@@ -154,7 +120,6 @@ const entityResolvers = function (resolvers) {
                 })
                     .catch(error => log.error(error));
             };
-            // Delete entity.
             resolvers.Mutation[`delete${entityData._meta.pascal}`] = (parent, args, { dbModels }) => {
                 return new Promise((resolve, reject) => {
                     dbModels[entityData._meta.pascal].findById(args.id).exec((err, entity) => {
@@ -174,12 +139,7 @@ const entityResolvers = function (resolvers) {
                     });
                 });
             };
-            // @todo
-            // Update entity
-            // @todo
-            // Replace entity
         }
-        // Resolve top-level and nested objects and references.
         resolveNestedFields(types, entityData._meta.pascal, entityData.fields);
     });
     for (const type in types) {

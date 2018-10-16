@@ -3,8 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const { vue, vueI18n: VueI18n, options, registry, glob, path, _, fs } = Panacea.container;
 vue.use(VueI18n);
 const messages = _([
-    // Locale source directories order: core, plugins, app.
-    // Note that Panacea CMS path is not included here as it's not a dependency of Panacea core.
     path.resolve(__dirname, '../../locales/*.json'),
     ...Object.keys(registry.plugins || {}).map(dir => `${dir}/locales/*.json`),
     path.resolve(process.cwd(), 'locales/*.json')

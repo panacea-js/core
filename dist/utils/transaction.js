@@ -20,7 +20,6 @@ class Transaction {
         await this._asyncForEach(this._handlers, async (handler) => {
             if ((!this.error || proceedOnFail) && typeof handler[stage] === 'function') {
                 try {
-                    // @ts-ignore
                     await handler[stage](this);
                 }
                 catch (error) {
@@ -41,17 +40,8 @@ class Transaction {
             await this._invokeHandlers('complete');
         }
         if (this.error) {
-            // Rollback handlers should not assume any existing state change has
-            // succeeded (such as the main operation) because it's possible that a
-            // fail() can be issued from any stage. Instead, rollback handlers should
-            // independently check the current state to determine what tasks the
-            // rollback needs to perform. It can help rollback handlers understand
-            // where something failed if the callback issuing the fail() adds useful
-            // information to the context.
             await this._invokeHandlers('rollback', true);
             this.status = 'failed';
-            // Complete callbacks are run even on failure, so can be considered always
-            // run at the end of a transaction execution.
             await this._invokeHandlers('complete', true);
         }
         this.completed = Date.now();

@@ -1,12 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const { _, entityTypes } = Panacea.container;
-/**
- * Get GraphQL schema for each field and provide two output types for the output object.
- *
- * One key is for where the references should be strings - in the case of Input Types and Mutations.
- * Another key is for where the references should to the models (GraphQL types)- used in types and Query definitions.
- */
 const translateEntityTypeFields = function (fields) {
     let output = {
         refsAsStrings: {},
@@ -15,7 +9,6 @@ const translateEntityTypeFields = function (fields) {
     _(fields).forEach((field, _fieldName) => {
         Object.keys(output).forEach((refType) => {
             if (!field._meta) {
-                // All field meta should exist on EntityTypeFields.
                 return;
             }
             let fieldType;
@@ -32,8 +25,6 @@ const translateEntityTypeFields = function (fields) {
                 value: `${field._meta.camel}: ${fieldType}`
             };
             if (field.type === 'object' && field.fields) {
-                // Recurse this function to append output to the fields key.
-                // This allows for unlimited nesting of defined fields.
                 output[refType][field._meta.camel].fields = translateEntityTypeFields(field.fields);
             }
         });
@@ -48,7 +39,6 @@ const getDefinitions = function () {
         queries: {},
         mutations: {}
     };
-    // Get entity types, inputs, queries and mutations.
     _(entityTypeDefinitions).forEach((entityTypeData) => {
         const definedFields = translateEntityTypeFields(entityTypeData.fields);
         const entityTypePascal = entityTypeData._meta.pascal;
@@ -59,8 +49,6 @@ const getDefinitions = function () {
             name: entityTypePascal,
             fields: definedFields.refsAsModels
         };
-        // If exclude flag is set on entity, still provide a type to allow
-        // references from other entity types.
         if (entityTypeData._excludeGraphQL) {
             return;
         }

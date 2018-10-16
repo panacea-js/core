@@ -14,13 +14,9 @@ class EntityTypes {
         this._errors = [];
     }
     addError(entityTypeData, error) {
-        // Ensure the _errors array exists.
         entityTypeData._errors = entityTypeData._errors || [];
         entityTypeData._errors.push(error);
     }
-    /**
-     * Converts system field definitions to MongoDB equivalents.
-     */
     convertFieldTypeToMongo(type) {
         if (typeof type !== 'string' || type === '') {
             throw TypeError('No type specified in mongo field types conversion mapping');
@@ -30,9 +26,6 @@ class EntityTypes {
         }
         return this.fieldsMapMongo.get(type) || '';
     }
-    /**
-     * Converts system field definitions to GraphQL equivalents.
-     */
     convertFieldTypeToGraphQL(type) {
         if (typeof type !== 'string' || type === '') {
             throw TypeError('No type specified in GraphQL field types conversion mapping');
@@ -43,13 +36,11 @@ class EntityTypes {
         return this.fieldsMapGraphQL.get(type) || '';
     }
     validate(entityTypeData, entityTypeName, action) {
-        // Entity type validators.
         const entityTypeValidators = [
             this.validateRequiredProperties
         ];
         hooks.invoke('core.entityTypes.validators', { entityTypeValidators });
         entityTypeValidators.map(validator => validator.call(this, entityTypeData, entityTypeName, action));
-        // Field validators.
         const entityTypeFieldValidators = [
             this.validateRequiredFields
         ];
@@ -72,13 +63,9 @@ class EntityTypes {
         _(fields).forEach((field, fieldName) => {
             field.description = field.description || '';
             field._meta = {
-                // Enforce field names as camel case so as not to interfere with the
-                // underscores used to identify the entity/field object nesting hierarchy.
-                // Any system fields (such as _revisions) should remain unaltered.
                 camel: _(fieldName.startsWith('_')) ? fieldName : _(fieldName).camelCase()
             };
             if (field.type === 'object' && field.fields) {
-                // Recurse this function to add nest fields meta.
                 this.addFieldsMeta(field.fields);
             }
         });
@@ -91,11 +78,9 @@ class EntityTypes {
         this.fieldsMapGraphQL = new Map();
     }
     getData() {
-        // Register fields types if not yet loaded.
         if (Object.keys(this.fieldTypes).length === 0) {
             this.registerFieldTypes.call(this);
         }
-        // Ensure that the filesystem is only hit once.
         if (_(this.definitions).isEmpty()) {
             _.forIn(registry.entityTypes, (registrantData) => {
                 this.locations[registrantData.locationKey] = registrantData.path;
@@ -121,7 +106,6 @@ class EntityTypes {
             success: false,
             errorMessage: ''
         };
-        // Clone the incoming data while removing any special object types such as observers.
         let entityTypeData = JSON.parse(JSON.stringify(data));
         hooks.invoke('core.entityTypes.preSave', { name, entityTypeData, locationKey });
         const validates = this.validate(entityTypeData, name, 'save');
@@ -140,7 +124,6 @@ class EntityTypes {
             result.errorMessage = errorMessage;
             return result;
         }
-        // Transform entity type name to pascal case.
         name = _.upperFirst(_.camelCase(name));
         const filePath = `${basePath}/${name}.yml`;
         try {
@@ -159,17 +142,12 @@ class EntityTypes {
         hooks.invoke('core.entityTypes.postSave', { name, entityTypeData, locationKey });
         return result;
     }
-    /**
-     * Strip metadata (properties starting with an underscore) from all entity
-     * type definitions or a single entity type definition recursively.
-     */
     stripMeta(data) {
         const clonedData = _.cloneDeep(data);
         _(clonedData).forEach((value, key) => {
             if (typeof clonedData === 'object') {
                 clonedData[key] = this.stripMeta(value);
             }
-            // Strip any keys with _.
             if (typeof key === 'string' && key.indexOf('_') === 0) {
                 delete clonedData[key];
             }
@@ -189,12 +167,6 @@ class EntityTypes {
         });
         return fields;
     }
-    /**
-     * Iterate entity type object fields to ensure they have subfields.
-     *
-     * Is is a soft validation. If an object doesn't have sub-fields then exclude it
-     * from the definition rather than raising a validator error.
-     */
     checkObjectsHaveFields(fields, entityTypeName) {
         _(fields).forEach((fieldData, fieldId) => {
             if (fieldData.type === 'object' && !fieldData.fields) {
@@ -206,9 +178,6 @@ class EntityTypes {
             }
         });
     }
-    /**
-     * Register Panacea field type definitions.
-     */
     registerFieldTypes() {
         const fieldTypes = {};
         const fieldsMapMongo = new Map();
@@ -220,9 +189,6 @@ class EntityTypes {
         this.fieldsMapMongo = fieldsMapMongo;
         this.fieldsMapGraphQL = fieldsMapGraphQL;
     }
-    /**
-     * Entity type validator for required base properties on the entity type.
-     */
     validateRequiredProperties(entityTypeData, entityTypeName, action) {
         if (_(entityTypeData.fields).isEmpty())
             this.addError(entityTypeData, TypeError(`Fields do not exist on entity type: ${entityTypeName}`));
@@ -231,12 +197,8 @@ class EntityTypes {
         if (_(entityTypeData.storage).isEmpty())
             this.addError(entityTypeData, TypeError(`A 'storage' key must be set on entity type: ${entityTypeName}`));
     }
-    /**
-     * Entity type field validator to ensure field can be parsed as expected by Panacea.
-     */
     validateRequiredFields(entityTypeData, entityTypeName, action, fields) {
         _(fields).forEach((field, fieldName) => {
-            // Validate field contains all the required attributes.
             if (_(field).isEmpty())
                 this.addError(entityTypeData, TypeError(`Field ${fieldName} configuration is empty`));
             if (_(field.type).isEmpty())
@@ -246,8 +208,6 @@ class EntityTypes {
             if (_(field.label).isEmpty())
                 this.addError(entityTypeData, TypeError(`Field label not defined for ${fieldName}`));
             if (field.type === 'object' && field.hasOwnProperty('fields')) {
-                // Recurse this function to append output to the fields key.
-                // This allows for unlimited nesting of defined fields.
                 this.validateRequiredFields.call(this, entityTypeData, entityTypeName, action, field.fields);
             }
         });

@@ -4,7 +4,7 @@ const { _, i18n } = Panacea.container;
 exports.default = {
     register(hooks) {
         hooks.once('core.entityTypes.definitions', ({ definitions }) => {
-            const revisionsText = i18n.t('core.entityTypes.revisions.label'); // Revisions
+            const revisionsText = i18n.t('core.entityTypes.revisions.label');
             for (const entityTypeName of Object.keys(definitions)) {
                 const entityType = definitions[entityTypeName];
                 if (!entityType.revisions) {
@@ -16,7 +16,6 @@ exports.default = {
                 clonedRevision.revisions = false;
                 clonedRevision._excludeGraphQL = true;
                 definitions[revisionEntityType] = clonedRevision;
-                // _revision field stores an array of references to the revision entity.
                 entityType.fields._revisions = {
                     type: 'reference',
                     references: revisionEntityType,

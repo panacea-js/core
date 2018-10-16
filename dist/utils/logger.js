@@ -26,7 +26,6 @@ const getFileTransports = function (options) {
     if (options.showLogsInConsole) {
         transports.push(new winston.transports.Console({
             format: winston.format.simple()
-            // colorize: true
         }));
     }
     return transports;

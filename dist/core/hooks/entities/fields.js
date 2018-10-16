@@ -48,7 +48,6 @@ exports.default = {
             fieldsMapMongo.set('int', 'Number');
             fieldsMapMongo.set('boolean', 'Number');
             fieldsMapMongo.set('reference', 'String');
-            // Objects are for nested data.
             fieldsMapMongo.set('object', 'Object');
         });
         hooks.on('core.entityTypes.fields.mapGraphQL', ({ fieldsMapGraphQL }) => {
@@ -60,7 +59,6 @@ exports.default = {
             fieldsMapGraphQL.set('int', 'Int');
             fieldsMapGraphQL.set('boolean', 'Boolean');
             fieldsMapGraphQL.set('reference', 'String');
-            // objects are for nested data.
             fieldsMapGraphQL.set('object', '__NestedObject');
         });
     }
