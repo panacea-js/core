@@ -39,7 +39,10 @@ const bootstrap = function (panaceaFile = 'default', runStages = []) {
     return new bootstrap_1.default(panaceaConfigFile).all();
 };
 exports.bootstrap = bootstrap;
-const graphqlQuery = function (query, variables, panaceaFile = 'default', fetchOptions = {}) {
+const graphqlQuery = function (query, variables, panaceaFile = 'default', fetchOptions = {}, bootstrapFactory) {
+    if (!bootstrapFactory) {
+        bootstrapFactory = bootstrap;
+    }
     return new Promise((resolve, reject) => {
         const graphqlQueryRequest = function (query, variables) {
             const { options, _ } = Panacea.container;
@@ -65,7 +68,7 @@ const graphqlQuery = function (query, variables, panaceaFile = 'default', fetchO
             });
         };
         if (typeof Panacea === 'undefined') {
-            bootstrap(panaceaFile).then(() => {
+            bootstrapFactory(panaceaFile).then(() => {
                 const { app, options } = Panacea.container;
                 // Test panaceaFile is expected to return port as a Promise to allow
                 // portfinder to resolve an available port.
