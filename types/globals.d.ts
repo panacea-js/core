@@ -8,10 +8,12 @@ import * as glob from 'glob'
 import * as path from 'path'
 import * as fsExtra from 'fs-extra'
 import * as Mongoose from 'mongoose'
+import VueI18n from 'vue-i18n'
 import { GraphQLScalarType } from 'graphql'
 import { entityTypes } from '../src/entities/entityTypes'
 import { Transaction } from '../src/utils/transaction'
 import { IHooks } from '../src/utils/hooks';
+import { i18n } from '../src/utils/i18n';
 import { Logger } from '../src/utils/logger';
 
 interface IPanaceaDependencies {
@@ -24,6 +26,8 @@ interface IPanaceaDependencies {
   graphQLTypeDefinitions: () => Promise<string>
   GraphQLScalarType: typeof GraphQLScalarType
   hooks: IHooks
+  // Cannot current use vue-i18n types: https://github.com/kazupon/vue-i18n/issues/410
+  // i18n: typeof i18n
   jsYaml: typeof jsYaml
   log: winston.Logger
   makeExecutableSchema: typeof makeExecutableSchema
@@ -32,6 +36,7 @@ interface IPanaceaDependencies {
   path: typeof path
   Transaction: typeof Transaction
   winston: typeof winston
+  vueI18n: typeof VueI18n
 }
 
 interface IPanaceaOptions {
