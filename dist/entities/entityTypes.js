@@ -1,13 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry } = Panacea.container;
+const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry, defaultAppLocationKey } = Panacea.container;
 class EntityTypes {
     constructor() {
         this.definitions = {};
         this.locations = {};
-        this.defaults = {
-            locationKey: 'app'
-        };
         this.fieldTypes = {};
         this.fieldsMapMongo = new Map();
         this.fieldsMapGraphQL = new Map();
@@ -115,7 +112,7 @@ class EntityTypes {
             return result;
         }
         if (_(locationKey).isEmpty()) {
-            locationKey = this.defaults.locationKey;
+            locationKey = defaultAppLocationKey;
         }
         const basePath = this.locations[locationKey];
         if (!fs.existsSync(basePath)) {

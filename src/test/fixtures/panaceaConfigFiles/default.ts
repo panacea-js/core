@@ -39,11 +39,13 @@ export default function (): IPanaceaOptions {
     entityTypes: {
       test: {
         path: path.resolve(__dirname, '..', 'entityTypes/schemas'),
-        locationKey: 'test'
+        locationKey: 'test',
+        priority: 0
       },
       sandbox: {
         path: `${sandboxDir}`,
-        locationKey: 'sandbox'
+        locationKey: 'sandbox',
+        priority: 0
       }
     }
   }

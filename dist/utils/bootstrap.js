@@ -2,90 +2,112 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const fs = require("fs-extra");
-const Bootstrap = function (panaceaConfigFile = '') {
-    if (!panaceaConfigFile) {
-        panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js');
-    }
-    panaceaConfigFile = path.resolve(panaceaConfigFile);
-    if (fs.existsSync(`${panaceaConfigFile}.ts`)) {
-        panaceaConfigFile = `${panaceaConfigFile}.ts`;
-    }
-    if (!fs.existsSync(panaceaConfigFile)) {
-        throw Error(`Could not load panacea.js config file at ${panaceaConfigFile}`);
-    }
-    this.params = require(panaceaConfigFile).default();
-    this.defaultCorePriority = 0;
-    this.defaultPluginPriority = 5;
-    this.defaultAppPriority = 10;
-};
-Bootstrap.prototype.all = function () {
-    const startTime = Date.now();
-    for (const method in this) {
-        if (method.indexOf('stage') === 0) {
-            const stage = method;
-            this[stage]();
+const DIContainer_1 = require("./DIContainer");
+class Bootstrap {
+    constructor(panaceaConfigFile = '') {
+        this.defaultCorePriority = 0;
+        this.defaultPluginPriority = 5;
+        this.defaultAppPriority = 10;
+        this.defaultAppLocationKey = 'app';
+        if (!panaceaConfigFile) {
+            panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js');
         }
-    }
-    const completedTime = Date.now() - startTime;
-    const { i18n } = Panacea.container;
-    return Promise.resolve(i18n.t('core.bootstrap.completed', { completedTime }));
-};
-Bootstrap.prototype.runStages = function (stages) {
-    if (!Array.isArray(stages)) {
-        throw new Error(`Stages parameter is invalid - should be an array of integers`);
-    }
-    stages.forEach(stage => {
-        const stageFunction = `stage${stage}`;
-        if (typeof this[stageFunction] !== 'function') {
-            throw new Error(`Stage ${stage} specified is invalid`);
+        panaceaConfigFile = path.resolve(panaceaConfigFile);
+        if (fs.existsSync(`${panaceaConfigFile}.ts`)) {
+            panaceaConfigFile = `${panaceaConfigFile}.ts`;
         }
-        this[stageFunction]();
-    });
-};
-Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType, subPath) {
-    const { _, path, fs, registry, entityTypes, resolvePluginPath } = Panacea.container;
-    registry[registryType] = this.params[registryType] || {};
-    const unprioritizedRegistrants = [];
-    const corePath = resolvePluginPath('@panaceajs/core/dist/core/') || './dist/core/';
-    unprioritizedRegistrants.push({
-        locationKey: 'core',
-        path: path.resolve(corePath, subPath),
-        priority: this.defaultCorePriority
-    });
-    Object.keys(registry.plugins).forEach((pluginKey) => {
-        const pluginSubPath = path.resolve(resolvePluginPath(pluginKey), subPath);
-        if (fs.existsSync(pluginSubPath)) {
-            unprioritizedRegistrants.push({
-                locationKey: pluginKey,
-                path: pluginSubPath,
-                priority: this.defaultPluginPriority
+        if (!fs.existsSync(panaceaConfigFile)) {
+            throw Error(`Could not load panacea.js config file at ${panaceaConfigFile}`);
+        }
+        this.params = require(panaceaConfigFile).default();
+        this.container = DIContainer_1.registerServices(this.params);
+        Panacea.value('registry', {});
+        Panacea.value('defaultAppLocationKey', this.defaultAppLocationKey);
+        this.chain = {
+            '10-add-plugins-registry': addPluginsToRegistry,
+            '20-register-hooks': registerHooks,
+            '30-register-entity-types': registerEntityTypes,
+            '40-register-settings': registerSettings,
+            '50-prepare-graphql-server': prepareGraphQLServer,
+        };
+    }
+    ensureChainOrder() {
+        this.chain = Object.keys(this.chain).sort().reduce((orderedStages, stageKey) => {
+            orderedStages[stageKey] = this.chain[stageKey];
+            return orderedStages;
+        }, {});
+    }
+    all() {
+        return new Promise((resolve, reject) => {
+            const startTime = Date.now();
+            this.ensureChainOrder();
+            Object.keys(this.chain).forEach(async (stage) => {
+                if (typeof this.chain[stage] !== 'function') {
+                    return reject(new Error(`Stage ${stage} is not a function`));
+                }
+                await this.chain[stage].call(this);
             });
-        }
-    });
-    if (corePath !== './dist/core/') {
-        const applicationSubPath = path.resolve(process.cwd(), subPath);
-        if (fs.existsSync(applicationSubPath)) {
-            unprioritizedRegistrants.push({
-                locationKey: entityTypes.defaults.locationKey,
-                path: applicationSubPath,
-                priority: this.defaultAppPriority
-            });
-        }
+            const completedTime = Date.now() - startTime;
+            const { i18n } = Panacea.container;
+            return resolve(i18n.t('core.bootstrap.completed', { completedTime }));
+        });
     }
-    const prioritizedRegistrants = unprioritizedRegistrants.sort((a, b) => Number(a.priority) - Number(b.priority));
-    const directories = prioritizedRegistrants.filter(x => fs.existsSync(x.path));
-    directories.forEach(x => (registry[registryType][x.path] = x));
-    return directories;
-};
-Bootstrap.prototype.stage1 = function () {
-    this.container = require('./DIContainer').registerServices(this.params);
-};
-Bootstrap.prototype.stage2 = function () {
-    Panacea.value('registry', {});
-};
-Bootstrap.prototype.stage3 = function () {
+    runStages(stages) {
+        return new Promise((resolve, reject) => {
+            const startTime = Date.now();
+            if (!Array.isArray(stages)) {
+                return reject(new Error(`Stages parameter is invalid - should be an array of stages`));
+            }
+            this.ensureChainOrder();
+            stages.forEach(async (stage) => {
+                if (!this.chain[stage] || typeof this.chain[stage] !== 'function') {
+                    return reject(new Error(`Stage ${stage} specified is invalid`));
+                }
+                await this.chain[stage].call(this);
+            });
+            const completedTime = Date.now() - startTime;
+            const { i18n } = Panacea.container;
+            return resolve(i18n.t('core.bootstrap.completed', { completedTime }));
+        });
+    }
+    discoverImplementorDirectories(subPath) {
+        const { _, path, fs, registry, defaultAppLocationKey, resolvePluginPath } = Panacea.container;
+        const unprioritizedRegistrants = [];
+        const corePath = resolvePluginPath('@panaceajs/core/dist/core/') || './dist/core/';
+        unprioritizedRegistrants.push({
+            locationKey: 'core',
+            path: path.resolve(corePath, subPath),
+            priority: this.defaultCorePriority
+        });
+        Object.keys(registry.plugins).forEach((pluginKey) => {
+            const pluginSubPath = path.resolve(resolvePluginPath(pluginKey), subPath);
+            if (fs.existsSync(pluginSubPath)) {
+                unprioritizedRegistrants.push({
+                    locationKey: pluginKey,
+                    path: pluginSubPath,
+                    priority: this.defaultPluginPriority
+                });
+            }
+        });
+        if (corePath !== './dist/core/') {
+            const applicationSubPath = path.resolve(process.cwd(), subPath);
+            if (fs.existsSync(applicationSubPath)) {
+                unprioritizedRegistrants.push({
+                    locationKey: defaultAppLocationKey,
+                    path: applicationSubPath,
+                    priority: this.defaultAppPriority
+                });
+            }
+        }
+        const sortedRegistrantsByPriority = unprioritizedRegistrants.sort((a, b) => Number(a.priority) - Number(b.priority));
+        const validDirectories = sortedRegistrantsByPriority.filter(x => fs.existsSync(x.path));
+        return validDirectories;
+    }
+}
+exports.default = Bootstrap;
+async function addPluginsToRegistry() {
     const { registry, log } = Panacea.container;
-    if (!this.params.hasOwnProperty('plugins')) {
+    if (!this.params.plugins) {
         registry.plugins = {};
         return;
     }
@@ -110,22 +132,27 @@ Bootstrap.prototype.stage3 = function () {
         log.info(chalk.green('✔ ' + i18n.t('core.bootstrap.pluginLoaded', { pluginPath: plugin.path })));
         registry.plugins[plugin.path] = plugin;
     });
-};
-Bootstrap.prototype.stage4 = function () {
+}
+async function registerHooks() {
     const { hooks } = Panacea.container;
-    const directories = this.registryPathDiscoveryProcessor('hooks', 'hooks');
+    const directories = this.discoverImplementorDirectories('hooks');
     hooks.loadFromDirectories(directories.map(x => x.path));
-};
-Bootstrap.prototype.stage5 = function () {
-    this.registryPathDiscoveryProcessor('entityTypes', 'config/entityTypes/schemas');
-};
-Bootstrap.prototype.stage6 = function () {
-    this.registryPathDiscoveryProcessor('settings', 'config/settings/schemas');
-};
-Bootstrap.prototype.stage7 = function () {
+}
+async function registerEntityTypes() {
+    const { registry } = Panacea.container;
+    registry.entityTypes = this.params.entityTypes || {};
+    const directories = this.discoverImplementorDirectories('config/entityTypes/schemas');
+    directories.forEach(x => (registry.entityTypes[x.path] = x));
+}
+async function registerSettings() {
+    const { registry } = Panacea.container;
+    registry.settings = this.params.settings || {};
+    const directories = this.discoverImplementorDirectories('config/settings/schemas');
+    directories.forEach(x => (registry.settings[x.path] = x));
+}
+async function prepareGraphQLServer() {
     const { makeExecutableSchema, dbModels, graphiqlExpress, graphqlExpress, bodyParser, express, cors, voyagerMiddleware, graphQLTypeDefinitions, graphQLResolvers, dynamicMiddleware, hooks, log, options, i18n } = Panacea.container;
-    graphQLTypeDefinitions()
-        .then((typeDefs) => {
+    graphQLTypeDefinitions().then(typeDefs => {
         const resolvers = graphQLResolvers();
         const schema = makeExecutableSchema({
             typeDefs,
@@ -159,7 +186,7 @@ Bootstrap.prototype.stage7 = function () {
             const startTime = Date.now();
             const { entityTypes } = Panacea.container;
             entityTypes.clearCache();
-            graphQLTypeDefinitions().then((typeDefs) => {
+            graphQLTypeDefinitions().then(typeDefs => {
                 const resolvers = graphQLResolvers();
                 const schema = makeExecutableSchema({
                     typeDefs,
@@ -194,6 +221,5 @@ Bootstrap.prototype.stage7 = function () {
         console.error(error);
         log.error(i18n.t('core.bootstrap.typeDefsError', { error: error.message }));
     });
-};
-exports.default = Bootstrap;
+}
 //# sourceMappingURL=bootstrap.js.map

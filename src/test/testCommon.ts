@@ -34,12 +34,12 @@ const entityHasErrorMessage = function (entity: EntityTypeDefinition, message: s
   return entity._errors.filter(error => error.message === message).length > 0
 }
 
-const bootstrap = function (panaceaFile = 'default', runStages: Array<number> = []) {
+const bootstrap = function (panaceaFile = 'default', runStages: Array<string> = []) {
   const panaceaConfigFile: string = `${__dirname}/fixtures/panaceaConfigFiles/${panaceaFile}`
   if (runStages.length > 0) {
-    return new (Bootstrap as any)(panaceaConfigFile).runStages(runStages)
+    return new Bootstrap(panaceaConfigFile).runStages(runStages)
   }
-  return new (Bootstrap as any)(panaceaConfigFile).all()
+  return new Bootstrap(panaceaConfigFile).all()
 }
 
 const graphqlQuery = function (query: string, variables?: object, panaceaFile = 'default', fetchOptions = {}, bootstrapFactory?: any) {
@@ -50,7 +50,7 @@ const graphqlQuery = function (query: string, variables?: object, panaceaFile = 
     const graphqlQueryRequest = function (query: string, variables?: object) {
       const { options, _ } = Panacea.container
 
-      options.main.port.then(port => {
+      return options.main.port.then(port => {
         const url = `${options.main.protocol}://${options.main.host}:${port}/${options.main.endpoint}`
         _.defaultsDeep(fetchOptions, {
           method: 'POST',
@@ -65,11 +65,11 @@ const graphqlQuery = function (query: string, variables?: object, panaceaFile = 
           .then(response => resolve(response.json()))
           .catch(error => {
             console.error(error)
-            reject(error)
+            return reject(error)
           })
       }).catch(error => {
         console.error(error)
-        reject(error)
+        return reject(error)
       })
     }
 
@@ -79,7 +79,7 @@ const graphqlQuery = function (query: string, variables?: object, panaceaFile = 
         // Test panaceaFile is expected to return port as a Promise to allow
         // portfinder to resolve an available port.
         Promise.resolve(options.main.port).then(port => {
-          app.listen(port, graphqlQueryRequest(query, variables))
+          app.listen(port, () => graphqlQueryRequest(query, variables))
         })
       }).catch((error: Error) => {
         console.error(error)

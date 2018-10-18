@@ -15,6 +15,7 @@ import { Transaction } from '../src/utils/transaction'
 import { IHooks } from '../src/utils/hooks';
 import { i18n } from '../src/utils/i18n';
 import { Logger } from '../src/utils/logger';
+import { Application } from 'express';
 
 interface IPanaceaDependencies {
   _: LoDashStatic
@@ -39,6 +40,22 @@ interface IPanaceaDependencies {
   vueI18n: typeof VueI18n
 }
 
+interface IPanaceaValues {
+  defaultAppLocationKey: string
+  app: Application
+  registry: {
+    plugins: {
+      [pluginPath: string]: IPlugin
+    }
+    entityTypes: {
+      [pluginPath: string]: IRegistrant
+    }
+    settings: {
+      [pluginPath: string]: IRegistrant
+    }
+  }
+}
+
 interface IPanaceaOptions {
   main?: IPanaceaOptionsSectionMain
   plugins?: IPanaceaOptionsSectionPlugins
@@ -47,9 +64,17 @@ interface IPanaceaOptions {
     file?: string,
     globalVariable?: string
     options?: IPanaceaOptionsSectionServicesOptions
-  },
-  entityTypes?: IPanaceaOptionsEntityTypes,
-  graphiql?: IPanaceaOptionsSectionGraphiql,
+  }
+  entityTypes?: {
+    [locationKey: string]: IRegistrant
+  }
+  hooks?: {
+    [locationKey: string]: IRegistrant
+  }
+  settings?: {
+    [locationKey: string]: IRegistrant
+  }
+  graphiql?: IPanaceaOptionsSectionGraphiql
   voyager?: IPanaceaOptionsSectionVoyager
 }
 
@@ -58,12 +83,20 @@ interface IPanaceaOptionsComplete {
   plugins: IPanaceaOptionsSectionPlugins
   locales: IPanaceaOptionsSectionLocales
   services: {
-    file: string,
+    file: string
     globalVariable: string
     options: IPanaceaOptionsSectionServicesOptions
-  },
-  entityTypes: IPanaceaOptionsEntityTypes,
-  graphiql: IPanaceaOptionsSectionGraphiql,
+  }
+  entityTypes: {
+    [locationKey: string]: IRegistrant
+  }
+  hooks: {
+    [locationKey: string]: IRegistrant
+  }
+  settings: {
+    [locationKey: string]: IRegistrant
+  }
+  graphiql: IPanaceaOptionsSectionGraphiql
   voyager: IPanaceaOptionsSectionVoyager
 }
 
@@ -74,7 +107,8 @@ interface IPanaceaOptionsSectionMain {
   port: Promise<number>
   disableCors?: boolean
 }
-type IPanaceaOptionsSectionPlugins = Array<string>
+
+type IPanaceaOptionsSectionPlugins = Array<string | IPlugin>
 
 interface IPanaceaOptionsSectionLocales {
   default: string
@@ -95,11 +129,15 @@ interface IPanaceaOptionsSectionServicesOptions {
   }
 }
 
-interface IPanaceaOptionsEntityTypes {
-  [locationName: string]: {
-    locationKey: string
-    path: string
-  }
+interface IRegistrant {
+  locationKey: string
+  path: string
+  priority: number
+}
+
+interface IPlugin {
+  path: string
+  priority: number
 }
 
 interface IPanaceaOptionsSectionGraphiql {
@@ -113,7 +151,7 @@ interface IPanaceaOptionsSectionVoyager {
 }
 
 interface IPanacea {
-  container: IPanaceaDependencies & {
+  container: IPanaceaDependencies & IPanaceaValues & {
     [dependency: string]: any
   }
   value(name: string, val: any): any

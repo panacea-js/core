@@ -1,14 +1,11 @@
-import { Registrant } from '../utils/bootstrap'
+import { IRegistrant } from '../../types/globals'
 
-const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry } = Panacea.container
+const { _, log, fs, loadYmlFiles, writeYmlFile, hooks, registry, defaultAppLocationKey } = Panacea.container
 
 class EntityTypes {
   definitions: EntityTypeDefinitions
   locations: {
     [locationId: string]: string
-  }
-  defaults: {
-    [key: string]: string
   }
   fieldTypes: FieldTypes
   fieldsMapMongo: FieldMap
@@ -17,9 +14,6 @@ class EntityTypes {
   constructor () {
     this.definitions = {}
     this.locations = {}
-    this.defaults = {
-      locationKey: 'app'
-    }
     this.fieldTypes = {}
     this.fieldsMapMongo = new Map()
     this.fieldsMapGraphQL = new Map()
@@ -132,7 +126,7 @@ class EntityTypes {
 
     // Ensure that the filesystem is only hit once.
     if (_(this.definitions).isEmpty()) {
-      _.forIn(registry.entityTypes, (registrantData: Registrant) => {
+      _.forIn(registry.entityTypes, (registrantData: IRegistrant) => {
         this.locations[registrantData.locationKey] = registrantData.path
         const fileEntityTypes = loadYmlFiles(registrantData.path)
         Object.keys(fileEntityTypes).forEach((entityName: string) => {
@@ -175,7 +169,7 @@ class EntityTypes {
     }
 
     if (_(locationKey).isEmpty()) {
-      locationKey = this.defaults.locationKey
+      locationKey = defaultAppLocationKey
     }
 
     const basePath = this.locations[locationKey]

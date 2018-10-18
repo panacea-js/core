@@ -50,41 +50,31 @@ test.serial('Attempting to load panacea core, searches for panacea.js in cwd() w
 })
 
 test.serial('Can bootstrap individual stages', async t => {
-  t.plan(2)
   const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default'))
-  t.true(typeof bootstrap.container === 'undefined')
-  bootstrap.runStages([1, 2, 3])
+  await bootstrap.runStages([
+    '10-add-plugins-registry',
+    '20-register-hooks',
+    '30-register-entity-types']
+  )
   t.true(typeof bootstrap.container === 'object')
 })
 
 test.serial('Throws error when bootstrapping with invalid parameter', async t => {
-  t.plan(3)
+  t.plan(2)
   const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default'))
-  t.true(typeof bootstrap.container === 'undefined')
-  const error = t.throws(() => bootstrap.runStages('1'))
-  t.is(error.message, 'Stages parameter is invalid - should be an array of integers')
+  const error = await t.throwsAsync(bootstrap.runStages('10-add-plugins-registry'))
+  t.is(error.message, 'Stages parameter is invalid - should be an array of stages')
 })
 
 test.serial('Throws error when bootstrapping with no parameter', async t => {
-  t.plan(3)
   const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default'))
-  t.true(typeof bootstrap.container === 'undefined')
-  const error = t.throws(() => bootstrap.runStages())
-  t.is(error.message, 'Stages parameter is invalid - should be an array of integers')
+  const error = await t.throwsAsync(bootstrap.runStages())
+  t.is(error.message, 'Stages parameter is invalid - should be an array of stages')
 })
 
-test.serial('Throws error when bootstrapping with invalid stage (not a function)', async t => {
-  t.plan(3)
+test.serial('Throws error when bootstrapping with invalid stage (not in the chain)', async t => {
+  t.plan(2)
   const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default'))
-  t.true(typeof bootstrap.container === 'undefined')
-  const error = t.throws(() => bootstrap.runStages([1000]))
-  t.is(error.message, 'Stage 1000 specified is invalid')
-})
-
-test.serial('Throws error when bootstrapping with invalid stage (not a number)', async t => {
-  t.plan(3)
-  const bootstrap = await new (Bootstrap as any)(path.resolve(testDir, 'fixtures/panaceaConfigFiles/default'))
-  t.true(typeof bootstrap.container === 'undefined')
-  const error = t.throws(() => bootstrap.runStages(['one']))
-  t.is(error.message, 'Stage one specified is invalid')
+  const error = await t.throwsAsync(bootstrap.runStages(['notValid']))
+  t.is(error.message, 'Stage notValid specified is invalid')
 })

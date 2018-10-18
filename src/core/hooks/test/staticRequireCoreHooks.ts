@@ -1,9 +1,11 @@
 import * as path from 'path'
 import Bootstrap from '../../../utils/bootstrap';
 
-// Override bootstrap stage 4 so as to statically include core hooks.
-// This is required because istanbul doesn't cover dynamic require statements.
-Bootstrap.prototype.stage4 = function () {
+/**
+ * Override bootstrap stage 4 so as to statically include core hooks. This is
+ * required because istanbul doesn't cover dynamic require statements.
+ */
+async function staticallyRegisterHooks () {
   const { hooks } = Panacea.container
   require('../entities/dates').default.register(hooks)
   require('../entities/entities').default.register(hooks)
@@ -16,13 +18,17 @@ Bootstrap.prototype.stage4 = function () {
   require('../graphql/schema/filters').default.register(hooks)
 }
 
-
-const bootstrap = function (panaceaFile = 'default', runStages: Array<number> = []) {
+const bootstrap = function (panaceaFile = 'default', runStages: Array<string> = []) {
   const panaceaConfigFile = path.resolve(__dirname, `../../../test/fixtures/panaceaConfigFiles/${panaceaFile}`)
+
+  const bootstrapInstance = new Bootstrap(panaceaConfigFile)
+
+  bootstrapInstance.chain['20-register-hooks'] = staticallyRegisterHooks
+
   if (runStages.length > 0) {
-    return new (Bootstrap as any)(panaceaConfigFile).runStages(runStages)
+    return bootstrapInstance.runStages(runStages)
   }
-  return new (Bootstrap as any)(panaceaConfigFile).all()
+  return bootstrapInstance.all()
 }
 
 export { bootstrap }

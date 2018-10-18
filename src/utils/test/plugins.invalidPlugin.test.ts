@@ -6,7 +6,7 @@ const sandboxDir = getSandboxDir()
 
 test('Invalid plugin locations shows warning', t => {
   return new Promise(resolve => {
-    bootstrap('invalidPlugin', [1, 2, 3])
+    bootstrap('invalidPlugin', ['10-add-plugins-registry'])
     const { fs } = Panacea.container
 
     // Wait 100ms to give logger a chance to write file before

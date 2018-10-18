@@ -1,155 +1,193 @@
 import * as path from 'path'
 import * as fs from 'fs-extra'
-import { IPanacea } from '../../types/globals'
+import { IPanaceaOptions, IPlugin, IRegistrant } from '../../types/globals'
 import { CorsOptions } from 'cors'
+import { registerServices } from './DIContainer'
+import * as Bottle from 'bottlejs'
 
-interface IBootstrap {
-  params: IPanacea
-  defaultCorePriority: number
-  defaultPluginPriority: number
-  defaultAppPriority: number
-}
-
-export interface Registrant {
-  locationKey: string
-  path: string
-  priority: number
-}
-
-const Bootstrap = function (this: IBootstrap, panaceaConfigFile: string = ''): void {
-  if (!panaceaConfigFile) {
-    panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js')
+export default class Bootstrap {
+  params: IPanaceaOptions
+  container?: Bottle
+  chain: {
+    [bootstrapChainId: string]: () => Promise<void>
   }
+  defaultCorePriority = 0
+  defaultPluginPriority = 5
+  defaultAppPriority = 10
+  defaultAppLocationKey = 'app'
 
-  panaceaConfigFile = path.resolve(panaceaConfigFile)
+  constructor (panaceaConfigFile: string = '') {
+    if (!panaceaConfigFile) {
+      panaceaConfigFile = path.resolve(process.cwd(), 'panacea.js')
+    }
 
-  // Help path.resolve load typescript files. path.resolve won't get ts
-  // extensions so check if by adding the ts extension whether the file exists.
-  if (fs.existsSync(`${panaceaConfigFile}.ts`)) {
-    panaceaConfigFile = `${panaceaConfigFile}.ts`
-  }
+    panaceaConfigFile = path.resolve(panaceaConfigFile)
 
-  if (!fs.existsSync(panaceaConfigFile)) {
-    throw Error(`Could not load panacea.js config file at ${panaceaConfigFile}`) // Cannot translate as Panacea container isn't available for i18n.
-  }
+    // Help path.resolve load typescript files. path.resolve won't get ts
+    // extensions so check if by adding the ts extension whether the file exists.
+    if (fs.existsSync(`${panaceaConfigFile}.ts`)) {
+      panaceaConfigFile = `${panaceaConfigFile}.ts`
+    }
 
-  this.params = require(panaceaConfigFile).default()
-  this.defaultCorePriority = 0
-  this.defaultPluginPriority = 5
-  this.defaultAppPriority = 10
-}
+    if (!fs.existsSync(panaceaConfigFile)) {
+      throw Error(`Could not load panacea.js config file at ${panaceaConfigFile}`) // Cannot translate as Panacea container isn't available for i18n.
+    }
 
-Bootstrap.prototype.all = function (): Promise<string> {
-  const startTime = Date.now()
+    // Set initialization parameters.
+    this.params = require(panaceaConfigFile).default()
 
-  for (const method in this) {
-    if (method.indexOf('stage') === 0) {
-      const stage = method
-      this[stage]()
+    // Create dependency injection container.
+    this.container = registerServices(this.params)
+
+    // Initialize the registry.
+    Panacea.value('registry', {})
+
+    Panacea.value('defaultAppLocationKey', this.defaultAppLocationKey)
+
+    // Define the stages in the bootstrap chain.
+    this.chain = {
+      '10-add-plugins-registry': addPluginsToRegistry,
+      '20-register-hooks': registerHooks,
+      '30-register-entity-types': registerEntityTypes,
+      '40-register-settings': registerSettings,
+      '50-prepare-graphql-server': prepareGraphQLServer,
     }
   }
 
-  const completedTime = Date.now() - startTime
-
-  const { i18n } = Panacea.container
-
-  return Promise.resolve(i18n.t('core.bootstrap.completed', { completedTime })) // Completed full bootstrap (in {completedTime}ms)
-}
-
-Bootstrap.prototype.runStages = function (stages: Array<Number>) {
-  if (!Array.isArray(stages)) {
-    throw new Error(`Stages parameter is invalid - should be an array of integers`) // Cannot translate as Panacea container isn't available for i18n.
+  /**
+   * Sort the bootstrap chain order by key.
+   *
+   * Consumers of Bootstrap can alter/append their own stages to the bootstrap
+   * chain. Objects in javascript don't ensure key order integrity so this
+   * method is required before execution of the stages.
+   */
+  private ensureChainOrder() {
+    this.chain = Object.keys(this.chain).sort().reduce((orderedStages, stageKey) => {
+      orderedStages[stageKey] = this.chain[stageKey]
+      return orderedStages
+    }, <Bootstrap['chain']> {})
   }
-  stages.forEach(stage => {
-    const stageFunction = `stage${stage}`
-    if (typeof this[stageFunction] !== 'function') {
-      throw new Error(`Stage ${stage} specified is invalid`) // Cannot translate as Panacea container isn't available for i18n.
-    }
-    this[stageFunction]()
-  })
-}
 
-Bootstrap.prototype.registryPathDiscoveryProcessor = function (registryType: string, subPath: string): Array<Registrant> {
-  const { _, path, fs, registry, entityTypes, resolvePluginPath } = Panacea.container
+  /**
+   * Run all bootstrap stages in the chain.
+   */
+  all (): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const startTime = Date.now()
 
-  registry[registryType] = this.params[registryType] || {}
+      this.ensureChainOrder()
 
-  const unprioritizedRegistrants: Array<Registrant> = []
-
-  // Treat core as a plugin to itself so it can register its own hook
-  // implementations when bootstrapping externally - i.e. as a dependency of
-  // another project. If core is bootstrapping itself (e.g. when running tests)
-  // core effectively works in place of the application registrant below.
-  const corePath = resolvePluginPath('@panaceajs/core/dist/core/') || './dist/core/'
-  // Core Registrants.
-  unprioritizedRegistrants.push({
-    locationKey: 'core',
-    path: path.resolve(corePath, subPath),
-    priority: this.defaultCorePriority
-  })
-
-  // Plugin Registrants.
-  Object.keys(registry.plugins).forEach((pluginKey) => {
-    const pluginSubPath = path.resolve(resolvePluginPath(pluginKey), subPath)
-    if (fs.existsSync(pluginSubPath)) {
-      unprioritizedRegistrants.push({
-        locationKey: pluginKey,
-        path: pluginSubPath,
-        priority: this.defaultPluginPriority
+      Object.keys(this.chain).forEach(async (stage) => {
+        if (typeof this.chain[stage] !== 'function') {
+          return reject(new Error(`Stage ${stage} is not a function`)) // Cannot translate as Panacea container isn't available for i18n.
+        }
+        await this.chain[stage].call(this)
       })
-    }
-  })
 
-  // Application Registrant.
-  // Only include if core is not bootstrapping itself. See above.
-  if (corePath !== './dist/core/') {
-    const applicationSubPath = path.resolve(process.cwd(), subPath)
-    if (fs.existsSync(applicationSubPath)) {
-      unprioritizedRegistrants.push({
-        locationKey: entityTypes.defaults.locationKey,
-        path: applicationSubPath,
-        priority: this.defaultAppPriority
-      })
-    }
+      const completedTime = Date.now() - startTime
+
+      const { i18n } = Panacea.container
+
+      return resolve(i18n.t('core.bootstrap.completed', { completedTime })) // Completed full bootstrap (in {completedTime}ms)
+    })
   }
 
-  const prioritizedRegistrants = unprioritizedRegistrants.sort((a, b) => Number(a.priority) - Number(b.priority))
+  /**
+   * Run only specific bootstrap stages in the chain.
+   */
+  runStages (stages: Array<string>): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const startTime = Date.now()
 
-  const directories = prioritizedRegistrants.filter(x => fs.existsSync(x.path))
+      if (!Array.isArray(stages)) {
+        return reject(new Error(`Stages parameter is invalid - should be an array of stages`)) // Cannot translate as Panacea container isn't available for i18n.
+      }
 
-  directories.forEach(x => (registry[registryType][x.path] = x))
+      this.ensureChainOrder()
 
-  return directories
-}
+      stages.forEach(async (stage) => {
+        if (!this.chain[stage] || typeof this.chain[stage] !== 'function') {
+          return reject(new Error(`Stage ${stage} specified is invalid`)) // Cannot translate as Panacea container isn't available for i18n.
+        }
+        await this.chain[stage].call(this)
+      })
 
-/**
- * Register services.
- */
-Bootstrap.prototype.stage1 = function () {
-  this.container = require('./DIContainer').registerServices(this.params)
-}
+      const completedTime = Date.now() - startTime
 
-/**
- * Initialize the registry onto the Panacea.container.
- *
- * Adds the application level hooks.
- */
-Bootstrap.prototype.stage2 = function () {
-  Panacea.value('registry', {})
-}
+      const { i18n } = Panacea.container
 
-interface Plugin {
-  path: string
-  priority: number
+      return resolve(i18n.t('core.bootstrap.completed', { completedTime })) // Completed full bootstrap (in {completedTime}ms)
+    })
+  }
+
+  /**
+   * Return an array of resolvable locations where specified subdirectories can
+   * be found within root directories for core, plugins and the consuming application.
+   *
+   * Core root implementors are in: src/core (dist/core when compiled)
+   * Plugin implementors are checked from their root location.
+   * Application implementors are checked from their root location.
+   *
+   * This method informs which directories exist so that the contents can be
+   * autoloaded.
+   */
+  discoverImplementorDirectories (subPath: string): Array<IRegistrant> {
+    const { _, path, fs, registry, defaultAppLocationKey, resolvePluginPath } = Panacea.container
+
+    const unprioritizedRegistrants: Array<IRegistrant> = []
+
+    // Treat core as a plugin to itself so it can register its own hook
+    // implementations when bootstrapping externally - i.e. as a dependency of
+    // another project. If core is bootstrapping itself (e.g. when running tests)
+    // core effectively works in place of the application registrant below.
+    const corePath = resolvePluginPath('@panaceajs/core/dist/core/') || './dist/core/'
+    // Core Registrants.
+    unprioritizedRegistrants.push({
+      locationKey: 'core',
+      path: path.resolve(corePath, subPath),
+      priority: this.defaultCorePriority
+    })
+
+    // Plugin Registrants.
+    Object.keys(registry.plugins).forEach((pluginKey) => {
+      const pluginSubPath = path.resolve(resolvePluginPath(pluginKey), subPath)
+      if (fs.existsSync(pluginSubPath)) {
+        unprioritizedRegistrants.push({
+          locationKey: pluginKey,
+          path: pluginSubPath,
+          priority: this.defaultPluginPriority
+        })
+      }
+    })
+
+    // Application Registrant.
+    // Only include if core is not bootstrapping itself. See above.
+    if (corePath !== './dist/core/') {
+      const applicationSubPath = path.resolve(process.cwd(), subPath)
+      if (fs.existsSync(applicationSubPath)) {
+        unprioritizedRegistrants.push({
+          locationKey: defaultAppLocationKey,
+          path: applicationSubPath,
+          priority: this.defaultAppPriority
+        })
+      }
+    }
+
+    const sortedRegistrantsByPriority = unprioritizedRegistrants.sort((a, b) => Number(a.priority) - Number(b.priority))
+
+    const validDirectories = sortedRegistrantsByPriority.filter(x => fs.existsSync(x.path))
+
+    return validDirectories
+  }
 }
 
 /**
  * Add plugins to the registry.
  */
-Bootstrap.prototype.stage3 = function () {
+async function addPluginsToRegistry (this: Bootstrap) {
   const { registry, log } = Panacea.container
 
-  if (!this.params.hasOwnProperty('plugins')) {
+  if (!this.params.plugins) {
     registry.plugins = {}
     return
   }
@@ -158,9 +196,9 @@ Bootstrap.prototype.stage3 = function () {
 
   registry.plugins = {}
 
-  this.params.plugins.map((plugin: Plugin | string) => {
-    // Allows plugins to be declared in panacea.js as single string without a priority.
-    // Mutate plugin into plugin object structure.
+  this.params.plugins.map((plugin: IPlugin | string) => {
+    // Allows plugins to be declared in panacea.js as single string without a
+    // priority. Mutate plugin into plugin object structure.
     if (typeof plugin === 'string') {
       plugin = {
         path: plugin,
@@ -187,32 +225,38 @@ Bootstrap.prototype.stage3 = function () {
 }
 
 /**
- * Load application and plugins hooks.
+ * Discover and register core, plugins and application hooks.
  */
-Bootstrap.prototype.stage4 = function () {
+async function registerHooks (this: Bootstrap) {
   const { hooks } = Panacea.container
-  const directories: Array<Registrant> = this.registryPathDiscoveryProcessor('hooks', 'hooks')
+  const directories: Array<IRegistrant> = this.discoverImplementorDirectories('hooks')
   hooks.loadFromDirectories(directories.map(x => x.path))
 }
 
 /**
- * Discover and register application and plugins entity types.
+ * Discover and register core, plugins and application entity types.
  */
-Bootstrap.prototype.stage5 = function () {
-  this.registryPathDiscoveryProcessor('entityTypes', 'config/entityTypes/schemas')
+async function registerEntityTypes (this: Bootstrap) {
+  const { registry } = Panacea.container
+  registry.entityTypes = this.params.entityTypes || {}
+  const directories = this.discoverImplementorDirectories('config/entityTypes/schemas')
+  directories.forEach(x => (registry.entityTypes[x.path] = x))
 }
 
 /**
- * Discover and register application and plugins settings.
+ * Discover and register core, plugins and application settings.
  */
-Bootstrap.prototype.stage6 = function () {
-  this.registryPathDiscoveryProcessor('settings', 'config/settings/schemas')
+async function registerSettings (this: Bootstrap) {
+  const { registry } = Panacea.container
+  registry.settings = this.params.settings || {}
+  const directories = this.discoverImplementorDirectories('config/settings/schemas')
+  directories.forEach(x => (registry.settings[x.path] = x))
 }
 
 /**
  * Prepares GraphQL schema and prepares express app ready to be served.
  */
-Bootstrap.prototype.stage7 = function () {
+async function prepareGraphQLServer (this: Bootstrap) {
   const {
     makeExecutableSchema,
     dbModels,
@@ -231,112 +275,109 @@ Bootstrap.prototype.stage7 = function () {
     i18n
   } = Panacea.container
 
-  graphQLTypeDefinitions()
-    .then((typeDefs: string) => {
-      const resolvers = graphQLResolvers()
+  graphQLTypeDefinitions().then(typeDefs => {
+    const resolvers = graphQLResolvers()
 
-      const schema = makeExecutableSchema({
-        typeDefs,
-        resolvers
-      })
+    const schema = makeExecutableSchema({
+      typeDefs,
+      resolvers
+    })
 
-      const app = express()
+    const app = express()
 
-      const graphqlExpressDynamicMiddleware = dynamicMiddleware.create(
-        graphqlExpress((req: Express.Request) => {
-          return {
-            schema,
-            context: {
-              req,
-              dbModels: dbModels()
-            }
+    const graphqlExpressDynamicMiddleware = dynamicMiddleware.create(
+      graphqlExpress((req: Express.Request) => {
+        return {
+          schema,
+          context: {
+            req,
+            dbModels: dbModels()
           }
+        }
+      })
+    )
+
+    let whitelist: Array<string> = []
+    hooks.invoke('core.cors.whitelist', { whitelist, options })
+
+    let corsOptions: CorsOptions = {
+      origin: function (origin, callback) {
+        if (options.main.disableCors || whitelist[0] === '*' || whitelist.indexOf(origin) !== -1) {
+          callback(null, true)
+        } else {
+          callback(new Error(i18n.t('core.bootstrap.notAllowedCORS'))) // Not allowed by CORS
+        }
+      },
+      // Pass HTTP headers to graphql endpoint.
+      credentials: true
+    }
+
+    // Main GraphQL endpoint.
+    app.use(
+      `/${options.main.endpoint}`,
+      cors(corsOptions),
+      bodyParser.json(),
+      graphqlExpressDynamicMiddleware.handler()
+    )
+
+    // Allow middleware to be dynamically replaced via core.reload hook without needing to restart the server.
+    hooks.on('core.reload', ({ reason }: { reason: string }) => {
+      const startTime = Date.now()
+
+      const { entityTypes } = Panacea.container
+      entityTypes.clearCache()
+
+      graphQLTypeDefinitions().then(typeDefs => {
+        const resolvers = graphQLResolvers()
+
+        const schema = makeExecutableSchema({
+          typeDefs,
+          resolvers
+        })
+
+        graphqlExpressDynamicMiddleware.replace(
+          graphqlExpress((req: Express.Request) => {
+            return {
+              schema,
+              context: {
+                req,
+                dbModels: dbModels()
+              }
+            }
+          })
+        )
+      }).catch((error: Error) => console.error(error))
+
+      const timeToReplace = Date.now() - startTime
+
+      log.info(i18n.t('core.bootstrap.reloadGraphql', { timeToReplace, reason })) // Reloaded graphql middleware (in {timeToReplace}ms) because {reason}
+    })
+
+    // GraphiQL endpoint.
+    if (options.graphiql.enable) {
+      app.use(
+        `/${options.graphiql.endpoint}`,
+        graphiqlExpress({
+          endpointURL: `/${options.main.endpoint}`
         })
       )
+    }
 
-      let whitelist: Array<string> = []
-      hooks.invoke('core.cors.whitelist', { whitelist, options })
-
-      let corsOptions: CorsOptions = {
-        origin: function (origin, callback) {
-          if (options.main.disableCors || whitelist[0] === '*' || whitelist.indexOf(origin) !== -1) {
-            callback(null, true)
-          } else {
-            callback(new Error(i18n.t('core.bootstrap.notAllowedCORS'))) // Not allowed by CORS
-          }
-        },
-        // Pass HTTP headers to graphql endpoint.
-        credentials: true
-      }
-
-      // Main GraphQL endpoint.
+    // Voyager endpoint.
+    if (options.voyager.enable) {
       app.use(
-        `/${options.main.endpoint}`,
-        cors(corsOptions),
-        bodyParser.json(),
-        graphqlExpressDynamicMiddleware.handler()
+        `/${options.voyager.endpoint}`,
+        voyagerMiddleware({
+          endpointUrl: `/${options.main.endpoint}`
+        })
       )
+    }
 
-      // Allow middleware to be dynamically replaced via core.reload hook without needing to restart the server.
-      hooks.on('core.reload', ({ reason }: { reason: string }) => {
-        const startTime = Date.now()
-
-        const { entityTypes } = Panacea.container
-        entityTypes.clearCache()
-
-        graphQLTypeDefinitions().then((typeDefs: string) => {
-          const resolvers = graphQLResolvers()
-
-          const schema = makeExecutableSchema({
-            typeDefs,
-            resolvers
-          })
-
-          graphqlExpressDynamicMiddleware.replace(
-            graphqlExpress((req: Express.Request) => {
-              return {
-                schema,
-                context: {
-                  req,
-                  dbModels: dbModels()
-                }
-              }
-            })
-          )
-        }).catch((error: Error) => console.error(error))
-
-        const timeToReplace = Date.now() - startTime
-
-        log.info(i18n.t('core.bootstrap.reloadGraphql', { timeToReplace, reason })) // Reloaded graphql middleware (in {timeToReplace}ms) because {reason}
-      })
-
-      // GraphiQL endpoint.
-      if (options.graphiql.enable) {
-        app.use(
-          `/${options.graphiql.endpoint}`,
-          graphiqlExpress({
-            endpointURL: `/${options.main.endpoint}`
-          })
-        )
-      }
-
-      // Voyager endpoint.
-      if (options.voyager.enable) {
-        app.use(
-          `/${options.voyager.endpoint}`,
-          voyagerMiddleware({
-            endpointUrl: `/${options.main.endpoint}`
-          })
-        )
-      }
-
-      // Assign the express app onto the Panacea container so the bootstrap caller can serve it.
-      Panacea.value('app', app)
-    })
-    .catch((error: Error) => {
-      console.error(error)
-      log.error(i18n.t('core.bootstrap.typeDefsError', { error: error.message })) // Server not started. Type definitions error: {error}
-    })
+    // Assign the express app onto the Panacea container so the bootstrap caller can serve it.
+    Panacea.value('app', app)
+  })
+  .catch((error: Error) => {
+    console.error(error)
+    log.error(i18n.t('core.bootstrap.typeDefsError', { error: error.message })) // Server not started. Type definitions error: {error}
+  })
 }
-
-export default Bootstrap
