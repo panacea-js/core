@@ -1,6 +1,7 @@
 import { IHooks } from '../../../utils/hooks'
 import { Transaction, TransactionHandler } from '../../../utils/transaction'
 import { DbModels } from '../../../mongodb/models'
+import * as Mongoose from 'mongoose';
 
 const { _, i18n } = Panacea.container
 
@@ -56,11 +57,12 @@ export default {
           }
         },
         rollback: async function (txn: Transaction) {
-          const { entityData, dbModels, createdRevisionId }: { entityData: EntityTypeDefinition, dbModels: DbModels, createdRevisionId: string } = txn.context
+          const { entityData, dbModels, createdRevisionId, createdEntity }: { entityData: EntityTypeDefinition, dbModels: DbModels, createdRevisionId: string, createdEntity: Mongoose.Document } = txn.context
           if (entityData.revisions && createdRevisionId) {
             if (entityData._meta && entityData._meta.revisionEntityType) {
               const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType]
-              EntityRevisionModel.findByIdAndDelete(txn.context.createdRevisionId)
+              // Delete revision entity.
+              await EntityRevisionModel.findByIdAndDelete(txn.context.createdRevisionId).exec()
             }
           }
         }

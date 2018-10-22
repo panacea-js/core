@@ -1,7 +1,7 @@
 import { IHooks } from '../../../utils/hooks'
 import * as Mongoose from 'mongoose'
 import { Transaction, TransactionHandler } from '../../../utils/transaction'
-import { DbModels } from '../../../mongodb/models'
+import { DbModels } from '../../../mongodb/models';
 
 const { _, entityTypes, mongoose, dbConnection } = Panacea.container
 
@@ -80,10 +80,14 @@ const addEntityTypeModels = function ({ models }: { models: DbModels }) {
 
 const entityCreateHandler = {
   operation: async function (txn: Transaction) {
-    const { entityData, dbModels, args } = txn.context
+    const { entityData, dbModels, args } : { entityData: EntityTypeDefinition, dbModels: DbModels, args: any } = txn.context
     const EntityModel = dbModels[entityData._meta.pascal]
     const entity = await new EntityModel(args.fields).save()
     txn.context.createdEntity = entity
+  },
+  rollback: async function (txn: Transaction) {
+    const { createdEntity }: { createdEntity: Mongoose.Document } = txn.context
+    await createdEntity.remove()
   }
 }
 
