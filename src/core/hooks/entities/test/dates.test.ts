@@ -1,6 +1,5 @@
 import test from 'ava'
 import { initTasks, graphqlQuery } from '../../../../test/testCommon'
-import { bootstrap } from '../../test/staticRequireCoreHooks';
 
 initTasks(test)
 
@@ -18,7 +17,7 @@ test.serial('Can create an entity automatically saving the created date', t => {
       }
     }
   `
-  const createLizard = (name: string) => graphqlQuery(createLizardQuery(name), {}, 'default', {}, bootstrap)
+  const createLizard = (name: string) => graphqlQuery(createLizardQuery(name))
 
   const allLizardsQuery = `
     {
@@ -31,7 +30,7 @@ test.serial('Can create an entity automatically saving the created date', t => {
       }
     }
   `
-  const allLizards = () => graphqlQuery(allLizardsQuery, {}, 'default', {}, bootstrap)
+  const allLizards = () => graphqlQuery(allLizardsQuery)
 
   return createLizard('ScaleyLizardWithDate')
     .then(() => allLizards())
