@@ -70,53 +70,33 @@ const bootstrap = function (panaceaFile = 'default', runStages: Array<string> = 
   return bootstrapInstance.all()
 }
 
-const graphqlQuery = function (query: string, variables?: object, panaceaFile = 'default', fetchOptions = {}, bootstrapFactory?: any) {
-  if (!bootstrapFactory) {
-    bootstrapFactory = bootstrap
+const graphqlQuery = async function (query: string, variables?: object, panaceaFile = 'default', fetchOptions = {}) {
+  if (typeof Panacea === 'undefined') {
+    await bootstrap(panaceaFile)
   }
-  return new Promise((resolve, reject) => {
-    const graphqlQueryRequest = function (query: string, variables?: object) {
-      const { options, _ } = Panacea.container
 
-      return options.main.port.then(port => {
-        const url = `${options.main.protocol}://${options.main.host}:${port}/${options.main.endpoint}`
-        _.defaultsDeep(fetchOptions, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query,
-            variables
-          })
-        })
+  const { options, app, _ } = Panacea.container
 
-        return fetch(url, fetchOptions)
-          .then(response => resolve(response.json()))
-          .catch(error => {
-            console.error(error)
-            return reject(error)
-          })
-      }).catch(error => {
-        console.error(error)
-        return reject(error)
-      })
-    }
+  const port = await options.main.port
 
-    if (typeof Panacea === 'undefined') {
-      bootstrapFactory(panaceaFile).then(() => {
-        const { app, options } = Panacea.container
-        // Test panaceaFile is expected to return port as a Promise to allow
-        // portfinder to resolve an available port.
-        Promise.resolve(options.main.port).then(port => {
-          app.listen(port, () => graphqlQueryRequest(query, variables))
-        })
-      }).catch((error: Error) => {
-        console.error(error)
-        reject(error)
-      })
-    } else {
-      graphqlQueryRequest(query, variables)
-    }
+  const isListening = !!app.get('listeningPort')
+
+  if (!isListening) {
+    app.set('listeningPort', port)
+    await app.listen(port)
+  }
+
+  const url = `${options.main.protocol}://${options.main.host}:${port}/${options.main.endpoint}`
+  _.defaultsDeep(fetchOptions, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query,
+      variables
+    })
   })
+  const response = await fetch(url, fetchOptions)
+  return response.json()
 }
 
 export { bootstrap, graphqlQuery, initTasks, getSandboxDir, getTestingKey, entityHasErrorMessage }

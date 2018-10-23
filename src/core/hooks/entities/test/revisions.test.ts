@@ -1,7 +1,10 @@
 import test from 'ava'
-import { initTasks, graphqlQuery } from '../../../../test/testCommon'
+import { initTasks, graphqlQuery, bootstrap } from '../../../../test/testCommon'
 
 initTasks(test)
+bootstrap()
+
+const { hooks, dbModels } = Panacea.container
 
 const allCatsQuery = `
 {
@@ -45,8 +48,6 @@ test.serial('Can create a Cat entity with new revision', async t => {
 
 test.serial('Can create a Cat entity which deliberately throws in a spanner into the transaction causing the revision to be deleted', async t => {
   t.plan(3)
-
-  const { hooks, dbModels } = Panacea.container
 
   hooks.on('core.entity.createHandlers', ({ transactionHandlers }: { transactionHandlers: Array<TransactionHandler> }) => {
     transactionHandlers.push({

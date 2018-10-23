@@ -8,7 +8,9 @@ const sandboxDir = getSandboxDir()
 // Add extra port entropy to portfinder start port to prevent port clashes.
 // This is a workaround for portfinder as it is doesn't return an available port every time.
 const microTime = Math.ceil(Date.now() % 1000)
-const availablePort = (startPort: number) => portfinder.getPortPromise({ host: '127.0.0.1', port: startPort + microTime })
+const availablePort = (startPort: number) => {
+  return portfinder.getPortPromise({ host: '127.0.0.1', port: startPort + microTime })
+}
 
 export default function (): IPanaceaOptions {
   return {
