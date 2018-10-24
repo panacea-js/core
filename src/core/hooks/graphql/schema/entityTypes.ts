@@ -79,13 +79,13 @@ const definitions = {
 
 export default {
   register (hooks: IHooks) {
-    hooks.on('core.graphql.definitions.types', ({ types }) => {
+    hooks.on('core.graphql.definitions.types', ({ types } : { types: GraphQLTypeDefinitions }) => {
       _.merge(types, definitions.types)
     })
-    hooks.on('core.graphql.definitions.queries', ({ queries }) => {
+    hooks.on('core.graphql.definitions.queries', ({ queries } : { queries: GraphQLQueryDefinitions }) => {
       _.merge(queries, definitions.queries)
     })
-    hooks.on('core.graphql.definitions.mutations', ({ mutations }) => {
+    hooks.on('core.graphql.definitions.mutations', ({ mutations } : { mutations: GraphQLMutationDefinitions }) => {
       _.merge(mutations, definitions.mutations)
     })
   }

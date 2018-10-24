@@ -78,10 +78,41 @@ const addEntityTypeModels = function ({ models }: { models: DbModels }) {
   })
 }
 
+/**
+ * Checks whether objects or arrays are empty. All other types (except null) are
+ * not considered empty.
+ */
+const isEmpty = function(value: any) {
+  if (Array.isArray(value) || typeof value === 'object') {
+    return _.isEmpty(value)
+  }
+  if (value === null) {
+    return true
+  }
+  return false
+}
+
+/**
+ * Recurses query arguments to flatten arrays which may have empty objects.
+ *
+ * This prevents blank objects from being incorrectly saved to the database.
+ */
+const flattenEmptyFields = function (fields: any) {
+  _(fields).forEach((field, fieldName) => {
+    if (Array.isArray(field)) {
+      fields[fieldName] = isEmpty(field.filter((x: any) => !isEmpty(x))) ? null : field
+    }
+    if (!Array.isArray(field) && typeof field === 'object') {
+      fields[fieldName] = flattenEmptyFields(fields[fieldName])
+    }
+  })
+}
+
 const entityCreateHandler = {
   operation: async function (txn: Transaction) {
     const { entityData, dbModels, args } : { entityData: EntityTypeDefinition, dbModels: DbModels, args: any } = txn.context
     const EntityModel = dbModels[entityData._meta.pascal]
+    flattenEmptyFields(args.fields)
     const entity = await new EntityModel(args.fields).save()
     txn.context.createdEntity = entity
   },

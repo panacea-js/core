@@ -25,6 +25,7 @@ fields:
         label: Stories
         description: A list of adventures the cat has been on
         type: object
+        many: true
         fields:
             title:
                 label: Title
@@ -32,6 +33,5 @@ fields:
                 type: string
             body:
                 label: Body
-                desciption: Story details
+                description: Story details
                 type: text
-

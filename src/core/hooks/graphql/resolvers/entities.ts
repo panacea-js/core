@@ -54,27 +54,38 @@ const resolveNestedFields = function (
  * Ensure that mongoose documents have expected values as per the GraphQL constraints.
  */
 const ensureDocumentHasDefaultValues = function (fields: EntityTypeFields, documentPartial: any) {
-  _(fields).forEach((field: EntityTypeField, fieldId: string) => {
-    if (field.fields && documentPartial[fieldId]) {
-      ensureDocumentHasDefaultValues(field.fields, documentPartial[fieldId])
-    }
+
+  const applyDefaultValues = function (item: any, field: EntityTypeField, fieldId: string) {
     // Required field must return a value:
-    if (field.required && _.isEmpty(documentPartial[fieldId])) {
+    if (field.required && _.isEmpty(item[fieldId])) {
       if (field.default) {
         // Use default value as set on the field definition.
-        documentPartial[fieldId] = field.default
+        item[fieldId] = field.default
         return
       }
 
       if (['int', 'float', 'boolean'].includes(field.type)) {
         // Implicit default value based on the field type.
-        documentPartial[fieldId] = 0
+        item[fieldId] = 0
         return
       }
 
       // Fallback default value.
-      documentPartial[fieldId] = ''
+      item[fieldId] = ''
     }
+  }
+
+  _(fields).forEach((field: EntityTypeField, fieldId: string) => {
+    if (field.fields && documentPartial[fieldId]) {
+      ensureDocumentHasDefaultValues(field.fields, documentPartial[fieldId])
+    }
+
+    if (Array.isArray(documentPartial)) {
+      documentPartial.forEach(item => applyDefaultValues(item, field, fieldId))
+      return
+    }
+
+    applyDefaultValues(documentPartial, field, fieldId)
   })
 }
 
@@ -103,7 +114,7 @@ const entityResolvers = function (resolvers: any) {
     const hasFields = Object.keys(entityData.fields).length > 1
 
     // Get single entity.
-    resolvers.Query[entityData._meta.camel] = async (parent: any, args: any, { dbModels }: { dbModels: DbModels}) => {
+    resolvers.Query[entityData._meta.camel] = async (parent: any, args: any, { dbModels }: { dbModels: DbModels }) => {
       let document: any = {}
       let error
 
@@ -133,7 +144,7 @@ const entityResolvers = function (resolvers: any) {
     }
 
     // Get many entities.
-    resolvers.Query[entityData._meta.pluralCamel] = async (parent: any, args: any, { dbModels }: { dbModels: DbModels}) => {
+    resolvers.Query[entityData._meta.pluralCamel] = async (parent: any, args: any, { dbModels }: { dbModels: DbModels }) => {
       let documents: Array<any> = []
       let error
 
@@ -165,7 +176,7 @@ const entityResolvers = function (resolvers: any) {
     // Only allow mutations of entities that have fields.
     if (hasFields) {
       // Create entity.
-      resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent: any, args: any, { dbModels }: { dbModels: DbModels}) => {
+      resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent: any, args: any, { dbModels }: { dbModels: DbModels }) => {
         const transactionContext = {
           parent,
           args,
@@ -190,7 +201,7 @@ const entityResolvers = function (resolvers: any) {
       }
 
       // Delete entity.
-      resolvers.Mutation[`delete${entityData._meta.pascal}`] = (parent: any, args: any, { dbModels }: { dbModels: DbModels}) => {
+      resolvers.Mutation[`delete${entityData._meta.pascal}`] = (parent: any, args: any, { dbModels }: { dbModels: DbModels }) => {
         return new Promise((resolve, reject) => {
           dbModels[entityData._meta.pascal].findById(args.id).exec((err, entity) => {
             if (err) {
