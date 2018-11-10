@@ -26,7 +26,7 @@ export default {
         // _revision field stores an array of references to the revision entity.
         entityType.fields._revisions = {
           type: 'reference',
-          references: revisionEntityType,
+          references: [revisionEntityType],
           label: revisionsText,
           description: i18n.t('core.entityTypes.revisions.description', { entityTypeName }), // Revisions for ${entityTypeName},
           many: true
@@ -49,20 +49,22 @@ export default {
         prepare: async function (txn: Transaction) {
           const { entityData, dbModels, args } = txn.context
           if (entityData.revisions) {
-            const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType]
+            const revisionEntityType = entityData._meta.revisionEntityType
+            const EntityRevisionModel = dbModels[revisionEntityType]
             const entityRevision = await new EntityRevisionModel(args.fields).save()
             args.fields._revisions = args.fields._revisions || []
-            args.fields._revisions.push(entityRevision._id.toString())
-            txn.context.createdRevisionId = entityRevision._id.toString()
+            args.fields._revisions.push(`${revisionEntityType}|${entityRevision._id}`)
+            txn.context.createdRevisionId = `${revisionEntityType}|${entityRevision._id}`
           }
         },
         rollback: async function (txn: Transaction) {
           const { entityData, dbModels, createdRevisionId, createdEntity }: { entityData: EntityTypeDefinition, dbModels: DbModels, createdRevisionId: string, createdEntity: Mongoose.Document } = txn.context
           if (entityData.revisions && createdRevisionId) {
             if (entityData._meta && entityData._meta.revisionEntityType) {
-              const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType]
+              const [revisionEntityType, revisionEntityId] = createdRevisionId.split('|')
+              const EntityRevisionModel = dbModels[revisionEntityType]
               // Delete revision entity.
-              await EntityRevisionModel.findByIdAndDelete(txn.context.createdRevisionId).exec()
+              await EntityRevisionModel.findByIdAndDelete(revisionEntityId).exec()
             }
           }
         }

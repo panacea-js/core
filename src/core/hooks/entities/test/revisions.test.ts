@@ -1,5 +1,6 @@
 import test from 'ava'
 import { initTasks, graphqlQuery, bootstrap } from '../../../../test/testCommon'
+import { Transaction, TransactionHandler } from '../../../../utils/transaction';
 
 initTasks(test)
 bootstrap()

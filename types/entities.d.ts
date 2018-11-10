@@ -51,7 +51,7 @@ interface EntityTypeField {
   description?: string
   many?: boolean
   default?: string
-  references?: string
+  references?: [string]
   required?: boolean
   index?: boolean
   fields?: EntityTypeFields

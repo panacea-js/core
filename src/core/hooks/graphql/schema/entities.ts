@@ -1,4 +1,5 @@
 import { IHooks } from '../../../../utils/hooks'
+import { IResolvers } from 'graphql-tools';
 
 const { _, entityTypes } = Panacea.container
 
@@ -44,8 +45,10 @@ const translateEntityTypeFields = function (fields: EntityTypeFields) {
 
       let fieldType
 
-      if (field.type === 'reference') {
-        fieldType = (refType === 'refsAsStrings') ? 'String' : field.references
+      if (field.type === 'reference' && typeof field.references !== 'undefined') {
+        const referenceEntityTypes = field.references.length > 1 ? 'Union' + field.references.sort().join('') : field.references
+
+        fieldType = (refType === 'refsAsStrings') ? 'String' : referenceEntityTypes
       } else {
         fieldType = entityTypes.convertFieldTypeToGraphQL(field.type)
       }
@@ -69,6 +72,26 @@ const translateEntityTypeFields = function (fields: EntityTypeFields) {
   return output
 }
 
+const discoverUnionTypes = function (fields: EntityTypeFields, unionTypes: GraphQLUnionTypeDefinitions) {
+  _(fields).forEach((field, _fieldName) => {
+    if (field.type === 'reference') {
+      if (Array.isArray(field.references) && field.references.length > 1) {
+        const sortedReferences = field.references.sort()
+        const unionTypeName = 'Union' + sortedReferences.join('')
+        if (typeof unionTypes[unionTypeName] === 'undefined') {
+          unionTypes[unionTypeName] = sortedReferences
+        }
+      }
+    }
+
+    if (field.type === 'object' && field.fields) {
+      discoverUnionTypes(field.fields, unionTypes)
+    }
+  })
+
+  return unionTypes
+}
+
 interface IEntityTypeSchemaDefinitions {
   types: {
     [entityTypeName: string]: {
@@ -77,6 +100,7 @@ interface IEntityTypeSchemaDefinitions {
       fields: IEntityTypeRefsDefinitions['refsAsModels']
     }
   },
+  unionTypes: GraphQLUnionTypeDefinitions,
   inputs: {
     [entityTypeName: string]: {
       comment: string
@@ -110,20 +134,24 @@ interface IEntityTypeSchemaDefinitions {
   }
 }
 
-const getDefinitions = function () {
 
-  const entityTypeDefinitions: EntityTypeDefinitions = entityTypes.getData()
 
+function getGraphQLSchemaDefinitions () {
   const definitions: IEntityTypeSchemaDefinitions = {
     types: {},
+    unionTypes: {},
     inputs: {},
     queries: {},
     mutations: {}
   }
 
+  const entityTypeDefinitions: EntityTypeDefinitions = entityTypes.getData()
+
   // Get entity types, inputs, queries and mutations.
   _(entityTypeDefinitions).forEach((entityTypeData) => {
     const definedFields = translateEntityTypeFields(entityTypeData.fields)
+
+    discoverUnionTypes(entityTypeData.fields, definitions.unionTypes)
 
     const entityTypePascal = entityTypeData._meta.pascal
     const camel = entityTypeData._meta.camel
@@ -216,20 +244,42 @@ const getDefinitions = function () {
 
 export default {
   register (hooks: IHooks) {
+
+    let definitions: IEntityTypeSchemaDefinitions
+
     hooks.on('core.graphql.definitions.types', ({ types }: { types: GraphQLTypeDefinitions}) => {
-      const definitions = getDefinitions()
+      definitions = getGraphQLSchemaDefinitions()
       _.merge(types, definitions.types)
     })
+
+    hooks.on('core.graphql.definitions.unionTypes', ({ unionTypes }: { unionTypes: GraphQLUnionTypeDefinitions}) => {
+      _.merge(unionTypes, definitions.unionTypes)
+    })
+
+    hooks.on('core.graphql.resolvers', ({ resolvers }: { resolvers: IResolvers }) => {
+      // Provide __resolveType for union types used for polymorphic references
+      // to let graphql resolvers know the schema type of the referenced entity
+      // being returned.
+      Object.keys(definitions.unionTypes).forEach(unionType => {
+        resolvers[unionType] = {
+          __resolveType(obj) {
+            // The object collection name the equivalent to the type being
+            // returned.
+            return obj.collection.name
+          }
+        }
+      })
+    })
+
     hooks.on('core.graphql.definitions.inputs', ({ inputs }: { inputs: GraphQLInputDefinitions}) => {
-      const definitions = getDefinitions()
       _.merge(inputs, definitions.inputs)
     })
+
     hooks.on('core.graphql.definitions.queries', ({ queries }: { queries: GraphQLQueryDefinitions}) => {
-      const definitions = getDefinitions()
       _.merge(queries, definitions.queries)
     })
+
     hooks.on('core.graphql.definitions.mutations', ({ mutations }: { mutations: GraphQLMutationDefinitions}) => {
-      const definitions = getDefinitions()
       _.merge(mutations, definitions.mutations)
     })
   }

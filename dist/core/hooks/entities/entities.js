@@ -43,15 +43,39 @@ const addEntityTypeModels = function ({ models }) {
         }, {});
         const schema = new mongoose.Schema(definedFields);
         delete db.models[entityTypeName];
-        models[entityTypeName] = db.model(entityTypeName, schema);
+        models[entityTypeName] = db.model(entityTypeName, schema, entityTypeName);
+    });
+};
+const isEmpty = function (value) {
+    if (Array.isArray(value) || typeof value === 'object') {
+        return _.isEmpty(value);
+    }
+    if (value === null) {
+        return true;
+    }
+    return false;
+};
+const flattenEmptyFields = function (fields) {
+    _(fields).forEach((field, fieldName) => {
+        if (Array.isArray(field)) {
+            fields[fieldName] = isEmpty(field.filter((x) => !isEmpty(x))) ? null : field;
+        }
+        if (!Array.isArray(field) && typeof field === 'object') {
+            fields[fieldName] = flattenEmptyFields(fields[fieldName]);
+        }
     });
 };
 const entityCreateHandler = {
     operation: async function (txn) {
         const { entityData, dbModels, args } = txn.context;
         const EntityModel = dbModels[entityData._meta.pascal];
+        flattenEmptyFields(args.fields);
         const entity = await new EntityModel(args.fields).save();
         txn.context.createdEntity = entity;
+    },
+    rollback: async function (txn) {
+        const { createdEntity } = txn.context;
+        await createdEntity.remove();
     }
 };
 exports.default = {

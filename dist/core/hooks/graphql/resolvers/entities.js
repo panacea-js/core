@@ -9,37 +9,54 @@ const resolveNestedFields = function (types, currentType, fields) {
         if (field.type === 'reference') {
             types[currentType] = types[currentType] || {};
             types[currentType][fieldName] = function (sourceDocument, args, { dbModels }) {
-                if (!field.references || !dbModels[field.references]) {
+                if (!field.references) {
                     return;
                 }
                 if (field.many) {
                     let targetEntities = [];
-                    sourceDocument[fieldName].map((targetId) => {
-                        field.references && targetEntities.push(dbModels[field.references].findById(targetId));
+                    sourceDocument[fieldName].map((target) => {
+                        const [targetEntityType, targetId] = target.split('|');
+                        if (!dbModels[targetEntityType]) {
+                            return;
+                        }
+                        const targetEntity = dbModels[targetEntityType].findById(targetId);
+                        targetEntities.push(targetEntity);
                     });
-                    return targetEntities;
+                    return targetEntities.filter(x => !!x);
                 }
-                return dbModels[field.references].findById(sourceDocument[fieldName]);
+                const [targetEntityType, targetId] = sourceDocument[fieldName].split('|');
+                if (!dbModels[targetEntityType]) {
+                    return;
+                }
+                const targetEntity = dbModels[targetEntityType].findById(targetId);
+                return targetEntity;
             };
         }
     });
 };
 const ensureDocumentHasDefaultValues = function (fields, documentPartial) {
+    const applyDefaultValues = function (item, field, fieldId) {
+        if (field.required && _.isEmpty(item[fieldId])) {
+            if (field.default) {
+                item[fieldId] = field.default;
+                return;
+            }
+            if (['int', 'float', 'boolean'].includes(field.type)) {
+                item[fieldId] = 0;
+                return;
+            }
+            item[fieldId] = '';
+        }
+    };
     _(fields).forEach((field, fieldId) => {
         if (field.fields && documentPartial[fieldId]) {
             ensureDocumentHasDefaultValues(field.fields, documentPartial[fieldId]);
         }
-        if (field.required && _.isEmpty(documentPartial[fieldId])) {
-            if (field.default) {
-                documentPartial[fieldId] = field.default;
-                return;
-            }
-            if (['int', 'float', 'boolean'].includes(field.type)) {
-                documentPartial[fieldId] = 0;
-                return;
-            }
-            documentPartial[fieldId] = '';
+        if (Array.isArray(documentPartial)) {
+            documentPartial.forEach(item => applyDefaultValues(item, field, fieldId));
+            return;
         }
+        applyDefaultValues(documentPartial, field, fieldId);
     });
 };
 const entityResolvers = function (resolvers) {

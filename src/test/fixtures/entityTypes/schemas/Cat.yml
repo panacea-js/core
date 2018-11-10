@@ -19,7 +19,8 @@ fields:
     livesWithDogs:
         label: Lives with dogs
         type: reference
-        references: Dog
+        references:
+            - Dog
         many: true
     stories:
         label: Stories

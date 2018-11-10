@@ -12,7 +12,9 @@ fields:
     bestBuddy:
         label: Best buddy
         type: reference
-        references: Lizard
+        references:
+            - Lizard
+            - Dog
     social:
         label: Social links
         description: Add you social media links
@@ -35,7 +37,8 @@ fields:
                 label: Dogs
                 description: Testing deep references
                 type: reference
-                references: Dog
+                references:
+                    - Dog
                 many: true
             grid:
                 label: Grid reference
@@ -63,7 +66,8 @@ fields:
                 label: Featured cats
                 description: Tag people in your organisation related to this paragraph item
                 type: reference
-                references: Cat
+                references:
+                    - Cat
                 many: true
             grid_reference:
                 label: Grid reference
@@ -97,7 +101,8 @@ fields:
                                 label: Cat on a grid
                                 description: Which cat was here
                                 type: reference
-                                references: Cat
+                                references:
+                                    - Cat
             style_preset:
                 label: Style preset
                 description: A predefined style to be used on this paragraph itme

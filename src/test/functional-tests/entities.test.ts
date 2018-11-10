@@ -68,7 +68,7 @@ test.serial('Can create, read and delete an entity with referenced entities', as
         })
     })
     .then(dogIds => {
-      const livesWithDogsInput = dogIds.map(d => `"${d}"`).join(', ')
+      const livesWithDogsInput = dogIds.map(d => `"Dog|${d}"`).join(', ')
 
       // Create 'Puss' and reference the dogs. Also given the Cat entity has
       // revisions set, it should be possible to retrieve the CatRevision
@@ -143,7 +143,7 @@ test.serial('Can create and read two entities that reference each other', t => {
     }
   `)
 
-  const createLizardWithBestBuddy = (name: string, buddyId: number) => graphqlQuery(`
+  const createLizardWithBestBuddy = (name: string, buddyId: string) => graphqlQuery(`
     mutation {
       createLizard(fields: {
         name: "${name}",
@@ -152,8 +152,10 @@ test.serial('Can create and read two entities that reference each other', t => {
         id,
         name,
         bestBuddy {
-          id,
-          name
+          ... on Lizard {
+            id,
+            name
+          }
         }
       }
     }
@@ -161,9 +163,9 @@ test.serial('Can create and read two entities that reference each other', t => {
 
   return createLizard('Lizzy').then((json: any) => {
     const lizzyId = json.data.createLizard.id
-    return createLizardWithBestBuddy('Bruno', lizzyId).then((json: any) => {
-      const bestBuddyBruno = json.data.createLizard.bestBuddy.id
-      t.is(bestBuddyBruno, lizzyId)
+    return createLizardWithBestBuddy('Bizzy', `Lizard|${lizzyId}`).then((json: any) => {
+      const bestBuddyBizzy = json.data.createLizard.bestBuddy.id
+      t.is(bestBuddyBizzy, lizzyId)
     })
   })
 })

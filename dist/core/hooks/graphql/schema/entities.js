@@ -12,8 +12,9 @@ const translateEntityTypeFields = function (fields) {
                 return;
             }
             let fieldType;
-            if (field.type === 'reference') {
-                fieldType = (refType === 'refsAsStrings') ? 'String' : field.references;
+            if (field.type === 'reference' && typeof field.references !== 'undefined') {
+                const referenceEntityTypes = field.references.length > 1 ? 'Union' + field.references.sort().join('') : field.references;
+                fieldType = (refType === 'refsAsStrings') ? 'String' : referenceEntityTypes;
             }
             else {
                 fieldType = entityTypes.convertFieldTypeToGraphQL(field.type);
@@ -31,16 +32,35 @@ const translateEntityTypeFields = function (fields) {
     });
     return output;
 };
-const getDefinitions = function () {
-    const entityTypeDefinitions = entityTypes.getData();
+const discoverUnionTypes = function (fields, unionTypes) {
+    _(fields).forEach((field, _fieldName) => {
+        if (field.type === 'reference') {
+            if (Array.isArray(field.references) && field.references.length > 1) {
+                const sortedReferences = field.references.sort();
+                const unionTypeName = 'Union' + sortedReferences.join('');
+                if (typeof unionTypes[unionTypeName] === 'undefined') {
+                    unionTypes[unionTypeName] = sortedReferences;
+                }
+            }
+        }
+        if (field.type === 'object' && field.fields) {
+            discoverUnionTypes(field.fields, unionTypes);
+        }
+    });
+    return unionTypes;
+};
+function getGraphQLSchemaDefinitions() {
     const definitions = {
         types: {},
+        unionTypes: {},
         inputs: {},
         queries: {},
         mutations: {}
     };
+    const entityTypeDefinitions = entityTypes.getData();
     _(entityTypeDefinitions).forEach((entityTypeData) => {
         const definedFields = translateEntityTypeFields(entityTypeData.fields);
+        discoverUnionTypes(entityTypeData.fields, definitions.unionTypes);
         const entityTypePascal = entityTypeData._meta.pascal;
         const camel = entityTypeData._meta.camel;
         const pluralCamel = entityTypeData._meta.pluralCamel;
@@ -118,23 +138,33 @@ const getDefinitions = function () {
         };
     });
     return definitions;
-};
+}
 exports.default = {
     register(hooks) {
+        let definitions;
         hooks.on('core.graphql.definitions.types', ({ types }) => {
-            const definitions = getDefinitions();
+            definitions = getGraphQLSchemaDefinitions();
             _.merge(types, definitions.types);
         });
+        hooks.on('core.graphql.definitions.unionTypes', ({ unionTypes }) => {
+            _.merge(unionTypes, definitions.unionTypes);
+        });
+        hooks.on('core.graphql.resolvers', ({ resolvers }) => {
+            Object.keys(definitions.unionTypes).forEach(unionType => {
+                resolvers[unionType] = {
+                    __resolveType(obj) {
+                        return obj.collection.name;
+                    }
+                };
+            });
+        });
         hooks.on('core.graphql.definitions.inputs', ({ inputs }) => {
-            const definitions = getDefinitions();
             _.merge(inputs, definitions.inputs);
         });
         hooks.on('core.graphql.definitions.queries', ({ queries }) => {
-            const definitions = getDefinitions();
             _.merge(queries, definitions.queries);
         });
         hooks.on('core.graphql.definitions.mutations', ({ mutations }) => {
-            const definitions = getDefinitions();
             _.merge(mutations, definitions.mutations);
         });
     }

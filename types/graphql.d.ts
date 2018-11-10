@@ -59,6 +59,10 @@ interface GraphQLTypeDefinitions {
   [typeName: string] : GraphQLTypeDefinition
 }
 
+interface GraphQLUnionTypeDefinitions {
+  [unionTypeName: string]: Array<string>
+}
+
 interface GraphQLTypeDefinition {
   comment? : string,
   name: string,

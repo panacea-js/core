@@ -83,6 +83,15 @@ const formatTypesToOutput = function (type: 'type' | 'input', definitions: Graph
   return output.join('') + nestedTypes.join('')
 }
 
+const formatUnionTypesToOutput = function (unionTypes: GraphQLUnionTypeDefinitions) {
+  const output: Array<string> = []
+  for (const unionType of Object.keys(unionTypes)) {
+    const referencedTypes = unionTypes[unionType].join(' | ')
+    output.push(`union ${unionType} = ${referencedTypes}`)
+  }
+  return output.join('')
+}
+
 /**
  * Transforms structured data for GraphQL enums to an output string.
  */
@@ -115,6 +124,7 @@ export const graphQLTypeDefinitions = function (): Promise<string> {
     try {
       const output = []
       const types: GraphQLTypeDefinitions = {}
+      const unionTypes: GraphQLUnionTypeDefinitions = {}
       const queries: GraphQLQueryDefinitions = {}
       const mutations: GraphQLMutationDefinitions = {}
       const inputs: GraphQLInputDefinitions = {}
@@ -124,6 +134,10 @@ export const graphQLTypeDefinitions = function (): Promise<string> {
       // Types.
       hooks.invoke('core.graphql.definitions.types', { types })
       output.push(formatTypesToOutput('type', types))
+
+      // Union types.
+      hooks.invoke('core.graphql.definitions.unionTypes', { unionTypes })
+      output.push(formatUnionTypesToOutput(unionTypes))
 
       // Inputs.
       hooks.invoke('core.graphql.definitions.inputs', { inputs })

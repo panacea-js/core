@@ -46,6 +46,14 @@ const formatTypesToOutput = function (type, definitions) {
     });
     return output.join('') + nestedTypes.join('');
 };
+const formatUnionTypesToOutput = function (unionTypes) {
+    const output = [];
+    for (const unionType of Object.keys(unionTypes)) {
+        const referencedTypes = unionTypes[unionType].join(' | ');
+        output.push(`union ${unionType} = ${referencedTypes}`);
+    }
+    return output.join('');
+};
 const formatEnumsToOutput = function (enums) {
     const output = [];
     _(enums).forEach(function (definition) {
@@ -64,6 +72,7 @@ exports.graphQLTypeDefinitions = function () {
         try {
             const output = [];
             const types = {};
+            const unionTypes = {};
             const queries = {};
             const mutations = {};
             const inputs = {};
@@ -71,6 +80,8 @@ exports.graphQLTypeDefinitions = function () {
             const scalars = [];
             hooks.invoke('core.graphql.definitions.types', { types });
             output.push(formatTypesToOutput('type', types));
+            hooks.invoke('core.graphql.definitions.unionTypes', { unionTypes });
+            output.push(formatUnionTypesToOutput(unionTypes));
             hooks.invoke('core.graphql.definitions.inputs', { inputs });
             output.push(formatTypesToOutput('input', inputs));
             hooks.invoke('core.graphql.definitions.queries', { queries });

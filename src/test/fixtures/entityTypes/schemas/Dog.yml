@@ -17,5 +17,6 @@ fields:
     livesWithCats:
         label: Lives with cats
         type: reference
-        references: Cat
+        references:
+            - Cat
         many: true

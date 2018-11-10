@@ -74,7 +74,7 @@ const addEntityTypeModels = function ({ models }: { models: DbModels }) {
 
     // When re-registering model ensure it is removed to prevent mongoose errors.
     delete db.models[entityTypeName]
-    models[entityTypeName] = db.model(entityTypeName, schema)
+    models[entityTypeName] = db.model(entityTypeName, schema, entityTypeName)
   })
 }
 

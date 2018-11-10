@@ -33,18 +33,32 @@ const resolveNestedFields = function (
       types[currentType] = types[currentType] || {}
 
       types[currentType][fieldName] = function (sourceDocument: any, args: any, { dbModels }: { dbModels: DbModels}) {
-        if (!field.references || !dbModels[field.references]) {
+        if (!field.references) {
           return
         }
 
         if (field.many) {
           let targetEntities: Array<any> = []
-          sourceDocument[fieldName].map((targetId: string) => {
-            field.references && targetEntities.push(dbModels[field.references].findById(targetId))
+          sourceDocument[fieldName].map((target: string) => {
+            const [targetEntityType, targetId] = target.split('|')
+            if (!dbModels[targetEntityType]) {
+              return
+            }
+            const targetEntity = dbModels[targetEntityType].findById(targetId)
+            targetEntities.push(targetEntity)
           })
-          return targetEntities
+          return targetEntities.filter(x => !!x)
         }
-        return dbModels[field.references].findById(sourceDocument[fieldName])
+
+        const [targetEntityType, targetId] = sourceDocument[fieldName].split('|')
+
+        if (!dbModels[targetEntityType]) {
+          return
+        }
+
+        const targetEntity = dbModels[targetEntityType].findById(targetId)
+
+        return targetEntity
       }
     }
   })

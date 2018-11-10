@@ -18,7 +18,7 @@ exports.default = {
                 definitions[revisionEntityType] = clonedRevision;
                 entityType.fields._revisions = {
                     type: 'reference',
-                    references: revisionEntityType,
+                    references: [revisionEntityType],
                     label: revisionsText,
                     description: i18n.t('core.entityTypes.revisions.description', { entityTypeName }),
                     many: true
@@ -38,19 +38,21 @@ exports.default = {
                 prepare: async function (txn) {
                     const { entityData, dbModels, args } = txn.context;
                     if (entityData.revisions) {
-                        const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType];
+                        const revisionEntityType = entityData._meta.revisionEntityType;
+                        const EntityRevisionModel = dbModels[revisionEntityType];
                         const entityRevision = await new EntityRevisionModel(args.fields).save();
                         args.fields._revisions = args.fields._revisions || [];
-                        args.fields._revisions.push(entityRevision._id.toString());
-                        txn.context.createdRevisionId = entityRevision._id.toString();
+                        args.fields._revisions.push(`${revisionEntityType}|${entityRevision._id}`);
+                        txn.context.createdRevisionId = `${revisionEntityType}|${entityRevision._id}`;
                     }
                 },
                 rollback: async function (txn) {
-                    const { entityData, dbModels, createdRevisionId } = txn.context;
+                    const { entityData, dbModels, createdRevisionId, createdEntity } = txn.context;
                     if (entityData.revisions && createdRevisionId) {
                         if (entityData._meta && entityData._meta.revisionEntityType) {
-                            const EntityRevisionModel = dbModels[entityData._meta.revisionEntityType];
-                            EntityRevisionModel.findByIdAndDelete(txn.context.createdRevisionId);
+                            const [revisionEntityType, revisionEntityId] = createdRevisionId.split('|');
+                            const EntityRevisionModel = dbModels[revisionEntityType];
+                            await EntityRevisionModel.findByIdAndDelete(revisionEntityId).exec();
                         }
                     }
                 }

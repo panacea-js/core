@@ -51,8 +51,6 @@ exports.default = {
             };
             transactionHandlers.push(datesCreateHandler);
         });
-        hooks.on('core.entity.resolverQueryResult', ({ queryResult }) => {
-        });
     }
 };
 //# sourceMappingURL=dates.js.map
