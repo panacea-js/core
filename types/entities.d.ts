@@ -56,6 +56,7 @@ interface EntityTypeField {
   index?: boolean
   fields?: EntityTypeFields
   _meta?: FieldMeta
+  _excludeGraphQLInput?: boolean
 }
 
 interface FieldMeta {

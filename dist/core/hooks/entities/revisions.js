@@ -17,6 +17,7 @@ exports.default = {
                 clonedRevision._excludeGraphQL = true;
                 definitions[revisionEntityType] = clonedRevision;
                 entityType.fields._revisions = {
+                    _excludeGraphQLInput: true,
                     type: 'reference',
                     references: [revisionEntityType],
                     label: revisionsText,

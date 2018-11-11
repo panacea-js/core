@@ -49,10 +49,17 @@ const formatTypesToOutput = function (type, definitions) {
 const formatUnionTypesToOutput = function (unionTypes) {
     const output = [];
     for (const unionType of Object.keys(unionTypes)) {
-        const referencedTypes = unionTypes[unionType].join(' | ');
-        output.push(`union ${unionType} = ${referencedTypes}`);
+        if (_(unionType).startsWith('UnionType')) {
+            const referencedTypes = unionTypes[unionType].join(' | ');
+            output.push(`union ${unionType} = ${referencedTypes}`);
+        }
+        if (_(unionType).startsWith('UnionInput')) {
+            const referencedTypes = unionTypes[unionType];
+            output.push(`input ${unionType} {`);
+            output.push(`}`);
+        }
     }
-    return output.join('');
+    return output.join('\n');
 };
 const formatEnumsToOutput = function (enums) {
     const output = [];

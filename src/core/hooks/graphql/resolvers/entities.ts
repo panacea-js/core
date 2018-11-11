@@ -199,6 +199,18 @@ const entityResolvers = function (resolvers: any) {
           entityData
         }
 
+        // @todo - Fix this - only done to fix test, need general solution to:
+        // 1. Map 'existing' inputs to  entityType|entityId for storage - first lookup to check for valid entity
+        // 2. Create entities and attach reference is input field key starts with 'create'
+        if (args.fields.livesWithDogs) {
+          args.fields.livesWithDogs = args.fields.livesWithDogs.map(dogRef => {
+            return `${dogRef.existing.entityType}|${dogRef.existing.entityId}`
+          })
+        }
+        if (args.fields.bestBuddy) {
+          args.fields.bestBuddy = `${args.fields.bestBuddy.existing.entityType}|${args.fields.bestBuddy.existing.entityId}`
+        }
+
         const transactionHandlers: Array<TransactionHandler> = []
         hooks.invoke('core.entity.createHandlers', { transactionHandlers })
 

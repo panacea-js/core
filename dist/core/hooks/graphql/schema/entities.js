@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const { _, entityTypes } = Panacea.container;
-const translateEntityTypeFields = function (fields) {
+const translateEntityTypeFields = function (fields, prefixes) {
     let output = {
         refsAsStrings: {},
         refsAsModels: {}
@@ -11,10 +11,14 @@ const translateEntityTypeFields = function (fields) {
             if (!field._meta) {
                 return;
             }
+            if (field._excludeGraphQLInput && refType === 'refsAsStrings') {
+                return;
+            }
             let fieldType;
             if (field.type === 'reference' && typeof field.references !== 'undefined') {
-                const referenceEntityTypes = field.references.length > 1 ? 'Union' + field.references.sort().join('') : field.references;
-                fieldType = (refType === 'refsAsStrings') ? 'String' : referenceEntityTypes;
+                const referenceType = field.references.length > 1 ? `UnionType_${prefixes.join('_')}_${_fieldName}` : field.references.sort().join('');
+                const referenceInput = `UnionInput_${prefixes.join('_')}_${_fieldName}`;
+                fieldType = (refType === 'refsAsStrings') ? referenceInput : referenceType;
             }
             else {
                 fieldType = entityTypes.convertFieldTypeToGraphQL(field.type);
@@ -26,28 +30,58 @@ const translateEntityTypeFields = function (fields) {
                 value: `${field._meta.camel}: ${fieldType}`
             };
             if (field.type === 'object' && field.fields) {
-                output[refType][field._meta.camel].fields = translateEntityTypeFields(field.fields);
+                output[refType][field._meta.camel].fields = translateEntityTypeFields(field.fields, [...prefixes, _fieldName]);
             }
         });
     });
     return output;
 };
-const discoverUnionTypes = function (fields, unionTypes) {
+const discoverUnionTypes = function (fields, prefixes, unionTypes) {
     _(fields).forEach((field, _fieldName) => {
         if (field.type === 'reference') {
-            if (Array.isArray(field.references) && field.references.length > 1) {
-                const sortedReferences = field.references.sort();
-                const unionTypeName = 'Union' + sortedReferences.join('');
-                if (typeof unionTypes[unionTypeName] === 'undefined') {
-                    unionTypes[unionTypeName] = sortedReferences;
+            if (Array.isArray(field.references)) {
+                const references = field.references.sort();
+                if (field.references.length > 1) {
+                    const unionTypeName = `UnionType_${prefixes.join('_')}_${_fieldName}`;
+                    if (typeof unionTypes[unionTypeName] === 'undefined') {
+                        unionTypes[unionTypeName] = references;
+                    }
                 }
             }
         }
         if (field.type === 'object' && field.fields) {
-            discoverUnionTypes(field.fields, unionTypes);
+            discoverUnionTypes(field.fields, [...prefixes, _fieldName], unionTypes);
         }
     });
     return unionTypes;
+};
+const discoverReferenceInputTypes = function (fields, prefixes, inputs) {
+    _(fields).forEach((field, _fieldName) => {
+        if (field.type === 'reference') {
+            if (Array.isArray(field.references) && !field._excludeGraphQLInput) {
+                const references = field.references.sort();
+                const createFields = references.reduce((acc, reference) => {
+                    acc[`create${reference}`] = {
+                        comment: `Fields to create on a new ${reference} and attach reference to this entity`,
+                        value: `create${reference}: ${reference}Input`,
+                    };
+                    return acc;
+                }, {});
+                const inputName = `UnionInput_${prefixes.join('_')}_${_fieldName}`;
+                inputs[inputName] = {
+                    comment: `Input type for ${prefixes.join('_')}_${_fieldName}`,
+                    name: inputName,
+                    fields: Object.assign({ existing: {
+                            comment: 'An existing entity reference',
+                            value: 'existing: ExistingReference'
+                        } }, createFields)
+                };
+            }
+        }
+        if (field.type === 'object' && field.fields) {
+            discoverReferenceInputTypes(field.fields, [...prefixes, _fieldName], inputs);
+        }
+    });
 };
 function getGraphQLSchemaDefinitions() {
     const definitions = {
@@ -57,10 +91,23 @@ function getGraphQLSchemaDefinitions() {
         queries: {},
         mutations: {}
     };
+    definitions.inputs['ExistingReference'] = {
+        comment: `Attach an existing entity as a reference`,
+        name: 'ExistingReference',
+        fields: {
+            entityType: {
+                comment: 'The entity type of the referenced entity',
+                value: 'entityType: String'
+            },
+            entityId: {
+                comment: 'The entity ID of the referenced entity',
+                value: 'entityId: String'
+            }
+        }
+    };
     const entityTypeDefinitions = entityTypes.getData();
-    _(entityTypeDefinitions).forEach((entityTypeData) => {
-        const definedFields = translateEntityTypeFields(entityTypeData.fields);
-        discoverUnionTypes(entityTypeData.fields, definitions.unionTypes);
+    _(entityTypeDefinitions).forEach((entityTypeData, entityTypeName) => {
+        const definedFields = translateEntityTypeFields(entityTypeData.fields, [entityTypeName]);
         const entityTypePascal = entityTypeData._meta.pascal;
         const camel = entityTypeData._meta.camel;
         const pluralCamel = entityTypeData._meta.pluralCamel;
@@ -72,6 +119,8 @@ function getGraphQLSchemaDefinitions() {
         if (entityTypeData._excludeGraphQL) {
             return;
         }
+        discoverUnionTypes(entityTypeData.fields, [entityTypeName], definitions.unionTypes);
+        discoverReferenceInputTypes(entityTypeData.fields, [entityTypeName], definitions.inputs);
         const inputFields = definedFields.refsAsStrings;
         delete inputFields.id;
         const countFields = Object.keys(inputFields).length;

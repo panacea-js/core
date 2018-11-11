@@ -68,47 +68,60 @@ test.serial('Can create, read and delete an entity with referenced entities', as
         })
     })
     .then(dogIds => {
-      const livesWithDogsInput = dogIds.map(d => `"Dog|${d}"`).join(', ')
+      const livesWithDogsInput = `[
+        {
+          existing: {
+            entityType: "Dog",
+            entityId: "${dogIds[0]}"
+          }
+        },
+        {
+          existing: {
+            entityType: "Dog",
+            entityId: "${dogIds[1]}"
+          }
+        }
+      ]`
 
       // Create 'Puss' and reference the dogs. Also given the Cat entity has
       // revisions set, it should be possible to retrieve the CatRevision
       // resolved reference under the _revisions field. More comprehensive
       // revision tests are in hooks/entities/test/revisions.test.js
       return graphqlQuery(`
-      mutation {
-        createCat(fields: {
-          name: "Puss",
-          livesWithDogs: [${livesWithDogsInput}]
-        }) {
-          id,
-          name,
-          _revisions {
+        mutation {
+          createCat(fields: {
+            name: "Puss",
+            livesWithDogs: ${livesWithDogsInput}
+          }) {
             id,
             name,
+            _revisions {
+              id,
+              name,
+              livesWithDogs {
+                id,
+                name
+              }
+            },
             livesWithDogs {
               id,
               name
             }
-          },
-          livesWithDogs {
-            id,
-            name
           }
         }
-      }
-    `)
-        .then((json: any) => {
-          const puss = json.data.createCat
-          t.is(puss.name, 'Puss')
-          t.is(puss.livesWithDogs[0].name, 'Rover')
-          t.is(puss.livesWithDogs[1].name, 'Fido')
-          t.is(puss._revisions[0].livesWithDogs[0].name, 'Rover')
-          t.is(puss._revisions[0].livesWithDogs[1].name, 'Fido')
-          return {
-            catId: puss.id,
-            dogIds
-          }
-        }).catch(error => console.error(error))
+      `)
+      .then((json: any) => {
+        const puss = json.data.createCat
+        t.is(puss.name, 'Puss')
+        t.is(puss.livesWithDogs[0].name, 'Rover')
+        t.is(puss.livesWithDogs[1].name, 'Fido')
+        t.is(puss._revisions[0].livesWithDogs[0].name, 'Rover')
+        t.is(puss._revisions[0].livesWithDogs[1].name, 'Fido')
+        return {
+          catId: puss.id,
+          dogIds
+        }
+      }).catch(error => console.error(error))
     })
     .then((ids: any) => {
     // Read 'Puss' from its generated ID and assert they're friends (or at least live together!)
@@ -143,11 +156,16 @@ test.serial('Can create and read two entities that reference each other', t => {
     }
   `)
 
-  const createLizardWithBestBuddy = (name: string, buddyId: string) => graphqlQuery(`
+  const createLizardWithBestBuddy = (name: string, buddyType: string, buddyId: string) => graphqlQuery(`
     mutation {
       createLizard(fields: {
         name: "${name}",
-        bestBuddy: "${buddyId}"
+        bestBuddy: {
+          existing: {
+            entityType: "${buddyType}",
+            entityId: "${buddyId}"
+          }
+        }
       }) {
         id,
         name,
@@ -163,7 +181,7 @@ test.serial('Can create and read two entities that reference each other', t => {
 
   return createLizard('Lizzy').then((json: any) => {
     const lizzyId = json.data.createLizard.id
-    return createLizardWithBestBuddy('Bizzy', `Lizard|${lizzyId}`).then((json: any) => {
+    return createLizardWithBestBuddy('Bizzy', 'Lizard', lizzyId).then((json: any) => {
       const bestBuddyBizzy = json.data.createLizard.bestBuddy.id
       t.is(bestBuddyBizzy, lizzyId)
     })

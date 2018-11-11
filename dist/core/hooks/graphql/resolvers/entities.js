@@ -124,6 +124,14 @@ const entityResolvers = function (resolvers) {
                     entityType: entityData._meta.pascal,
                     entityData
                 };
+                if (args.fields.livesWithDogs) {
+                    args.fields.livesWithDogs = args.fields.livesWithDogs.map(dogRef => {
+                        return `${dogRef.existing.entityType}|${dogRef.existing.entityId}`;
+                    });
+                }
+                if (args.fields.bestBuddy) {
+                    args.fields.bestBuddy = `${args.fields.bestBuddy.existing.entityType}|${args.fields.bestBuddy.existing.entityId}`;
+                }
                 const transactionHandlers = [];
                 hooks.invoke('core.entity.createHandlers', { transactionHandlers });
                 return new Transaction(transactionHandlers, transactionContext).execute()

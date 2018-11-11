@@ -28,7 +28,7 @@ type EntityTypeRefTypes = keyof IEntityTypeRefsDefinitions
  * One key is for where the references should be strings - in the case of Input Types and Mutations.
  * Another key is for where the references should to the models (GraphQL types)- used in types and Query definitions.
  */
-const translateEntityTypeFields = function (fields: EntityTypeFields) {
+const translateEntityTypeFields = function (fields: EntityTypeFields, prefixes: Array<string>) {
 
   let output: IEntityTypeRefsDefinitions = {
     refsAsStrings: {},
@@ -43,12 +43,17 @@ const translateEntityTypeFields = function (fields: EntityTypeFields) {
         return
       }
 
+      if (field._excludeGraphQLInput && refType === 'refsAsStrings') {
+        return
+      }
+
       let fieldType
 
       if (field.type === 'reference' && typeof field.references !== 'undefined') {
-        const referenceEntityTypes = field.references.length > 1 ? 'Union' + field.references.sort().join('') : field.references
+        const referenceType = field.references.length > 1 ? `UnionType_${prefixes.join('_')}_${_fieldName}` : field.references.sort().join('')
+        const referenceInput = `UnionInput_${prefixes.join('_')}_${_fieldName}`
 
-        fieldType = (refType === 'refsAsStrings') ? 'String' : referenceEntityTypes
+        fieldType = (refType === 'refsAsStrings') ? referenceInput : referenceType
       } else {
         fieldType = entityTypes.convertFieldTypeToGraphQL(field.type)
       }
@@ -64,7 +69,7 @@ const translateEntityTypeFields = function (fields: EntityTypeFields) {
       if (field.type === 'object' && field.fields) {
         // Recurse this function to append output to the fields key.
         // This allows for unlimited nesting of defined fields.
-        output[refType as EntityTypeRefTypes][field._meta.camel].fields = translateEntityTypeFields(field.fields)
+        output[refType as EntityTypeRefTypes][field._meta.camel].fields = translateEntityTypeFields(field.fields, [...prefixes, _fieldName])
       }
     })
   })
@@ -72,24 +77,68 @@ const translateEntityTypeFields = function (fields: EntityTypeFields) {
   return output
 }
 
-const discoverUnionTypes = function (fields: EntityTypeFields, unionTypes: GraphQLUnionTypeDefinitions) {
+const discoverUnionTypes = function (fields: EntityTypeFields, prefixes: Array<string>, unionTypes: GraphQLUnionTypeDefinitions) {
   _(fields).forEach((field, _fieldName) => {
     if (field.type === 'reference') {
-      if (Array.isArray(field.references) && field.references.length > 1) {
-        const sortedReferences = field.references.sort()
-        const unionTypeName = 'Union' + sortedReferences.join('')
-        if (typeof unionTypes[unionTypeName] === 'undefined') {
-          unionTypes[unionTypeName] = sortedReferences
+      if (Array.isArray(field.references)) {
+
+        const references = field.references.sort()
+
+        if (field.references.length > 1) {
+
+          const unionTypeName = `UnionType_${prefixes.join('_')}_${_fieldName}`
+
+          if (typeof unionTypes[unionTypeName] === 'undefined') {
+            unionTypes[unionTypeName] = references
+          }
+        }
+
+      }
+    }
+
+    if (field.type === 'object' && field.fields) {
+      discoverUnionTypes(field.fields, [...prefixes, _fieldName], unionTypes)
+    }
+  })
+
+  return unionTypes
+}
+
+const discoverReferenceInputTypes = function (fields: EntityTypeFields, prefixes: Array<string>, inputs: GraphQLInputDefinitions) {
+  _(fields).forEach((field, _fieldName) => {
+    if (field.type === 'reference') {
+      if (Array.isArray(field.references) && !field._excludeGraphQLInput) {
+        const references = field.references.sort()
+
+        const createFields = references.reduce((acc, reference) => {
+          acc[`create${reference}`] = {
+            comment: `Fields to create on a new ${reference} and attach reference to this entity`,
+            value: `create${reference}: ${reference}Input`,
+          }
+          return acc
+        }, {} as any)
+
+
+        const inputName = `UnionInput_${prefixes.join('_')}_${_fieldName}`
+
+        inputs[inputName] = {
+          comment: `Input type for ${prefixes.join('_')}_${_fieldName}`,
+          name: inputName,
+          fields: {
+            existing: {
+              comment: 'An existing entity reference',
+              value: 'existing: ExistingReference'
+            },
+            ...createFields
+          }
         }
       }
     }
 
     if (field.type === 'object' && field.fields) {
-      discoverUnionTypes(field.fields, unionTypes)
+      discoverReferenceInputTypes(field.fields, [...prefixes, _fieldName], inputs)
     }
   })
-
-  return unionTypes
 }
 
 interface IEntityTypeSchemaDefinitions {
@@ -145,13 +194,26 @@ function getGraphQLSchemaDefinitions () {
     mutations: {}
   }
 
+  definitions.inputs['ExistingReference'] = {
+    comment: `Attach an existing entity as a reference`,
+    name: 'ExistingReference',
+    fields: {
+      entityType: {
+        comment: 'The entity type of the referenced entity',
+        value: 'entityType: String'
+      },
+      entityId: {
+        comment: 'The entity ID of the referenced entity',
+        value: 'entityId: String'
+      }
+    }
+  }
+
   const entityTypeDefinitions: EntityTypeDefinitions = entityTypes.getData()
 
   // Get entity types, inputs, queries and mutations.
-  _(entityTypeDefinitions).forEach((entityTypeData) => {
-    const definedFields = translateEntityTypeFields(entityTypeData.fields)
-
-    discoverUnionTypes(entityTypeData.fields, definitions.unionTypes)
+  _(entityTypeDefinitions).forEach((entityTypeData, entityTypeName) => {
+    const definedFields = translateEntityTypeFields(entityTypeData.fields, [entityTypeName])
 
     const entityTypePascal = entityTypeData._meta.pascal
     const camel = entityTypeData._meta.camel
@@ -168,6 +230,9 @@ function getGraphQLSchemaDefinitions () {
     if (entityTypeData._excludeGraphQL) {
       return
     }
+
+    discoverUnionTypes(entityTypeData.fields, [entityTypeName], definitions.unionTypes)
+    discoverReferenceInputTypes(entityTypeData.fields, [entityTypeName], definitions.inputs)
 
     const inputFields = definedFields.refsAsStrings
     delete inputFields.id

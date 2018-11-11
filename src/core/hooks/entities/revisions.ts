@@ -25,6 +25,7 @@ export default {
 
         // _revision field stores an array of references to the revision entity.
         entityType.fields._revisions = {
+          _excludeGraphQLInput: true,
           type: 'reference',
           references: [revisionEntityType],
           label: revisionsText,

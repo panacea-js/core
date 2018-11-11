@@ -86,10 +86,19 @@ const formatTypesToOutput = function (type: 'type' | 'input', definitions: Graph
 const formatUnionTypesToOutput = function (unionTypes: GraphQLUnionTypeDefinitions) {
   const output: Array<string> = []
   for (const unionType of Object.keys(unionTypes)) {
-    const referencedTypes = unionTypes[unionType].join(' | ')
-    output.push(`union ${unionType} = ${referencedTypes}`)
+    if (_(unionType).startsWith('UnionType')) {
+      const referencedTypes = unionTypes[unionType].join(' | ')
+      output.push(`union ${unionType} = ${referencedTypes}`)
+    }
+    if (_(unionType).startsWith('UnionInput')) {
+      const referencedTypes = unionTypes[unionType]
+      // output.push(`union ${unionType} = ${referencedTypes}`)
+      output.push(`input ${unionType} {`)
+      output.push(`}`)
+    }
+
   }
-  return output.join('')
+  return output.join('\n')
 }
 
 /**
@@ -162,6 +171,8 @@ export const graphQLTypeDefinitions = function (): Promise<string> {
       const tidyDefinitionEndings = function (input: string) {
         return input.replace(/\n\n\}/g, '\n}')
       }
+
+      //console.log(tidyDefinitionEndings(output.join('\n')))
 
       resolve(tidyDefinitionEndings(output.join('\n')))
     } catch (error) {

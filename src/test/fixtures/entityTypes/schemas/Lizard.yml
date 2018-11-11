@@ -58,18 +58,18 @@ fields:
         type: object
         many: true
         fields:
-            body_text:
+            bodyText:
                 label: Body
                 description: Some misc text of your choosing
                 type: string
-            featured_cats:
+            featuredCats:
                 label: Featured cats
                 description: Tag people in your organisation related to this paragraph item
                 type: reference
                 references:
                     - Cat
                 many: true
-            grid_reference:
+            gridReference:
                 label: Grid reference
                 description: Testing a further object nesting
                 type: object
@@ -87,7 +87,7 @@ fields:
                         label: Preset
                         description: Apply an image preset in order to automatically resize the image
                         type: string
-                    griddy_cat:
+                    griddyCat:
                         label: Griddy cat
                         description: Add non-sensical nested cat in a grid reference
                         type: object
@@ -103,7 +103,7 @@ fields:
                                 type: reference
                                 references:
                                     - Cat
-            style_preset:
+            stylePreset:
                 label: Style preset
                 description: A predefined style to be used on this paragraph itme
                 type: string
