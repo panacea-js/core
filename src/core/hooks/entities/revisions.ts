@@ -7,14 +7,18 @@ const { _, i18n } = Panacea.container
 
 export default {
   register (hooks: IHooks) {
-    hooks.once('core.entityTypes.definitions', ({ definitions }: { definitions: EntityTypeDefinitions }) => {
+    hooks.on('core.entityTypes.definitions', ({ definitions }: { definitions: EntityTypeDefinitions }) => {
       const revisionsText = i18n.t('core.entityTypes.revisions.label') // Revisions
 
       for (const entityTypeName of Object.keys(definitions)) {
+
         const entityType: EntityTypeDefinition = definitions[entityTypeName]
-        if (!entityType.revisions) {
+
+        // Skip this entity type is it's not revisionable or already has revisions applied.
+        if (!entityType.revisions || entityType.fields._revisions) {
           continue
         }
+
         const revisionEntityType = _.upperFirst(_.camelCase(entityTypeName)) + 'Revision'
 
         const clonedRevision: EntityTypeDefinition = _.cloneDeep(entityType)

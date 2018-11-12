@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const { _, log, hooks, entityTypes, Transaction, modelQuery } = Panacea.container;
-const resolveNestedFields = function (types, currentType, fields) {
+const resolveNestedFieldTypes = function (types, currentType, fields) {
     _(fields).forEach((field, fieldName) => {
         if (field.type === 'object' && field.fields) {
-            resolveNestedFields(types, `${currentType}_${fieldName}`, field.fields);
+            resolveNestedFieldTypes(types, `${currentType}_${fieldName}`, field.fields);
         }
         if (field.type === 'reference') {
             types[currentType] = types[currentType] || {};
@@ -33,6 +33,53 @@ const resolveNestedFields = function (types, currentType, fields) {
             };
         }
     });
+};
+const resolveInputArguments = async function (args, context, currentArgsIndex, fields, resolvers, entityTypeDefinitions) {
+    for (const fieldName of Object.keys(fields)) {
+        const field = fields[fieldName];
+        if (field.type === 'object' && field.fields) {
+            await resolveInputArguments(args, context, [...currentArgsIndex, fieldName], field.fields, resolvers, entityTypeDefinitions);
+        }
+        if (field.type === 'reference') {
+            let argData = _.get(args, [...currentArgsIndex, fieldName]);
+            if (argData) {
+                if (!field.many) {
+                    argData = [argData];
+                }
+                const referenceDefinitions = argData;
+                for (const referenceItemIndex in referenceDefinitions) {
+                    const referenceItemData = referenceDefinitions[referenceItemIndex];
+                    if (referenceItemData.existing && referenceItemData.existing.entityType && referenceItemData.existing.entityId) {
+                        const value = `${referenceItemData.existing.entityType}|${referenceItemData.existing.entityId}`;
+                        if (field.many) {
+                            _.set(args, [...currentArgsIndex, fieldName, referenceItemIndex], value);
+                            continue;
+                        }
+                        _.set(args, [...currentArgsIndex, fieldName], value);
+                        continue;
+                    }
+                    const action = Object.keys(referenceItemData).length > 0 ? Object.keys(referenceItemData)[0] : null;
+                    if (action && resolvers.Mutation && resolvers.Mutation[action] && typeof resolvers.Mutation[action] === 'function') {
+                        const referencedEntityType = action.replace('create', '');
+                        context.entityType = referencedEntityType;
+                        context.entityTypeData = entityTypeDefinitions[referencedEntityType];
+                        const createdEntity = await resolvers.Mutation[action].apply(null, [null, referenceItemData[action], context]);
+                        const value = `${referencedEntityType}|${createdEntity._id}`;
+                        if (field.many) {
+                            _.set(args, [...currentArgsIndex, fieldName, referenceItemIndex], value);
+                            continue;
+                        }
+                        _.set(args, [...currentArgsIndex, fieldName], value);
+                        continue;
+                    }
+                    if (field.many) {
+                        _.unset(args, [...currentArgsIndex, fieldName, referenceItemIndex]);
+                    }
+                    _.unset(args, [...currentArgsIndex, fieldName]);
+                }
+            }
+        }
+    }
 };
 const ensureDocumentHasDefaultValues = function (fields, documentPartial) {
     const applyDefaultValues = function (item, field, fieldId) {
@@ -64,7 +111,7 @@ const entityResolvers = function (resolvers) {
     const definitions = entityTypes.getData();
     _(definitions).forEach((entityData) => {
         if (entityData._excludeGraphQL) {
-            resolveNestedFields(types, entityData._meta.pascal, entityData.fields);
+            resolveNestedFieldTypes(types, entityData._meta.pascal, entityData.fields);
             return;
         }
         types[entityData._meta.pascal] = {};
@@ -116,23 +163,19 @@ const entityResolvers = function (resolvers) {
             return documents;
         };
         if (hasFields) {
-            resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent, args, { dbModels }) => {
+            resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent, args, context) => {
+                if (!args.fields) {
+                    args = { fields: args };
+                }
                 const transactionContext = {
                     parent,
                     args,
-                    dbModels,
-                    entityType: entityData._meta.pascal,
-                    entityData
+                    dbModels: context.dbModels,
+                    entityType: context.entityType ? context.entityType : entityData._meta.pascal,
+                    entityData: context.entityData ? context.entityData : entityData
                 };
-                if (args.fields.livesWithDogs) {
-                    args.fields.livesWithDogs = args.fields.livesWithDogs.map(dogRef => {
-                        return `${dogRef.existing.entityType}|${dogRef.existing.entityId}`;
-                    });
-                }
-                if (args.fields.bestBuddy) {
-                    args.fields.bestBuddy = `${args.fields.bestBuddy.existing.entityType}|${args.fields.bestBuddy.existing.entityId}`;
-                }
                 const transactionHandlers = [];
+                await resolveInputArguments(args, context, ['fields'], entityData.fields, resolvers, definitions);
                 hooks.invoke('core.entity.createHandlers', { transactionHandlers });
                 return new Transaction(transactionHandlers, transactionContext).execute()
                     .then((txn) => {
@@ -165,7 +208,7 @@ const entityResolvers = function (resolvers) {
                 });
             };
         }
-        resolveNestedFields(types, entityData._meta.pascal, entityData.fields);
+        resolveNestedFieldTypes(types, entityData._meta.pascal, entityData.fields);
     });
     for (const type in types) {
         resolvers[type] = types[type];

@@ -19,20 +19,17 @@ const { _, log, hooks, entityTypes, Transaction, modelQuery } = Panacea.containe
  * @param {object} fields The list of fields defined at the current level of
  *   recursion.
  */
-const resolveNestedFields = function (
-  types: any,
-  currentType: string,
-  fields: EntityTypeFields
-): void {
+const resolveNestedFieldTypes = function (types: any, currentType: string, fields: EntityTypeFields) {
   _(fields).forEach((field, fieldName) => {
     if (field.type === 'object' && field.fields) {
-      resolveNestedFields(types, `${currentType}_${fieldName}`, field.fields)
+      resolveNestedFieldTypes(types, `${currentType}_${fieldName}`, field.fields)
     }
 
     if (field.type === 'reference') {
       types[currentType] = types[currentType] || {}
 
-      types[currentType][fieldName] = function (sourceDocument: any, args: any, { dbModels }: { dbModels: DbModels}) {
+      // Reference field resolver function.
+      types[currentType][fieldName] = function (sourceDocument: any, args: any, { dbModels }: { dbModels: DbModels }) {
         if (!field.references) {
           return
         }
@@ -62,6 +59,98 @@ const resolveNestedFields = function (
       }
     }
   })
+}
+
+interface IInputReferenceDefinition {
+  existing?: {
+    entityType: string
+    entityId: string
+  }
+  [createReferenceType: string]: any
+}
+
+/**
+ * Resolve input arguments to normalize storage of reference fields.
+ *
+ * Reference fields can either reference existing entities or create new
+ * entities as part of the parent mutation.
+ *
+ * This checks whether creating entity references are required before saving the
+ * main entity. If so, entities are created and referenced on the main entity
+ * args in prepare callbacks by adding transaction handlers.
+ */
+const resolveInputArguments = async function (args: any, context: any, currentArgsIndex: Array<string>, fields: EntityTypeFields, resolvers: any, entityTypeDefinitions: EntityTypeDefinitions) {
+  for (const fieldName of Object.keys(fields)) {
+    const field = fields[fieldName]
+    if (field.type === 'object' && field.fields) {
+      await resolveInputArguments(args, context, [...currentArgsIndex, fieldName], field.fields, resolvers, entityTypeDefinitions)
+    }
+
+    if (field.type === 'reference') {
+      // Get the input argument data from the current index if it has been set
+      // on the mutation.
+      let argData = _.get(args, [...currentArgsIndex, fieldName])
+
+      if (argData) {
+        if (!field.many) {
+          // Input is coming in for a singular field. Normalize to an array for
+          // common handling of single and multiple references and storage.
+          argData = [argData]
+        }
+
+        // Alias argData for typecasting.
+        const referenceDefinitions = argData as [IInputReferenceDefinition]
+
+        // Iterate reference field input to alter the input args to be in the
+        // expected format for storage: `entityType|entityId`
+        for (const referenceItemIndex in referenceDefinitions) {
+          const referenceItemData = referenceDefinitions[referenceItemIndex]
+
+          // Convert input declaring a reference to an existing entity.
+          if (referenceItemData.existing && referenceItemData.existing.entityType && referenceItemData.existing.entityId) {
+            const value = `${referenceItemData.existing.entityType}|${referenceItemData.existing.entityId}`
+            if (field.many) {
+              _.set(args, [...currentArgsIndex, fieldName, referenceItemIndex], value)
+              continue
+            }
+            _.set(args, [...currentArgsIndex, fieldName], value)
+            continue
+          }
+
+          // If there is no 'existing' reference type set check for arguments
+          // that declare to entity creation. Only process the first reference
+          // item found because there should only ever be only declaration per
+          // argsData item.
+          const action = Object.keys(referenceItemData).length > 0 ? Object.keys(referenceItemData)[0] : null
+
+          if (action && resolvers.Mutation && resolvers.Mutation[action] && typeof resolvers.Mutation[action] === 'function') {
+
+            const referencedEntityType = action.replace('create', '')
+
+            context.entityType = referencedEntityType
+            context.entityTypeData = entityTypeDefinitions[referencedEntityType]
+
+            const createdEntity = await resolvers.Mutation[action].apply(null, [null, referenceItemData[action], context])
+
+            const value = `${referencedEntityType}|${createdEntity._id}`
+
+            if (field.many) {
+              _.set(args, [...currentArgsIndex, fieldName, referenceItemIndex], value)
+              continue
+            }
+            _.set(args, [...currentArgsIndex, fieldName], value)
+            continue
+          }
+
+          // Fallback to unsetting the reference.
+          if (field.many) {
+            _.unset(args, [...currentArgsIndex, fieldName, referenceItemIndex])
+          }
+          _.unset(args, [...currentArgsIndex, fieldName])
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -118,7 +207,7 @@ const entityResolvers = function (resolvers: any) {
     // resolvers, but still resolve for any references made by other entity types.
     if (entityData._excludeGraphQL) {
       // Resolve top-level and nested objects and references.
-      resolveNestedFields(types, entityData._meta.pascal, entityData.fields)
+      resolveNestedFieldTypes(types, entityData._meta.pascal, entityData.fields)
       return
     }
 
@@ -190,28 +279,28 @@ const entityResolvers = function (resolvers: any) {
     // Only allow mutations of entities that have fields.
     if (hasFields) {
       // Create entity.
-      resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent: any, args: any, { dbModels }: { dbModels: DbModels }) => {
+      resolvers.Mutation[`create${entityData._meta.pascal}`] = async (parent: any, args: any, context: { entityType?: string, entityData?: EntityTypeDefinition, dbModels: DbModels }) => {
+
+        // Nested references don't have to nest their input arguments inside a
+        // 'fields' property. If a nested reference is calling this function
+        // then update args to wrap the input args with an object which maps the
+        // expected structure. See resolveInputArguments().
+        if (!args.fields) {
+          args = { fields: args }
+        }
+
         const transactionContext = {
           parent,
           args,
-          dbModels,
-          entityType: entityData._meta.pascal,
-          entityData
-        }
-
-        // @todo - Fix this - only done to fix test, need general solution to:
-        // 1. Map 'existing' inputs to  entityType|entityId for storage - first lookup to check for valid entity
-        // 2. Create entities and attach reference is input field key starts with 'create'
-        if (args.fields.livesWithDogs) {
-          args.fields.livesWithDogs = args.fields.livesWithDogs.map(dogRef => {
-            return `${dogRef.existing.entityType}|${dogRef.existing.entityId}`
-          })
-        }
-        if (args.fields.bestBuddy) {
-          args.fields.bestBuddy = `${args.fields.bestBuddy.existing.entityType}|${args.fields.bestBuddy.existing.entityId}`
+          dbModels: context.dbModels,
+          entityType: context.entityType ? context.entityType : entityData._meta.pascal,
+          entityData: context.entityData ? context.entityData : entityData
         }
 
         const transactionHandlers: Array<TransactionHandler> = []
+
+        await resolveInputArguments(args, context, ['fields'], entityData.fields, resolvers, definitions)
+
         hooks.invoke('core.entity.createHandlers', { transactionHandlers })
 
         return new Transaction(transactionHandlers, transactionContext).execute()
@@ -256,7 +345,7 @@ const entityResolvers = function (resolvers: any) {
     }
 
     // Resolve top-level and nested objects and references.
-    resolveNestedFields(types, entityData._meta.pascal, entityData.fields)
+    resolveNestedFieldTypes(types, entityData._meta.pascal, entityData.fields)
   })
 
   for (const type in types) {

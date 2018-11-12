@@ -185,7 +185,7 @@ test.serial('Can create and read two entities that reference each other', t => {
       const bestBuddyBizzy = json.data.createLizard.bestBuddy.id
       t.is(bestBuddyBizzy, lizzyId)
     })
-  })
+  }).catch(error => console.log(error))
 })
 
 test.serial('Can create and read three entities in a single query', t => {
@@ -218,5 +218,39 @@ test.serial('Can create and read three entities in a single query', t => {
       t.true(lizardNames.includes('Scaley'))
       t.true(lizardNames.includes('Lennie'))
       t.true(lizardNames.includes('Izzy'))
+    })
+})
+
+test.serial('Can create an entity which has entity references which should be created themselves as part of a single mutation', async t => {
+  t.plan(2)
+  const createLizard = () => graphqlQuery(`
+    mutation {
+      createLizard(
+        fields: {
+          name: "Jasper",
+          bestBuddy: {
+            createLizard: {
+              name: "Jasper's mate"
+            }
+          }
+        }
+      ) {
+        id,
+        name,
+        bestBuddy {
+          ... on Lizard {
+            id,
+            name
+          }
+        }
+      }
+    }
+  `)
+
+  return createLizard()
+    .then((json: any) => {
+      const jasper = json.data.createLizard
+      t.is(jasper.name, 'Jasper')
+      t.is(jasper.bestBuddy.name, "Jasper's mate")
     })
 })

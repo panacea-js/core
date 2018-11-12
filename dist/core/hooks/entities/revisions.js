@@ -3,11 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const { _, i18n } = Panacea.container;
 exports.default = {
     register(hooks) {
-        hooks.once('core.entityTypes.definitions', ({ definitions }) => {
+        hooks.on('core.entityTypes.definitions', ({ definitions }) => {
             const revisionsText = i18n.t('core.entityTypes.revisions.label');
             for (const entityTypeName of Object.keys(definitions)) {
                 const entityType = definitions[entityTypeName];
-                if (!entityType.revisions) {
+                if (!entityType.revisions || entityType.fields._revisions) {
                     continue;
                 }
                 const revisionEntityType = _.upperFirst(_.camelCase(entityTypeName)) + 'Revision';
