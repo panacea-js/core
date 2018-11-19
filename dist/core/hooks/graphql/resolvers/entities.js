@@ -48,9 +48,9 @@ const resolveInputArguments = async function (args, context, currentArgsIndex, f
                 }
                 const referenceDefinitions = argData;
                 for (const referenceItemIndex in referenceDefinitions) {
-                    const referenceItemData = referenceDefinitions[referenceItemIndex];
-                    if (referenceItemData.existing && referenceItemData.existing.entityType && referenceItemData.existing.entityId) {
-                        const value = `${referenceItemData.existing.entityType}|${referenceItemData.existing.entityId}`;
+                    const referencedItemData = referenceDefinitions[referenceItemIndex];
+                    if (referencedItemData.existing && referencedItemData.existing.entityType && referencedItemData.existing.entityId) {
+                        const value = `${referencedItemData.existing.entityType}|${referencedItemData.existing.entityId}`;
                         if (field.many) {
                             _.set(args, [...currentArgsIndex, fieldName, referenceItemIndex], value);
                             continue;
@@ -58,19 +58,25 @@ const resolveInputArguments = async function (args, context, currentArgsIndex, f
                         _.set(args, [...currentArgsIndex, fieldName], value);
                         continue;
                     }
-                    const action = Object.keys(referenceItemData).length > 0 ? Object.keys(referenceItemData)[0] : null;
+                    const action = Object.keys(referencedItemData).length > 0 ? Object.keys(referencedItemData)[0] : null;
                     if (action && resolvers.Mutation && resolvers.Mutation[action] && typeof resolvers.Mutation[action] === 'function') {
-                        const referencedEntityType = action.replace('create', '');
-                        context.entityType = referencedEntityType;
-                        context.entityTypeData = entityTypeDefinitions[referencedEntityType];
-                        const createdEntity = await resolvers.Mutation[action].apply(null, [null, referenceItemData[action], context]);
-                        const value = `${referencedEntityType}|${createdEntity._id}`;
-                        if (field.many) {
-                            _.set(args, [...currentArgsIndex, fieldName, referenceItemIndex], value);
+                        const actionWords = action.match(/[A-Z]?[a-z]+/g) || [];
+                        const actionType = actionWords[0];
+                        actionWords.shift();
+                        const referencedEntityType = actionWords.join('');
+                        const referencedEntityContext = _.cloneDeep(context);
+                        referencedEntityContext.entityType = referencedEntityType;
+                        referencedEntityContext.entityTypeData = entityTypeDefinitions[referencedEntityType];
+                        const processedEntity = await resolvers.Mutation[action].apply(null, [null, referencedItemData[action], referencedEntityContext]);
+                        if (actionType === 'create' || actionType === 'update') {
+                            const storedReferenceValue = `${referencedEntityType}|${processedEntity._id}`;
+                            if (field.many) {
+                                _.set(args, [...currentArgsIndex, fieldName, referenceItemIndex], storedReferenceValue);
+                                continue;
+                            }
+                            _.set(args, [...currentArgsIndex, fieldName], storedReferenceValue);
                             continue;
                         }
-                        _.set(args, [...currentArgsIndex, fieldName], value);
-                        continue;
                     }
                     if (field.many) {
                         _.unset(args, [...currentArgsIndex, fieldName, referenceItemIndex]);
@@ -174,8 +180,8 @@ const entityResolvers = function (resolvers) {
                     entityType: context.entityType ? context.entityType : entityData._meta.pascal,
                     entityData: context.entityData ? context.entityData : entityData
                 };
-                const transactionHandlers = [];
                 await resolveInputArguments(args, context, ['fields'], entityData.fields, resolvers, definitions);
+                const transactionHandlers = [];
                 hooks.invoke('core.entity.createHandlers', { transactionHandlers });
                 return new Transaction(transactionHandlers, transactionContext).execute()
                     .then((txn) => {

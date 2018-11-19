@@ -60,10 +60,31 @@ const discoverReferenceInputTypes = function (fields, prefixes, inputs) {
         if (field.type === 'reference') {
             if (Array.isArray(field.references) && !field._excludeGraphQLInput) {
                 const references = field.references.sort();
-                const createFields = references.reduce((acc, reference) => {
+                const nestedCreate = references.reduce((acc, reference) => {
                     acc[`create${reference}`] = {
                         comment: `Fields to create on a new ${reference} and attach reference to this entity`,
                         value: `create${reference}: ${reference}Input`,
+                    };
+                    return acc;
+                }, {});
+                const nestedUpdate = references.reduce((acc, reference) => {
+                    acc[`update${reference}`] = {
+                        comment: `Entity ID and fields to update on an existing ${reference} reference`,
+                        value: `update${reference}: ${reference}Input`,
+                    };
+                    return acc;
+                }, {});
+                const nestedDelete = references.reduce((acc, reference) => {
+                    acc[`delete${reference}`] = {
+                        comment: `Entity ID to delete on an existing ${reference} reference. This will not only remove the reference but also delete the referenced entity.`,
+                        value: `delete${reference}: ${reference}Input`,
+                    };
+                    return acc;
+                }, {});
+                const nestedRemove = references.reduce((acc, reference) => {
+                    acc[`remove${reference}`] = {
+                        comment: `Entity ID to remove on an existing ${reference} reference. This will not delete the referenced entity itself, only the reference to it.`,
+                        value: `remove${reference}: ${reference}Input`,
                     };
                     return acc;
                 }, {});
@@ -72,9 +93,9 @@ const discoverReferenceInputTypes = function (fields, prefixes, inputs) {
                     comment: `Input type for ${prefixes.join('_')}_${_fieldName}`,
                     name: inputName,
                     fields: Object.assign({ existing: {
-                            comment: 'An existing entity reference',
+                            comment: 'A new reference to and existing entity',
                             value: 'existing: ExistingReference'
-                        } }, createFields)
+                        } }, nestedCreate, nestedUpdate, nestedDelete, nestedRemove)
                 };
             }
         }
@@ -116,11 +137,11 @@ function getGraphQLSchemaDefinitions() {
             name: entityTypePascal,
             fields: definedFields.refsAsModels
         };
+        discoverUnionTypes(entityTypeData.fields, [entityTypeName], definitions.unionTypes);
+        discoverReferenceInputTypes(entityTypeData.fields, [entityTypeName], definitions.inputs);
         if (entityTypeData._excludeGraphQL) {
             return;
         }
-        discoverUnionTypes(entityTypeData.fields, [entityTypeName], definitions.unionTypes);
-        discoverReferenceInputTypes(entityTypeData.fields, [entityTypeName], definitions.inputs);
         const inputFields = definedFields.refsAsStrings;
         delete inputFields.id;
         const countFields = Object.keys(inputFields).length;

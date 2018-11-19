@@ -110,7 +110,7 @@ const discoverReferenceInputTypes = function (fields: EntityTypeFields, prefixes
       if (Array.isArray(field.references) && !field._excludeGraphQLInput) {
         const references = field.references.sort()
 
-        const createFields = references.reduce((acc, reference) => {
+        const nestedCreate = references.reduce((acc, reference) => {
           acc[`create${reference}`] = {
             comment: `Fields to create on a new ${reference} and attach reference to this entity`,
             value: `create${reference}: ${reference}Input`,
@@ -118,6 +118,29 @@ const discoverReferenceInputTypes = function (fields: EntityTypeFields, prefixes
           return acc
         }, {} as any)
 
+        const nestedUpdate = references.reduce((acc, reference) => {
+          acc[`update${reference}`] = {
+            comment: `Entity ID and fields to update on an existing ${reference} reference`,
+            value: `update${reference}: ${reference}Input`,
+          }
+          return acc
+        }, {} as any)
+
+        const nestedDelete = references.reduce((acc, reference) => {
+          acc[`delete${reference}`] = {
+            comment: `Entity ID to delete on an existing ${reference} reference. This will not only remove the reference but also delete the referenced entity.`,
+            value: `delete${reference}: ${reference}Input`,
+          }
+          return acc
+        }, {} as any)
+
+        const nestedRemove = references.reduce((acc, reference) => {
+          acc[`remove${reference}`] = {
+            comment: `Entity ID to remove on an existing ${reference} reference. This will not delete the referenced entity itself, only the reference to it.`,
+            value: `remove${reference}: ${reference}Input`,
+          }
+          return acc
+        }, {} as any)
 
         const inputName = `UnionInput_${prefixes.join('_')}_${_fieldName}`
 
@@ -126,10 +149,13 @@ const discoverReferenceInputTypes = function (fields: EntityTypeFields, prefixes
           name: inputName,
           fields: {
             existing: {
-              comment: 'An existing entity reference',
+              comment: 'A new reference to and existing entity',
               value: 'existing: ExistingReference'
             },
-            ...createFields
+            ...nestedCreate,
+            ...nestedUpdate,
+            ...nestedDelete,
+            ...nestedRemove
           }
         }
       }
@@ -183,8 +209,6 @@ interface IEntityTypeSchemaDefinitions {
   }
 }
 
-
-
 function getGraphQLSchemaDefinitions () {
   const definitions: IEntityTypeSchemaDefinitions = {
     types: {},
@@ -225,14 +249,14 @@ function getGraphQLSchemaDefinitions () {
       fields: definedFields.refsAsModels
     }
 
+    discoverUnionTypes(entityTypeData.fields, [entityTypeName], definitions.unionTypes)
+    discoverReferenceInputTypes(entityTypeData.fields, [entityTypeName], definitions.inputs)
+
     // If exclude flag is set on entity, still provide a type to allow
     // references from other entity types.
     if (entityTypeData._excludeGraphQL) {
       return
     }
-
-    discoverUnionTypes(entityTypeData.fields, [entityTypeName], definitions.unionTypes)
-    discoverReferenceInputTypes(entityTypeData.fields, [entityTypeName], definitions.inputs)
 
     const inputFields = definedFields.refsAsStrings
     delete inputFields.id

@@ -66,7 +66,7 @@ interface IInputReferenceDefinition {
     entityType: string
     entityId: string
   }
-  [createReferenceType: string]: any
+  [entityMutationName: string]: any
 }
 
 /**
@@ -104,11 +104,11 @@ const resolveInputArguments = async function (args: any, context: any, currentAr
         // Iterate reference field input to alter the input args to be in the
         // expected format for storage: `entityType|entityId`
         for (const referenceItemIndex in referenceDefinitions) {
-          const referenceItemData = referenceDefinitions[referenceItemIndex]
+          const referencedItemData = referenceDefinitions[referenceItemIndex]
 
           // Convert input declaring a reference to an existing entity.
-          if (referenceItemData.existing && referenceItemData.existing.entityType && referenceItemData.existing.entityId) {
-            const value = `${referenceItemData.existing.entityType}|${referenceItemData.existing.entityId}`
+          if (referencedItemData.existing && referencedItemData.existing.entityType && referencedItemData.existing.entityId) {
+            const value = `${referencedItemData.existing.entityType}|${referencedItemData.existing.entityId}`
             if (field.many) {
               _.set(args, [...currentArgsIndex, fieldName, referenceItemIndex], value)
               continue
@@ -121,25 +121,44 @@ const resolveInputArguments = async function (args: any, context: any, currentAr
           // that declare to entity creation. Only process the first reference
           // item found because there should only ever be only declaration per
           // argsData item.
-          const action = Object.keys(referenceItemData).length > 0 ? Object.keys(referenceItemData)[0] : null
+          const action = Object.keys(referencedItemData).length > 0 ? Object.keys(referencedItemData)[0] : null
 
           if (action && resolvers.Mutation && resolvers.Mutation[action] && typeof resolvers.Mutation[action] === 'function') {
 
-            const referencedEntityType = action.replace('create', '')
+            // actionWords is an array representation of the camelCame action.
+            const actionWords = action.match(/[A-Z]?[a-z]+/g) || []
 
-            context.entityType = referencedEntityType
-            context.entityTypeData = entityTypeDefinitions[referencedEntityType]
+            // actionType is 'create', 'update' or 'delete'.
+            const actionType = actionWords[0]
 
-            const createdEntity = await resolvers.Mutation[action].apply(null, [null, referenceItemData[action], context])
+            // Remove first action word and join array to re-compose the
+            // referenced entity type.
+            actionWords.shift()
+            const referencedEntityType = actionWords.join('')
 
-            const value = `${referencedEntityType}|${createdEntity._id}`
+            // Update context items to pass to the nested mutation that reflect
+            // the referenced entity type and not the parent context.
+            const referencedEntityContext = _.cloneDeep(context)
+            referencedEntityContext.entityType = referencedEntityType
+            referencedEntityContext.entityTypeData = entityTypeDefinitions[referencedEntityType]
 
-            if (field.many) {
-              _.set(args, [...currentArgsIndex, fieldName, referenceItemIndex], value)
+            const processedEntity = await resolvers.Mutation[action].apply(null, [null, referencedItemData[action], referencedEntityContext])
+
+            if (actionType === 'create' || actionType === 'update') {
+              // Entity created or updated. Compose the reference string in the
+              // format 'entity_type|entity_id'.
+              const storedReferenceValue = `${referencedEntityType}|${processedEntity._id}`
+
+              // Once the referenced entity is created, attach the reference
+              // string back onto parent args so that its own resolver can handle
+              // the reference.
+              if (field.many) {
+                _.set(args, [...currentArgsIndex, fieldName, referenceItemIndex], storedReferenceValue)
+                continue
+              }
+              _.set(args, [...currentArgsIndex, fieldName], storedReferenceValue)
               continue
             }
-            _.set(args, [...currentArgsIndex, fieldName], value)
-            continue
           }
 
           // Fallback to unsetting the reference.
@@ -297,10 +316,9 @@ const entityResolvers = function (resolvers: any) {
           entityData: context.entityData ? context.entityData : entityData
         }
 
-        const transactionHandlers: Array<TransactionHandler> = []
-
         await resolveInputArguments(args, context, ['fields'], entityData.fields, resolvers, definitions)
 
+        const transactionHandlers: Array<TransactionHandler> = []
         hooks.invoke('core.entity.createHandlers', { transactionHandlers })
 
         return new Transaction(transactionHandlers, transactionContext).execute()
