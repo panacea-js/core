@@ -103,7 +103,7 @@
     "graphql-voyager": "^1.0.0-rc.15",
     "js-yaml": "github:nodeca/js-yaml",
     "lodash": "^4.17.10",
-    "mkdirp": "^0.5.1",
+    "mkdirp": "^0.5.2",
     "moment": "^2.20.1",
     "mongoose": "^5.2.7",
     "rimraf": "^2.6.2",
