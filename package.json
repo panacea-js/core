@@ -75,7 +75,7 @@
     "@types/mongoose": "^5.2.19",
     "@types/node-fetch": "^2.1.2",
     "ava": "1.0.0-rc.1",
-    "codecov": "^3.0.4",
+    "codecov": "^3.7.1",
     "cross-env": "^5.1.1",
     "escope": "^3.6.0",
     "node-fetch": "^2.1.2",
