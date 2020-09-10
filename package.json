@@ -78,7 +78,7 @@
     "codecov": "^3.0.4",
     "cross-env": "^5.1.1",
     "escope": "^3.6.0",
-    "node-fetch": "^2.1.2",
+    "node-fetch": "^2.6.1",
     "nodemon": "^1.18.3",
     "nyc": "^13.1.0",
     "portfinder": "^1.0.15",
