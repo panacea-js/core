@@ -95,7 +95,7 @@
     "chalk": "^2.3.0",
     "cors": "^2.8.4",
     "dotenv-safe": "^4.0.4",
-    "express": "^4.15.3",
+    "express": "^4.17.3",
     "fs-extra": "^4.0.2",
     "glob": "^7.1.2",
     "graphql": "^14.0.2",
